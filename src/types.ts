@@ -1,9 +1,3 @@
-import { LanguageDirection } from './theme';
-
-export interface BaseComponentProps {
-    languageDirection?: LanguageDirection;
-}
-
 export interface Size {
     height: number;
     width: number;
