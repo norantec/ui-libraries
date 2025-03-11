@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import { Form, FormItem } from './components/form';
+import { Form, Instance, registerTemplate } from './components/form';
 
-Form.registerTemplate('demo', () => {
+registerTemplate('demo', () => {
     return [
         {
             label: 'test1',
@@ -15,11 +15,26 @@ Form.registerTemplate('demo', () => {
 });
 
 const App: React.FC = () => {
+    const [formInstance, setFormInstance] = useState<Instance>(undefined);
+
     return (
         <div>
-            <Form>
-                {({ getPartialTemplate }) => getPartialTemplate('demo')?.map?.((props) => <FormItem {...props} />)}
+            <Form
+                onInstanceInitialize={(instance) => {
+                    setFormInstance(instance);
+                }}
+            >
+                {({ getPartialTemplate, render }) => render(getPartialTemplate('demo'))}
             </Form>
+            <button
+                onClick={() => {
+                    formInstance?.submit?.()?.then((values) => {
+                        console.log('LENCONDA:DEMO:values', values);
+                    });
+                }}
+            >
+                Submit
+            </button>
         </div>
     );
 };

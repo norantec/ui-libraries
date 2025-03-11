@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-constraint */
-import React, { cloneElement, isValidElement, JSX, useContext, useEffect, useRef } from 'react';
+import React, { BaseSyntheticEvent, cloneElement, isValidElement, JSX, useContext, useEffect, useRef } from 'react';
 import { useUpdate } from 'ahooks';
 import { StringUtil } from '@open-norantec/toolchain/dist/utilities/string-util.class';
 import EventEmitter from 'eventemitter3';
@@ -95,8 +95,8 @@ export interface EffectItem {
 }
 
 export interface FormItemSerializer {
-    incoming: (incomingValue: any) => any[];
-    outgoing: (outgoingValue: any[]) => any;
+    incoming?: (incomingValue: any) => any;
+    outgoing?: (outgoingValue: any) => any;
 }
 
 export type Validator = (value: any, formValue: Value) => Promise<string> | string;
@@ -263,18 +263,19 @@ const { Provider: FormItemProvider, useComponentConfig: useFormItemComponentConf
                         display: 'inline-block',
                         position: 'relative',
                         boxSizing: 'border-box',
+                        color: 'red',
                         lineHeight: 1,
-                        marginTop: 8,
+                        marginTop: 4,
                         ...(() => {
                             switch (direction) {
                                 case Direction.LTR: {
                                     return {
-                                        paddingLeft: props?.fontSize + 8,
+                                        paddingLeft: props?.fontSize + 4,
                                     };
                                 }
                                 case Direction.RTL: {
                                     return {
-                                        paddingRight: props?.fontSize + 8,
+                                        paddingRight: props?.fontSize + 4,
                                     };
                                 }
                             }
@@ -313,7 +314,7 @@ const BasePropsContext = React.createContext<
     Partial<FormItemBaseProps> & Pick<FormProps, 'disabled' | 'readOnly' | 'defaultValues'>
 >({});
 
-export const Form: React.FC<FormProps> & FormStatic = (inputProps) => {
+export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref) => {
     const {
         children: inputChildren = [],
         dense,
@@ -607,14 +608,16 @@ export const Form: React.FC<FormProps> & FormStatic = (inputProps) => {
                                 defaultValues,
                             }}
                         >
-                            <div className={cx(css(sx?.wrapper))}>{normalizedChildren}</div>
+                            <div ref={ref} className={cx(css(sx?.wrapper))}>
+                                {normalizedChildren}
+                            </div>
                         </BasePropsContext.Provider>
                     </ErrorMessagesContext.Provider>
                 </ComponentPropsContext.Provider>
             </ValueContext.Provider>
         </EventContext.Provider>
     );
-};
+});
 
 const UNINITIALIZED = Symbol('');
 
@@ -745,12 +748,13 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
     }, [name, formItemContextRef.current, defaultValueRef.current, registerCondition]);
 
     useEffect(() => {
-        hiddenRef.current =
-            typeof hideCondition === 'function'
-                ? hideCondition(formItemContextRef.current)
-                : typeof hideCondition === 'boolean'
-                  ? hideCondition
-                  : false;
+        if (typeof hideCondition === 'function') {
+            hiddenRef.current = hideCondition(formItemContextRef.current);
+        } else if (typeof hideCondition === 'boolean') {
+            hiddenRef.current = hideCondition;
+        } else {
+            hiddenRef.current = false;
+        }
         update();
     }, [formItemContextRef.current, hideCondition]);
 
@@ -763,7 +767,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
     const parsedValue =
         typeof serializer?.incoming === 'function'
             ? serializer.incoming(formValueMap?.get?.(name))
-            : [formValueMap?.get?.(name)];
+            : formValueMap?.get?.(name);
 
     if (!formValueMap.has(name)) {
         return null;
@@ -775,11 +779,14 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
             className={cx(css(sx?.wrapper), props?.className)}
             style={{
                 ...props?.style,
-                ...(hiddenRef.current
-                    ? {
-                          display: 'none',
-                      }
-                    : {}),
+                ...(() => {
+                    if (hiddenRef.current) {
+                        return {
+                            display: 'none',
+                        };
+                    }
+                    return {};
+                })(),
             }}
         >
             <div className={cx(css(sx?.headerWrapper))}>
@@ -794,7 +801,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                 ></div>
             </div>
             <div className={cx(css(sx?.elementWrapper))}>
-                {normalizedChildren.map((element, elementIndex) =>
+                {normalizedChildren.slice(0, 1).map((element, elementIndex) =>
                     cloneElement(element, {
                         disabled:
                             element.props?.disabled ??
@@ -807,19 +814,19 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                                 return typeof readOnly === 'function' ? readOnly(getContext()) : readOnly;
                             })(),
                         ...componentPropsMap?.[name]?.[elementIndex],
-                        value: parsedValue?.[elementIndex],
-                        onChange: (value: any, ...others) => {
-                            const newParsedValue = Array.from(parsedValue);
-                            newParsedValue[elementIndex] = value;
+                        value: parsedValue,
+                        onChange: (value: any, ...others: any[]) => {
                             eventEmitter.emit(EVENTS.SET_VALUES, {
                                 [name]: (() => {
+                                    let result: any;
                                     if (typeof serializer?.outgoing === 'function') {
-                                        return serializer.outgoing(newParsedValue);
-                                    } else if ((newParsedValue?.[0] as any)?._reactName === 'onChange') {
-                                        return newParsedValue?.[0]?.target?.value;
+                                        result = serializer.outgoing(value);
+                                    } else if ((value as any)?._reactName === 'onChange') {
+                                        result = (value as BaseSyntheticEvent)?.target?.value;
                                     } else {
-                                        return newParsedValue?.[0];
+                                        result = value;
                                     }
+                                    return result;
                                 })(),
                             });
                             element?.props?.onChange?.(value, ...others);
@@ -857,7 +864,7 @@ export const FormFormatter = <T extends any = any>({ value, onChange, children }
 
 export type FormTemplateRegistry = (helpers: FormTemplateRegistryHelpers) => FormItemProps[];
 
-Form.registerTemplate = (name, registry) => {
+export const registerTemplate = (name, registry) => {
     if (StringUtil.isFalsyString(name)) {
         return;
     }
