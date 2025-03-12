@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
-import ReactDOM from 'react-dom/client';
+import * as React from 'react';
+import { useEffect } from 'react';
+import * as ReactDOM from 'react-dom/client';
 import { Form, useForm, registerTemplate, FormProvider } from './components/form';
 
 registerTemplate('demo', () => {

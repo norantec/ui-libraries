@@ -2,13 +2,15 @@
     "name": "@norantec/ui-libraries",
     "version": "1.0.0",
     "description": "Norantec UI libraries",
-    "main": "lib/index.js",
+    "main": "lib-cjs/index.js",
+    "module": "lib-esm/index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "build:lib": "rimraf lib && tsc --project tsconfig.build.json",
+        "build:cjs": "rimraf lib-cjs && tsc --project tsconfig.cjs.json",
+        "build:esm": "rimraf lib-esm && tsc --project tsconfig.esm.json",
         "demo": "webpack serve --config webpack.config.js --mode development",
         "build:demo": "webpack --config webpack.config.js --mode production",
-        "build": "npm run build:lib && npm run build:demo"
+        "build": "npm run build:cjs && npm run build:esm && npm run build:demo"
     },
     "repository": {
         "type": "git",
@@ -20,7 +22,8 @@
     },
     "files": [
         "demo",
-        "lib",
+        "lib-cjs",
+        "lib-esm",
         "LICENSE",
         "README.md"
     ],

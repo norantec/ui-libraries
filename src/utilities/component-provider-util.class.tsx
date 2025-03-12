@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useEffect, useRef } from 'react';
+import * as React from 'react';
+import { createContext, useContext, useEffect, useRef } from 'react';
 import { useUpdate } from 'ahooks';
 import { ColorSchemeFinalValue, useColorScheme } from '../hooks/use-color-scheme';
 import { ObjectUtil } from './object-util.class';
-import _ from 'lodash';
+import * as _ from 'lodash';
 import { Direction } from '../enums/direction.enum';
 import { useDirection } from '../hooks/use-direction';
 

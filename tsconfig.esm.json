@@ -1,0 +1,10 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "module": "ESNext",
+        "target": "ES2019",
+        "lib": ["ES2019", "DOM"],
+        "outDir": "./lib-esm"
+    },
+    "exclude": ["src/demo.tsx"]
+}
