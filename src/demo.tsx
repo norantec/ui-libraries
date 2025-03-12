@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
-import { Form, Instance, registerTemplate } from './components/form';
+import { Form, useForm, registerTemplate, FormProvider } from './components/form';
 
 registerTemplate('demo', () => {
     return [
@@ -23,16 +23,18 @@ registerTemplate('demo', () => {
 });
 
 const App: React.FC = () => {
-    const [formInstance, setFormInstance] = useState<Instance>(undefined);
+    const formInstance = useForm();
+
+    useEffect(() => {
+        console.log('LENCONDA:formInstance:', formInstance?.getValues?.());
+    }, [formInstance]);
 
     return (
         <div>
             <Form
+                instance={formInstance}
                 defaultValues={{
                     test2: 'asd',
-                }}
-                onInstanceInitialize={(instance) => {
-                    setFormInstance(instance);
                 }}
             >
                 {({ getPartialTemplate, render }) => render(getPartialTemplate('demo'))}
@@ -50,4 +52,8 @@ const App: React.FC = () => {
     );
 };
 
-ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+ReactDOM.createRoot(document.getElementById('root')!).render(
+    <FormProvider>
+        <App />
+    </FormProvider>,
+);

@@ -9,6 +9,8 @@ import { css, cx } from '@emotion/css';
 import { ComponentProviderUtil } from '../../utilities/component-provider-util.class';
 import { Direction } from '../../enums/direction.enum';
 import { PiXCircleFill } from 'react-icons/pi';
+import { v4 as uuid } from 'uuid';
+import { usePreviousValueEffect } from '../../hooks/use-previous-value-effect';
 
 const formTemplateMap = new Map<string, FormTemplateRegistry>();
 
@@ -47,12 +49,12 @@ export interface FormProps extends FormItemBaseProps {
     componentProps?: ComponentProps;
     defaultValues?: any;
     disabled?: boolean;
+    instance?: FormInstance;
     readOnly?: boolean;
     sx?: {
         wrapper?: CSSObject;
     };
     onChange?: (value: Value, changedFields: string[]) => void;
-    onInstanceInitialize?: (formInstance: Instance) => void;
 }
 
 export interface Value {
@@ -75,12 +77,58 @@ export interface SubmitValue {
     value?: Value;
 }
 
-export interface Instance {
+interface FormInnerInstance {
     clearValues: (names?: string[]) => void;
     resetValues: (names?: string[]) => void;
     setValue: (name: string, value?: any) => void;
     setValues: (values?: Value) => void;
     submit: () => Promise<SubmitValue>;
+}
+
+export class FormInstance implements FormInnerInstance {
+    public constructor(
+        useFormId: string,
+        instanceId: string,
+        private readonly innerInstance?: FormInnerInstance,
+        private readonly value?: ImmutableMap<string, any>,
+    ) {
+        Object.defineProperty(this, 'useFormId', {
+            writable: false,
+            value: useFormId,
+        });
+        Object.defineProperty(this, 'instanceId', {
+            writable: false,
+            value: instanceId,
+        });
+    }
+
+    clearValues(names?: string[]) {
+        return this.innerInstance?.clearValues?.(names);
+    }
+
+    resetValues(names?: string[]) {
+        return this.innerInstance?.resetValues?.(names);
+    }
+
+    setValue(name: string, value?: any) {
+        return this.innerInstance?.setValue?.(name, value);
+    }
+
+    setValues(values?: Value) {
+        return this.innerInstance?.setValues?.(values);
+    }
+
+    submit() {
+        return this.innerInstance?.submit?.();
+    }
+
+    getValue(name: string) {
+        return this.value?.get?.(name);
+    }
+
+    getValues() {
+        return this.value?.toJS?.();
+    }
 }
 
 export interface EffectActionHelpers {
@@ -133,6 +181,7 @@ const EVENTS = {
     CLEAR_VALUES: Symbol(''),
     DEFAULT_VALUE_REQUEST: Symbol(''),
     DEFAULT_VALUE_RESPONSE: Symbol(''),
+    INSTANCE: Symbol(''),
     NAMES_REQUEST: Symbol(''),
     NAMES_RESPONSE: Symbol(''),
     REGISTER_ITEM: Symbol(''),
@@ -145,31 +194,42 @@ const EVENTS = {
     VALUE_RESPONSE: Symbol(''),
 };
 
-const { Provider: FormProvider, useComponentConfig: useFormComponentConfig } = ComponentProviderUtil.create<FormProps>({
-    defaults: {
-        disabled: false,
-        readOnly: false,
-        dense: 4,
-        dangerColor: '#FF0000',
-    },
-    presets: ({ props }) => {
-        return {
-            sx: {
-                wrapper: {
-                    display: 'flex',
-                    flexDirection: 'column',
-                    flexWrap: 'wrap',
-                    alignItems: 'flex-start',
-                    '& > *': {
-                        marginBottom: 2 * props?.dense,
+const { Provider: FormBaseProvider, useComponentConfig: useFormComponentConfig } =
+    ComponentProviderUtil.create<FormProps>({
+        defaults: {
+            disabled: false,
+            readOnly: false,
+            dense: 4,
+            dangerColor: '#FF0000',
+        },
+        presets: ({ props }) => {
+            return {
+                sx: {
+                    wrapper: {
+                        display: 'flex',
+                        flexDirection: 'column',
+                        flexWrap: 'wrap',
+                        alignItems: 'flex-start',
+                        '& > *': {
+                            marginBottom: 2 * props?.dense,
+                        },
                     },
                 },
-            },
-        };
-    },
-});
+            };
+        },
+    });
 
-export { FormProvider };
+export const FormProvider: React.FC<React.PropsWithChildren<Parameters<typeof FormBaseProvider>[0]>> = ({
+    children,
+    ...props
+}) => {
+    const eventEmitterRef = useRef(new EventEmitter());
+    return (
+        <FormBaseProvider {...props}>
+            <EventContext.Provider value={eventEmitterRef.current}>{children}</EventContext.Provider>
+        </FormBaseProvider>
+    );
+};
 
 const { Provider: FormItemProvider, useComponentConfig: useFormItemComponentConfig } =
     ComponentProviderUtil.create<FormItemProps>({
@@ -290,6 +350,16 @@ const ValueContext = React.createContext<ImmutableMap<string, any>>(null);
 const ErrorMessagesContext = React.createContext<Record<string, string[]>>({});
 const BasePropsContext = React.createContext<Pick<FormProps, 'defaultValues'>>({});
 
+const getDefinedPropertyValue = (instance: FormInstance, key: string) => {
+    try {
+        const result = Object.getOwnPropertyDescriptor(instance, key)?.value ?? null;
+        return result;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) {
+        return null;
+    }
+};
+
 export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref) => {
     const {
         children: inputChildren = [],
@@ -303,8 +373,8 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
         readOnly = false,
         defaultValues = {},
         sx,
+        instance,
         onChange,
-        onInstanceInitialize,
     } = useFormComponentConfig(inputProps);
     const getPartialTemplate: GetPartialTemplateFn = (id, names) => {
         const registryFunction = formTemplateMap.get(id);
@@ -350,10 +420,10 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
     }
 
     const update = useUpdate();
-    const formInstanceRef = useRef<Instance>(undefined);
+    const formInnerInstanceRef = useRef<FormInnerInstance>(undefined);
     const valueRef = useRef<ImmutableMap<string, any>>(ImmutableMap());
     const errorsMapRef = useRef<ImmutableMap<string, string[]>>(ImmutableMap());
-    const eventEmitterRef = useRef(new EventEmitter());
+    const eventEmitter = useContext(EventContext);
     const handleChange = (value: ImmutableMap<string, any>, changedFields: string[]) => {
         const formValue = value.toJS();
         onChange?.(formValue, changedFields);
@@ -364,7 +434,7 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
         valueRef.current = value;
         errorsMapRef.current = newErrorsMap;
         update();
-        eventEmitterRef.current.emit(EVENTS.CHANGE, formValue, changedFields);
+        eventEmitter?.emit?.(EVENTS.CHANGE, formValue, changedFields);
     };
 
     useEffect(() => {
@@ -405,14 +475,14 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
                                     if (requestId !== currentRequestId) {
                                         return;
                                     }
-                                    eventEmitterRef.current.removeListener(EVENTS.DEFAULT_VALUE_RESPONSE, handler);
+                                    eventEmitter?.removeListener?.(EVENTS.DEFAULT_VALUE_RESPONSE, handler);
                                     resolve({
                                         name,
                                         defaultValue,
                                     });
                                 };
-                                eventEmitterRef.current.addListener(EVENTS.DEFAULT_VALUE_RESPONSE, handler);
-                                eventEmitterRef.current.emit(EVENTS.DEFAULT_VALUE_REQUEST, name, requestId);
+                                eventEmitter?.addListener?.(EVENTS.DEFAULT_VALUE_RESPONSE, handler);
+                                eventEmitter?.emit?.(EVENTS.DEFAULT_VALUE_REQUEST, name, requestId);
                             });
                         }),
                     ).then((resultList) => {
@@ -428,7 +498,7 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
                 }
             }
         };
-        eventEmitterRef.current.addListener(EVENTS.REGISTER_ITEM, (name: string, defaultValue?: any) => {
+        eventEmitter?.addListener?.(EVENTS.REGISTER_ITEM, (name: string, defaultValue?: any) => {
             if (StringUtil.isFalsyString(name) || valueRef.current.has(name)) {
                 return;
             }
@@ -436,7 +506,7 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             newRawValue = newRawValue.set(name, defaultValue);
             handleChange(newRawValue, [name]);
         });
-        eventEmitterRef.current.addListener(EVENTS.UNREGISTER_ITEM, (name: string) => {
+        eventEmitter?.addListener?.(EVENTS.UNREGISTER_ITEM, (name: string) => {
             if (StringUtil.isFalsyString(name) || !valueRef.current.has(name)) {
                 return;
             }
@@ -444,7 +514,7 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             newRawValue = newRawValue.delete(name);
             handleChange(newRawValue, [name]);
         });
-        eventEmitterRef.current.addListener(EVENTS.SET_VALUES, (value: Value) => {
+        eventEmitter?.addListener?.(EVENTS.SET_VALUES, (value: Value) => {
             let newRawValue = valueRef.current;
             const changedFields: string[] = [];
 
@@ -459,42 +529,42 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
 
             handleChange(newRawValue, changedFields);
         });
-        eventEmitterRef.current.addListener(EVENTS.RESET_VALUES, (names?: string[]) =>
+        eventEmitter?.addListener?.(EVENTS.RESET_VALUES, (names?: string[]) =>
             handleResetOrClear(EVENTS.RESET_VALUES, names),
         );
-        eventEmitterRef.current.addListener(EVENTS.CLEAR_VALUES, (names?: string[]) =>
+        eventEmitter?.addListener?.(EVENTS.CLEAR_VALUES, (names?: string[]) =>
             handleResetOrClear(EVENTS.CLEAR_VALUES, names),
         );
-        eventEmitterRef.current.addListener(EVENTS.NAMES_REQUEST, (requestId: symbol) => {
-            eventEmitterRef.current.emit(EVENTS.NAMES_RESPONSE, requestId, Object.keys(valueRef.current.toJS()));
+        eventEmitter?.addListener?.(EVENTS.NAMES_REQUEST, (requestId: symbol) => {
+            eventEmitter?.emit?.(EVENTS.NAMES_RESPONSE, requestId, Object.keys(valueRef.current.toJS()));
         });
-        eventEmitterRef.current.addListener(EVENTS.VALUE_REQUEST, (requestId: symbol) => {
-            eventEmitterRef.current.emit(EVENTS.VALUE_RESPONSE, requestId, valueRef.current.toJS());
+        eventEmitter?.addListener?.(EVENTS.VALUE_REQUEST, (requestId: symbol) => {
+            eventEmitter?.emit?.(EVENTS.VALUE_RESPONSE, requestId, valueRef.current.toJS());
         });
         return () => {
-            eventEmitterRef.current.removeAllListeners(EVENTS.REGISTER_ITEM);
-            eventEmitterRef.current.removeAllListeners(EVENTS.UNREGISTER_ITEM);
-            eventEmitterRef.current.removeAllListeners(EVENTS.SET_VALUES);
-            eventEmitterRef.current.removeAllListeners(EVENTS.RESET_VALUES);
-            eventEmitterRef.current.removeAllListeners(EVENTS.CLEAR_VALUES);
-            eventEmitterRef.current.removeAllListeners(EVENTS.NAMES_REQUEST);
-            eventEmitterRef.current.removeAllListeners(EVENTS.VALUE_REQUEST);
+            eventEmitter?.removeAllListeners?.(EVENTS.REGISTER_ITEM);
+            eventEmitter?.removeAllListeners?.(EVENTS.UNREGISTER_ITEM);
+            eventEmitter?.removeAllListeners?.(EVENTS.SET_VALUES);
+            eventEmitter?.removeAllListeners?.(EVENTS.RESET_VALUES);
+            eventEmitter?.removeAllListeners?.(EVENTS.CLEAR_VALUES);
+            eventEmitter?.removeAllListeners?.(EVENTS.NAMES_REQUEST);
+            eventEmitter?.removeAllListeners?.(EVENTS.VALUE_REQUEST);
         };
-    }, [valueRef.current, formInstanceRef.current]);
+    }, [valueRef.current, formInnerInstanceRef.current, eventEmitter]);
 
     useEffect(() => {
-        formInstanceRef.current = {
+        formInnerInstanceRef.current = {
             clearValues: (names) => {
-                eventEmitterRef.current.emit(EVENTS.CLEAR_VALUES, names);
+                eventEmitter?.emit?.(EVENTS.CLEAR_VALUES, names);
             },
             resetValues: (names) => {
-                eventEmitterRef.current.emit(EVENTS.RESET_VALUES, names);
+                eventEmitter?.emit?.(EVENTS.RESET_VALUES, names);
             },
             setValue: (name, value) => {
-                eventEmitterRef.current.emit(EVENTS.SET_VALUES, { [name]: value });
+                eventEmitter?.emit?.(EVENTS.SET_VALUES, { [name]: value });
             },
             setValues: (values) => {
-                eventEmitterRef.current.emit(EVENTS.SET_VALUES, values);
+                eventEmitter?.emit?.(EVENTS.SET_VALUES, values);
             },
             submit: async () => {
                 const names = await new Promise<string[]>((resolve) => {
@@ -503,11 +573,11 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
                         if (currentRequestId !== requestId) {
                             return;
                         }
-                        eventEmitterRef.current.removeListener(EVENTS.NAMES_RESPONSE, namesResponseHandler);
+                        eventEmitter?.removeListener?.(EVENTS.NAMES_RESPONSE, namesResponseHandler);
                         resolve(names);
                     };
-                    eventEmitterRef.current.addListener(EVENTS.NAMES_RESPONSE, namesResponseHandler);
-                    eventEmitterRef.current.emit(EVENTS.NAMES_REQUEST, requestId);
+                    eventEmitter?.addListener?.(EVENTS.NAMES_RESPONSE, namesResponseHandler);
+                    eventEmitter?.emit?.(EVENTS.NAMES_REQUEST, requestId);
                 });
                 const value = await new Promise<Value>((resolve) => {
                     const requestId = Symbol('');
@@ -515,11 +585,11 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
                         if (currentRequestId !== requestId) {
                             return;
                         }
-                        eventEmitterRef.current.removeListener(EVENTS.VALUE_RESPONSE, valueResponseHandler);
+                        eventEmitter?.removeListener?.(EVENTS.VALUE_RESPONSE, valueResponseHandler);
                         resolve(names);
                     };
-                    eventEmitterRef.current.addListener(EVENTS.VALUE_RESPONSE, valueResponseHandler);
-                    eventEmitterRef.current.emit(EVENTS.VALUE_REQUEST, requestId);
+                    eventEmitter?.addListener?.(EVENTS.VALUE_RESPONSE, valueResponseHandler);
+                    eventEmitter?.emit?.(EVENTS.VALUE_REQUEST, requestId);
                 });
                 const errorsMap = await new Promise<ImmutableMap<string, string[] | null>>((resolve) => {
                     const requestId = Symbol('');
@@ -536,12 +606,12 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
                         const currentKeys = Object.keys(result.toJS());
 
                         if (names?.every?.((name) => currentKeys.includes(name))) {
-                            eventEmitterRef.current.removeListener(EVENTS.SUBMIT_RESPONSE, submitResponseHandler);
+                            eventEmitter?.removeListener?.(EVENTS.SUBMIT_RESPONSE, submitResponseHandler);
                             resolve(result);
                         }
                     };
-                    eventEmitterRef.current.addListener(EVENTS.SUBMIT_RESPONSE, submitResponseHandler);
-                    eventEmitterRef.current.emit(EVENTS.SUBMIT_REQUEST, requestId);
+                    eventEmitter?.addListener?.(EVENTS.SUBMIT_RESPONSE, submitResponseHandler);
+                    eventEmitter?.emit?.(EVENTS.SUBMIT_REQUEST, requestId);
                 });
                 errorsMapRef.current = errorsMap;
                 update();
@@ -563,40 +633,54 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             },
         };
         update();
-    }, [eventEmitterRef.current]);
+    }, [eventEmitter]);
 
-    useEffect(() => {
-        onInstanceInitialize?.(formInstanceRef.current);
-    }, [onInstanceInitialize, formInstanceRef.current]);
+    usePreviousValueEffect(
+        () => {
+            const useFormId = getDefinedPropertyValue(instance, 'useFormId');
+            if (StringUtil.isFalsyString(useFormId)) return;
+            const newInstance = new FormInstance(useFormId, uuid(), formInnerInstanceRef.current, valueRef.current);
+            eventEmitter?.emit?.(EVENTS.INSTANCE, useFormId, newInstance);
+        },
+        [formInnerInstanceRef.current, eventEmitter, valueRef.current, instance],
+        (previousValue: [FormInstance, ImmutableMap<string, any>]) => {
+            if (
+                getDefinedPropertyValue(instance, 'instanceId') ===
+                    getDefinedPropertyValue(previousValue?.[0], 'instanceId') ||
+                previousValue?.[1] === valueRef.current
+            ) {
+                return;
+            }
+            return [instance, valueRef.current] as [FormInstance, ImmutableMap<string, any>];
+        },
+    );
 
     return (
-        <EventContext.Provider value={eventEmitterRef.current}>
-            <ValueContext.Provider value={valueRef.current}>
-                <ComponentPropsContext.Provider value={componentProps}>
-                    <ErrorMessagesContext.Provider value={errorsMapRef.current.toJS()}>
-                        <BasePropsContext.Provider
-                            value={{
-                                defaultValues,
-                            }}
-                        >
-                            <div ref={ref} className={cx(css(sx?.wrapper))}>
-                                {normalizedChildren.map((childItem) => {
-                                    return cloneElement(childItem, {
-                                        dense,
-                                        dangerColor,
-                                        labelProps,
-                                        maxWidth,
-                                        minWidth,
-                                        disabled,
-                                        readOnly,
-                                    });
-                                })}
-                            </div>
-                        </BasePropsContext.Provider>
-                    </ErrorMessagesContext.Provider>
-                </ComponentPropsContext.Provider>
-            </ValueContext.Provider>
-        </EventContext.Provider>
+        <ValueContext.Provider value={valueRef.current}>
+            <ComponentPropsContext.Provider value={componentProps}>
+                <ErrorMessagesContext.Provider value={errorsMapRef.current.toJS()}>
+                    <BasePropsContext.Provider
+                        value={{
+                            defaultValues,
+                        }}
+                    >
+                        <div ref={ref} className={cx(css(sx?.wrapper))}>
+                            {normalizedChildren.map((childItem) => {
+                                return cloneElement(childItem, {
+                                    dense,
+                                    dangerColor,
+                                    labelProps,
+                                    maxWidth,
+                                    minWidth,
+                                    disabled,
+                                    readOnly,
+                                });
+                            })}
+                        </div>
+                    </BasePropsContext.Provider>
+                </ErrorMessagesContext.Provider>
+            </ComponentPropsContext.Provider>
+        </ValueContext.Provider>
     );
 });
 
@@ -665,7 +749,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
             Promise.all(
                 normalizedValidators.map((validator) => validator(formValueMap?.get?.(name), formValueMap.toJS())),
             ).then((messages) => {
-                eventEmitter.emit(
+                eventEmitter?.emit?.(
                     EVENTS.SUBMIT_RESPONSE,
                     requestId,
                     name,
@@ -691,9 +775,9 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                 }
 
                 await effect.action(value, {
-                    reset: () => eventEmitter.emit(EVENTS.RESET_VALUES, [name]),
-                    clear: () => eventEmitter.emit(EVENTS.CLEAR_VALUES, [name]),
-                    set: (value) => eventEmitter.emit(EVENTS.SET_VALUES, { [name]: value }),
+                    reset: () => eventEmitter?.emit?.(EVENTS.RESET_VALUES, [name]),
+                    clear: () => eventEmitter?.emit?.(EVENTS.CLEAR_VALUES, [name]),
+                    set: (value) => eventEmitter?.emit?.(EVENTS.SET_VALUES, { [name]: value }),
                 });
             }
         };
@@ -701,15 +785,15 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
             if (currentName !== name) {
                 return;
             }
-            eventEmitter.emit(EVENTS.DEFAULT_VALUE_RESPONSE, requestId, defaultValueRef.current);
+            eventEmitter?.emit?.(EVENTS.DEFAULT_VALUE_RESPONSE, requestId, defaultValueRef.current);
         };
-        eventEmitter.addListener(EVENTS.SUBMIT_REQUEST, handleSubmitRequest);
-        eventEmitter.addListener(EVENTS.CHANGE, handleChange);
-        eventEmitter.addListener(EVENTS.DEFAULT_VALUE_REQUEST, handleDefaultValueRequest);
+        eventEmitter?.addListener?.(EVENTS.SUBMIT_REQUEST, handleSubmitRequest);
+        eventEmitter?.addListener?.(EVENTS.CHANGE, handleChange);
+        eventEmitter?.addListener?.(EVENTS.DEFAULT_VALUE_REQUEST, handleDefaultValueRequest);
         return () => {
-            eventEmitter.removeListener(EVENTS.SUBMIT_REQUEST, handleSubmitRequest);
-            eventEmitter.removeListener(EVENTS.CHANGE, handleChange);
-            eventEmitter.removeListener(EVENTS.DEFAULT_VALUE_REQUEST, handleDefaultValueRequest);
+            eventEmitter?.removeListener?.(EVENTS.SUBMIT_REQUEST, handleSubmitRequest);
+            eventEmitter?.removeListener?.(EVENTS.CHANGE, handleChange);
+            eventEmitter?.removeListener?.(EVENTS.DEFAULT_VALUE_REQUEST, handleDefaultValueRequest);
         };
     }, [eventEmitter, validators, name, formValueMap, required, effects, defaultValueRef.current]);
 
@@ -722,11 +806,11 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
             typeof registerCondition !== 'function' ? true : registerCondition?.(formItemContextRef.current);
 
         if (register) {
-            eventEmitter.emit(EVENTS.REGISTER_ITEM, name, defaultValueRef.current);
+            eventEmitter?.emit?.(EVENTS.REGISTER_ITEM, name, defaultValueRef.current);
         } else {
-            eventEmitter.emit(EVENTS.UNREGISTER_ITEM, name);
+            eventEmitter?.emit?.(EVENTS.UNREGISTER_ITEM, name);
         }
-    }, [name, formItemContextRef.current, defaultValueRef.current, registerCondition]);
+    }, [name, formItemContextRef.current, eventEmitter, defaultValueRef.current, registerCondition]);
 
     useEffect(() => {
         if (typeof hideCondition === 'function') {
@@ -797,7 +881,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                         ...componentPropsMap?.[name]?.[elementIndex],
                         value: parsedValue,
                         onChange: (value: any, ...others: any[]) => {
-                            eventEmitter.emit(EVENTS.SET_VALUES, {
+                            eventEmitter?.emit?.(EVENTS.SET_VALUES, {
                                 [name]: (() => {
                                     let result: any;
                                     if (typeof serializer?.outgoing === 'function') {
@@ -850,4 +934,43 @@ export const registerTemplate = (name: string, registry: FormTemplateRegistry) =
         return;
     }
     formTemplateMap.set(name, registry);
+};
+
+export const useForm = () => {
+    const eventEmitter = useContext(EventContext);
+    const update = useUpdate();
+    const instanceRef = useRef<FormInstance>(undefined);
+    const idRef = useRef<string>(undefined);
+
+    useEffect(() => {
+        const id = uuid();
+        idRef.current = id;
+        instanceRef.current = new FormInstance(id, uuid());
+        update();
+    }, []);
+
+    useEffect(() => {
+        if (StringUtil.isFalsyString(idRef.current)) return;
+
+        const handler = (useFormId: string | null, instance: FormInstance) => {
+            if (
+                StringUtil.isFalsyString(useFormId) ||
+                useFormId !== getDefinedPropertyValue(instance, 'useFormId') ||
+                getDefinedPropertyValue(instance, 'instanceId') ===
+                    getDefinedPropertyValue(instanceRef.current, 'instanceId')
+            ) {
+                return;
+            }
+            instanceRef.current = instance;
+            update();
+        };
+
+        eventEmitter?.addListener?.(EVENTS.INSTANCE, handler);
+
+        return () => {
+            eventEmitter?.removeListener?.(EVENTS.INSTANCE, handler);
+        };
+    }, [eventEmitter, idRef.current]);
+
+    return instanceRef.current;
 };
