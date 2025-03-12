@@ -36,7 +36,7 @@ jobs:
 
       - name: Pack-up artifact
         run: |
-          zip -r artifact.zip lib demo
+          zip -r artifact.zip lib-esm lib-cjs demo
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -80,7 +80,8 @@ jobs:
 
       - name: Check cache
         run: |
-          ls -al ./lib
+          ls -al ./lib-esm
+          ls -al ./lib-cjs
           ls -al ./demo
 
       - name: Install Norantec Toolchain
