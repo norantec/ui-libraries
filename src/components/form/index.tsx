@@ -14,8 +14,8 @@ const formTemplateMap = new Map<string, FormTemplateRegistry>();
 
 interface FormItemBaseProps
     extends Omit<React.HTMLAttributes<HTMLDivElement>, 'value' | 'onChange' | 'children' | 'defaultValue'> {
+    dangerColor?: string;
     dense?: number;
-    fontSize?: number;
     labelProps?: React.HTMLAttributes<HTMLDivElement>;
     maxWidth?: number | string;
     minWidth?: number | string;
@@ -149,15 +149,23 @@ const { Provider: FormProvider, useComponentConfig: useFormComponentConfig } = C
     defaults: {
         disabled: false,
         readOnly: false,
-        fontSize: 12,
-        sx: {
-            wrapper: {
-                display: 'flex',
-                flexDirection: 'column',
-                flexWrap: 'wrap',
-                alignItems: 'flex-start',
+        dense: 4,
+        dangerColor: '#FF0000',
+    },
+    presets: ({ props }) => {
+        return {
+            sx: {
+                wrapper: {
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flexWrap: 'wrap',
+                    alignItems: 'flex-start',
+                    '& > *': {
+                        marginBottom: 2 * props?.dense,
+                    },
+                },
             },
-        },
+        };
     },
 });
 
@@ -166,7 +174,6 @@ export { FormProvider };
 const { Provider: FormItemProvider, useComponentConfig: useFormItemComponentConfig } =
     ComponentProviderUtil.create<FormItemProps>({
         defaults: {
-            fontSize: 12,
             required: false,
             validators: [],
             effects: [],
@@ -175,7 +182,6 @@ const { Provider: FormItemProvider, useComponentConfig: useFormItemComponentConf
             return {
                 sx: {
                     wrapper: {
-                        fontSize: props?.fontSize,
                         maxWidth: '100%',
                     },
                     headerWrapper: {
@@ -183,7 +189,6 @@ const { Provider: FormItemProvider, useComponentConfig: useFormItemComponentConf
                         flexDirection: 'row',
                         flexWrap: 'nowrap',
                         alignItems: 'center',
-                        minHeight: 24,
                     },
                     headerLabel: {
                         userSelect: 'none',
@@ -191,16 +196,11 @@ const { Provider: FormItemProvider, useComponentConfig: useFormItemComponentConf
                         ...(() => {
                             if (props?.required) {
                                 return {
-                                    ...(direction === 'ltr' ? { paddingLeft: 12 } : {}),
-                                    ...(direction === 'rtl' ? { paddingRight: 12 } : {}),
-                                    '&::after': {
+                                    '&::before': {
                                         content: '"*"',
-                                        position: 'absolute',
                                         lineHeight: 1,
-                                        top: '50%',
-                                        transform: 'translateY(-50%)',
-                                        ...(direction === 'ltr' ? { left: 0 } : {}),
-                                        ...(direction === 'rtl' ? { right: 0 } : {}),
+                                        color: props?.dangerColor,
+                                        fontWeight: 'bolder',
                                     },
                                 };
                             }
@@ -225,28 +225,6 @@ const { Provider: FormItemProvider, useComponentConfig: useFormItemComponentConf
                         flexDirection: 'row',
                         flexWrap: 'nowrap',
                         alignItems: 'flex-start',
-                        '& > *': {
-                            ...(() => {
-                                switch (direction) {
-                                    case Direction.LTR: {
-                                        return {
-                                            marginLeft: 12,
-                                            '&:first-child': {
-                                                marginLeft: 0,
-                                            },
-                                        };
-                                    }
-                                    case Direction.RTL: {
-                                        return {
-                                            marginRight: 12,
-                                            '&:first-child': {
-                                                marginRight: 0,
-                                            },
-                                        };
-                                    }
-                                }
-                            })(),
-                        },
                     },
                     errorWrapper: {
                         display: 'flex',
@@ -263,19 +241,19 @@ const { Provider: FormItemProvider, useComponentConfig: useFormItemComponentConf
                         display: 'inline-block',
                         position: 'relative',
                         boxSizing: 'border-box',
-                        color: 'red',
+                        color: props?.dangerColor,
                         lineHeight: 1,
                         marginTop: 4,
                         ...(() => {
                             switch (direction) {
                                 case Direction.LTR: {
                                     return {
-                                        paddingLeft: props?.fontSize + 4,
+                                        paddingLeft: props?.dense,
                                     };
                                 }
                                 case Direction.RTL: {
                                     return {
-                                        paddingRight: props?.fontSize + 4,
+                                        paddingRight: props?.dense,
                                     };
                                 }
                             }
@@ -310,14 +288,13 @@ const EventContext = React.createContext<EventEmitter>(null);
 const ComponentPropsContext = React.createContext<ComponentProps>(null);
 const ValueContext = React.createContext<ImmutableMap<string, any>>(null);
 const ErrorMessagesContext = React.createContext<Record<string, string[]>>({});
-const BasePropsContext = React.createContext<
-    Partial<FormItemBaseProps> & Pick<FormProps, 'disabled' | 'readOnly' | 'defaultValues'>
->({});
+const BasePropsContext = React.createContext<Pick<FormProps, 'defaultValues'>>({});
 
 export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref) => {
     const {
         children: inputChildren = [],
         dense,
+        dangerColor,
         labelProps,
         maxWidth,
         minWidth,
@@ -599,17 +576,21 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
                     <ErrorMessagesContext.Provider value={errorsMapRef.current.toJS()}>
                         <BasePropsContext.Provider
                             value={{
-                                dense,
-                                labelProps,
-                                maxWidth,
-                                minWidth,
-                                disabled,
-                                readOnly,
                                 defaultValues,
                             }}
                         >
                             <div ref={ref} className={cx(css(sx?.wrapper))}>
-                                {normalizedChildren}
+                                {normalizedChildren.map((childItem) => {
+                                    return cloneElement(childItem, {
+                                        dense,
+                                        dangerColor,
+                                        labelProps,
+                                        maxWidth,
+                                        minWidth,
+                                        disabled,
+                                        readOnly,
+                                    });
+                                })}
                             </div>
                         </BasePropsContext.Provider>
                     </ErrorMessagesContext.Provider>
@@ -864,7 +845,7 @@ export const FormFormatter = <T extends any = any>({ value, onChange, children }
 
 export type FormTemplateRegistry = (helpers: FormTemplateRegistryHelpers) => FormItemProps[];
 
-export const registerTemplate = (name, registry) => {
+export const registerTemplate = (name: string, registry: FormTemplateRegistry) => {
     if (StringUtil.isFalsyString(name)) {
         return;
     }
