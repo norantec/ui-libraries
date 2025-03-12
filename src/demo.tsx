@@ -11,6 +11,14 @@ registerTemplate('demo', () => {
                 return <input placeholder="Input something..." />;
             },
         },
+        {
+            label: 'test2',
+            name: 'test2',
+            required: true,
+            children: () => {
+                return <input placeholder="Input something..." />;
+            },
+        },
     ];
 });
 
@@ -20,6 +28,9 @@ const App: React.FC = () => {
     return (
         <div>
             <Form
+                defaultValues={{
+                    test2: 'asd',
+                }}
                 onInstanceInitialize={(instance) => {
                     setFormInstance(instance);
                 }}
