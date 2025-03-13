@@ -6,10 +6,11 @@ import { ObjectUtil } from './object-util.class';
 import * as _ from 'lodash';
 import { Direction } from '../enums/direction.enum';
 import { useDirection } from '../hooks/use-direction';
-import mustache from 'mustache';
 import { CSSObject } from '@emotion/react';
 import { css } from '@emotion/css';
 import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
+
+const mustache = require('mustache');
 
 interface PropsGeneratorContext<T> {
     colorScheme: ColorSchemeFinalValue;
