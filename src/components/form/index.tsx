@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { BaseSyntheticEvent, cloneElement, isValidElement, JSX, useContext, useEffect, useRef } from 'react';
 import { useUpdate } from 'ahooks';
-import { StringUtil } from '@open-norantec/toolchain/dist/utilities/string-util.class';
+import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
 import EventEmitter from 'eventemitter3';
 import { Map as ImmutableMap } from 'immutable';
 import { CSSObject } from '@emotion/react';

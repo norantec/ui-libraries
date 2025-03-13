@@ -1,7 +1,7 @@
 import { useUpdate } from 'ahooks';
 import { useEffect, useRef } from 'react';
 import { Direction } from '../../enums/direction.enum';
-import { StringUtil } from '@open-norantec/toolchain/dist/utilities/string-util.class';
+import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
 
 const getDirection = (): Direction => {
     const rawDirection = document.documentElement.getAttribute('dir');

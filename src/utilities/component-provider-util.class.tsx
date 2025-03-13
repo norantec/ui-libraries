@@ -9,7 +9,7 @@ import { useDirection } from '../hooks/use-direction';
 import mustache from 'mustache';
 import { CSSObject } from '@emotion/react';
 import { css } from '@emotion/css';
-import { StringUtil } from '@open-norantec/toolchain/dist/utilities/string-util.class';
+import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
 
 interface PropsGeneratorContext<T> {
     colorScheme: ColorSchemeFinalValue;
