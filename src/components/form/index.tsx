@@ -6,7 +6,7 @@ import { StringUtil } from '@open-norantec/toolchain/dist/utilities/string-util.
 import EventEmitter from 'eventemitter3';
 import { Map as ImmutableMap } from 'immutable';
 import { CSSObject } from '@emotion/react';
-import { css, cx } from '@emotion/css';
+import { cx } from '@emotion/css';
 import { ComponentProviderUtil } from '../../utilities/component-provider-util.class';
 import { Direction } from '../../enums/direction.enum';
 import { PiXCircleFill } from 'react-icons/pi';
@@ -195,30 +195,33 @@ const EVENTS = {
     VALUE_RESPONSE: Symbol(''),
 };
 
-const { Provider: FormBaseProvider, useComponentConfig: useFormComponentConfig } =
-    ComponentProviderUtil.create<FormProps>({
-        defaults: {
-            disabled: false,
-            readOnly: false,
-            dense: 4,
-            dangerColor: '#FF0000',
-        },
-        presets: ({ props }) => {
-            return {
-                sx: {
-                    wrapper: {
-                        display: 'flex',
-                        flexDirection: 'column',
-                        flexWrap: 'wrap',
-                        alignItems: 'flex-start',
-                        '& > *': {
-                            marginBottom: 2 * props?.dense,
-                        },
+const {
+    Provider: FormBaseProvider,
+    useComponentConfig: useFormComponentConfig,
+    useClassNames: useFormClassNames,
+} = ComponentProviderUtil.create<FormProps>({
+    defaults: {
+        disabled: false,
+        readOnly: false,
+        dense: 4,
+        dangerColor: '#FF0000',
+    },
+    presets: ({ props }) => {
+        return {
+            sx: {
+                wrapper: {
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flexWrap: 'wrap',
+                    alignItems: 'flex-start',
+                    '& > *': {
+                        marginBottom: 2 * props?.dense,
                     },
                 },
-            };
-        },
-    });
+            },
+        };
+    },
+});
 
 export const FormProvider: React.FC<React.PropsWithChildren<Parameters<typeof FormBaseProvider>[0]>> = ({
     children,
@@ -232,116 +235,119 @@ export const FormProvider: React.FC<React.PropsWithChildren<Parameters<typeof Fo
     );
 };
 
-const { Provider: FormItemProvider, useComponentConfig: useFormItemComponentConfig } =
-    ComponentProviderUtil.create<FormItemProps>({
-        defaults: {
-            required: false,
-            validators: [],
-            effects: [],
-        },
-        presets: ({ props, direction }) => {
-            return {
-                sx: {
-                    wrapper: {
-                        maxWidth: '100%',
-                    },
-                    headerWrapper: {
-                        display: 'flex',
-                        flexDirection: 'row',
-                        flexWrap: 'nowrap',
-                        alignItems: 'center',
-                    },
-                    headerLabel: {
-                        userSelect: 'none',
-                        position: 'relative',
-                        ...(() => {
-                            if (props?.required) {
+const {
+    Provider: FormItemProvider,
+    useComponentConfig: useFormItemComponentConfig,
+    useClassNames: useFormItemClassNames,
+} = ComponentProviderUtil.create<FormItemProps>({
+    defaults: {
+        required: false,
+        validators: [],
+        effects: [],
+    },
+    presets: ({ props, direction }) => {
+        return {
+            sx: {
+                wrapper: {
+                    maxWidth: '100%',
+                },
+                headerWrapper: {
+                    display: 'flex',
+                    flexDirection: 'row',
+                    flexWrap: 'nowrap',
+                    alignItems: 'center',
+                },
+                headerLabel: {
+                    userSelect: 'none',
+                    position: 'relative',
+                    ...(() => {
+                        if (props?.required) {
+                            return {
+                                '&::before': {
+                                    content: '"*"',
+                                    lineHeight: 1,
+                                    color: props?.dangerColor,
+                                    fontWeight: 'bolder',
+                                },
+                            };
+                        }
+                        return {};
+                    })(),
+                    flexGrow: 1,
+                    flexShrink: 1,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    alignItems: 'center',
+                },
+                headerControls: {
+                    display: 'flex',
+                    flexWrap: 'nowrap',
+                    flexDirection: 'row',
+                    flexGrow: 0,
+                    flexShrink: 0,
+                },
+                elementWrapper: {
+                    display: 'flex',
+                    flexDirection: 'row',
+                    flexWrap: 'nowrap',
+                    alignItems: 'flex-start',
+                },
+                errorWrapper: {
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flexWrap: 'nowrap',
+                    alignItems: 'flex-start',
+                    maxWidth: '100%',
+                },
+                errorMessage: {
+                    maxWidth: '100%',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    display: 'inline-block',
+                    position: 'relative',
+                    boxSizing: 'border-box',
+                    color: props?.dangerColor,
+                    lineHeight: 1,
+                    marginTop: 4,
+                    ...(() => {
+                        switch (direction) {
+                            case Direction.LTR: {
                                 return {
-                                    '&::before': {
-                                        content: '"*"',
-                                        lineHeight: 1,
-                                        color: props?.dangerColor,
-                                        fontWeight: 'bolder',
-                                    },
+                                    paddingLeft: props?.dense,
                                 };
                             }
-                            return {};
-                        })(),
-                        flexGrow: 1,
-                        flexShrink: 1,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        alignItems: 'center',
-                    },
-                    headerControls: {
-                        display: 'flex',
-                        flexWrap: 'nowrap',
-                        flexDirection: 'row',
-                        flexGrow: 0,
-                        flexShrink: 0,
-                    },
-                    elementWrapper: {
-                        display: 'flex',
-                        flexDirection: 'row',
-                        flexWrap: 'nowrap',
-                        alignItems: 'flex-start',
-                    },
-                    errorWrapper: {
-                        display: 'flex',
-                        flexDirection: 'column',
-                        flexWrap: 'nowrap',
-                        alignItems: 'flex-start',
-                        maxWidth: '100%',
-                    },
-                    errorMessage: {
-                        maxWidth: '100%',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        display: 'inline-block',
-                        position: 'relative',
-                        boxSizing: 'border-box',
-                        color: props?.dangerColor,
-                        lineHeight: 1,
-                        marginTop: 4,
-                        ...(() => {
-                            switch (direction) {
-                                case Direction.LTR: {
-                                    return {
-                                        paddingLeft: props?.dense,
-                                    };
-                                }
-                                case Direction.RTL: {
-                                    return {
-                                        paddingRight: props?.dense,
-                                    };
-                                }
+                            case Direction.RTL: {
+                                return {
+                                    paddingRight: props?.dense,
+                                };
                             }
-                        })(),
-                    },
-                    errorMessageIcon: {
-                        position: 'absolute',
-                        top: 0,
-                        ...(() => {
-                            switch (direction) {
-                                case Direction.LTR: {
-                                    return {
-                                        left: 0,
-                                    };
-                                }
-                                case Direction.RTL: {
-                                    return {
-                                        right: 0,
-                                    };
-                                }
-                            }
-                        })(),
-                    },
+                        }
+                    })(),
                 },
-            };
-        },
-    });
+                errorMessageIcon: {
+                    position: 'absolute',
+                    top: 0,
+                    ...(() => {
+                        switch (direction) {
+                            case Direction.LTR: {
+                                return {
+                                    left: 0,
+                                };
+                            }
+                            case Direction.RTL: {
+                                return {
+                                    right: 0,
+                                };
+                            }
+                        }
+                    })(),
+                },
+            },
+        };
+    },
+});
 
 export { FormItemProvider };
 
@@ -377,6 +383,7 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
         instance,
         onChange,
     } = useFormComponentConfig(inputProps);
+    const classNames = useFormClassNames(sx);
     const getPartialTemplate: GetPartialTemplateFn = (id, names) => {
         const registryFunction = formTemplateMap.get(id);
 
@@ -665,7 +672,7 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
                             defaultValues,
                         }}
                     >
-                        <div ref={ref} className={cx(css(sx?.wrapper))}>
+                        <div ref={ref} className={cx(classNames?.wrapper)}>
                             {normalizedChildren.map((childItem) => {
                                 return cloneElement(childItem, {
                                     dense,
@@ -707,6 +714,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
         ...props
     } = useFormItemComponentConfig(inputProps);
     const update = useUpdate();
+    const classNames = useFormItemClassNames(sx);
     const eventEmitter = useContext(EventContext);
     const componentPropsMap = useContext(ComponentPropsContext);
     const formValueMap = useContext(ValueContext);
@@ -842,7 +850,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
     return (
         <div
             {...props}
-            className={cx(css(sx?.wrapper), props?.className)}
+            className={cx(classNames?.wrapper, props?.className)}
             style={{
                 ...props?.style,
                 ...(() => {
@@ -855,10 +863,10 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                 })(),
             }}
         >
-            <div className={cx(css(sx?.headerWrapper))}>
-                {label && <div className={cx(css(sx?.headerLabel))}>{label}</div>}
+            <div className={cx(classNames?.headerWrapper)}>
+                {label && <div className={cx(classNames?.headerLabel)}>{label}</div>}
                 <div
-                    className={cx(css(sx?.headerControls))}
+                    className={cx(classNames?.headerControls)}
                     style={{
                         flex: 'unset',
                         flexGrow: 0,
@@ -866,7 +874,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                     }}
                 ></div>
             </div>
-            <div className={cx(css(sx?.elementWrapper))}>
+            <div className={cx(classNames?.elementWrapper)}>
                 {normalizedChildren.slice(0, 1).map((element, elementIndex) =>
                     cloneElement(element, {
                         disabled:
@@ -902,14 +910,14 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                 )}
             </div>
             {errorMessagesMap?.[name]?.length > 0 && errorWrapperProps !== false && (
-                <div {...errorWrapperProps} className={cx(css(sx?.errorWrapper), errorWrapperProps?.className)}>
+                <div {...errorWrapperProps} className={cx(classNames?.errorWrapper, errorWrapperProps?.className)}>
                     {errorMessagesMap?.[name].map((errorMessage, index) => (
                         <div
                             key={index}
                             {...errorMessageProps}
-                            className={cx(css(sx?.errorMessage), errorMessageProps?.className)}
+                            className={cx(classNames?.errorMessage, errorMessageProps?.className)}
                         >
-                            <PiXCircleFill className={css(sx?.errorMessageIcon)} />
+                            <PiXCircleFill className={classNames?.errorMessageIcon} />
                             {errorMessage}
                         </div>
                     ))}
