@@ -52,7 +52,7 @@ function topologicalSort(values: Record<string, string[]>): string[] {
     const inDegree: Record<string, number> = {};
     const graph: Record<string, string[]> = {};
     const result: string[] = [];
-    const queue: string[] = [];
+    const zeroInDegreeQueue: string[] = [];
 
     for (const [value, dependencies] of Object.entries(values)) {
         if (!Array.isArray(graph[value])) graph[value] = [];
@@ -65,22 +65,22 @@ function topologicalSort(values: Record<string, string[]>): string[] {
     }
 
     for (const [value, degree] of Object.entries(inDegree)) {
-        if (degree === 0) queue.push(value);
+        if (degree === 0) zeroInDegreeQueue.push(value);
     }
 
-    while (queue.length > 0) {
-        const current = queue.shift()!;
+    while (zeroInDegreeQueue.length > 0) {
+        const current = zeroInDegreeQueue.shift()!;
         result.push(current);
         for (const dependent of graph[current]) {
             inDegree[dependent] -= 1;
-            if (inDegree[dependent] === 0) queue.push(dependent);
+            if (inDegree[dependent] === 0) zeroInDegreeQueue.push(dependent);
         }
     }
 
     if (result.length === Object.keys(values).length) {
         return result;
     } else {
-        throw new Error('Circular dependencies detected');
+        throw new Error(`Circular dependencies detected: ${result.join(', ')}`);
     }
 }
 
