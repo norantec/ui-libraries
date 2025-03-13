@@ -67,6 +67,7 @@
         "@open-norantec/utilities": "^1.0.0-alpha.0",
         "@react-aria/utils": "^3.26.0",
         "ahooks": "^3.8.4",
+        "ajv": "^8.17.1",
         "clsx": "^2.1.1",
         "color": "^4.2.3",
         "eventemitter3": "^5.0.1",
