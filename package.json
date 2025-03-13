@@ -64,7 +64,7 @@
         "@emotion/css": "^11.13.5",
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.0",
-        "@open-norantec/utilities": "^1.0.0-alpha.0",
+        "@open-norantec/utilities": "^1.0.0-alpha.1",
         "@react-aria/utils": "^3.26.0",
         "ahooks": "^3.8.4",
         "ajv": "^8.17.1",

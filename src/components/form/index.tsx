@@ -10,7 +10,7 @@ import { cx } from '@emotion/css';
 import { ComponentProviderUtil } from '../../utilities/component-provider-util.class';
 import { Direction } from '../../enums/direction.enum';
 import { PiXCircleFill } from 'react-icons/pi';
-import { v4 as uuid } from 'uuid';
+import { v4 as uuid } from 'uuid/dist/cjs-browser';
 import { usePreviousValueEffect } from '../../hooks/use-previous-value-effect';
 
 const formTemplateMap = new Map<string, FormTemplateRegistry>();
