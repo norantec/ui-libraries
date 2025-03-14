@@ -10,7 +10,7 @@ import { cx } from '@emotion/css';
 import { ComponentProviderUtil } from '../../utilities/component-provider-util.class';
 import { Direction } from '../../enums/direction.enum';
 import { PiXCircleFill } from 'react-icons/pi';
-import { v4 as uuid } from 'uuid';
+import { UUIDUtil } from '@open-norantec/utilities/dist/uuid-util.class';
 import { usePreviousValueEffect } from '../../hooks/use-previous-value-effect';
 
 const formTemplateMap = new Map<string, FormTemplateRegistry>();
@@ -647,7 +647,12 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
         () => {
             const useFormId = getDefinedPropertyValue(instance, 'useFormId');
             if (StringUtil.isFalsyString(useFormId)) return;
-            const newInstance = new FormInstance(useFormId, uuid(), formInnerInstanceRef.current, valueRef.current);
+            const newInstance = new FormInstance(
+                useFormId,
+                UUIDUtil.generateV4(),
+                formInnerInstanceRef.current,
+                valueRef.current,
+            );
             eventEmitter?.emit?.(EVENTS.INSTANCE, useFormId, newInstance);
         },
         [formInnerInstanceRef.current, eventEmitter, valueRef.current, instance],
@@ -952,9 +957,9 @@ export const useForm = () => {
     const idRef = useRef<string>(undefined);
 
     useEffect(() => {
-        const id = uuid();
+        const id = UUIDUtil.generateV4();
         idRef.current = id;
-        instanceRef.current = new FormInstance(id, uuid());
+        instanceRef.current = new FormInstance(id, UUIDUtil.generateV4());
         update();
     }, []);
 
