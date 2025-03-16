@@ -2,7 +2,6 @@ import * as React from 'react';
 import { createContext, useContext, useEffect, useRef } from 'react';
 import { useUpdate } from 'ahooks';
 import { ColorSchemeFinalValue, useColorScheme } from '../hooks/use-color-scheme';
-import { ObjectUtil } from './object-util.class';
 import * as _ from 'lodash';
 import { Direction } from '../enums/direction.enum';
 import { useDirection } from '../hooks/use-direction';
@@ -12,14 +11,35 @@ import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
 
 const mustache = require('mustache');
 
-interface PropsGeneratorContext<T> {
+interface PropsGeneratorContext {
     colorScheme: ColorSchemeFinalValue;
     direction: Direction;
-    props: T;
 }
 
-type PropsGeneratorFn<T> = (context: PropsGeneratorContext<T>) => Partial<T>;
-type PatcherFn<T> = (...propsList: Partial<T>[]) => T;
+function mergeProps<T>({
+    sources = [],
+    overrideArrays = true,
+    overrideFunctions = true,
+}: {
+    sources: T[];
+    overrideArrays?: boolean;
+    overrideFunctions?: boolean;
+}) {
+    return _.mergeWith({}, ...sources, (objectValue: any, sourceValue: any, key: string) => {
+        if (key === 'ref' || key.endsWith('Ref')) {
+            return sourceValue;
+        }
+
+        if (
+            (_.isArray(sourceValue) && overrideArrays) ||
+            (_.isFunction(sourceValue) && overrideFunctions) ||
+            React.isValidElement(sourceValue) ||
+            sourceValue instanceof Element
+        ) {
+            return sourceValue;
+        }
+    });
+}
 
 function extractDependencies(template: string, whiteList: string[] = []): string[] {
     const tokens = mustache.parse(template);
@@ -97,51 +117,47 @@ function transformKeys<T extends Record<string, any>>(inputObject: T, transformF
     }, {}) as T;
 }
 
-export interface ComponentConfig<T> {
-    defaults?: Partial<T>;
-    presets?: PropsGeneratorFn<T>;
-    overrides?: PropsGeneratorFn<T>;
-    patcher?: PatcherFn<T>;
+export interface ComponentProviderValue<T>
+    extends ComponentProviderCreateOptions<T>,
+        Omit<ComponentProviderProps<T>, 'children'> {}
+
+export interface ProviderPresetPropsGeneratorContext<T> extends PropsGeneratorContext {
+    defaultProps: Partial<T>;
+    inputProps: Partial<T>;
 }
 
-export interface ComponentProviderProps<T> extends ComponentConfig<T> {
+export interface MergerContext<T> extends ProviderPresetPropsGeneratorContext<T> {
+    presetProps: Partial<T>;
+    finalProps: Partial<T>;
+}
+
+export interface ComponentProviderCreateOptions<T> {
+    defaultProps?: (context: PropsGeneratorContext) => Partial<T>;
+    merger?: (context: MergerContext<T>) => Partial<T>;
+}
+
+export interface ComponentProviderProps<T> {
     children: React.ReactNode;
+    presetProps?: (context: ProviderPresetPropsGeneratorContext<T>) => Partial<T>;
 }
 
 export class ComponentProviderUtil {
-    public static create<T extends Record<string, any>>(config?: ComponentConfig<T>) {
-        const generateProps = (...propsList: Array<Partial<T> | T>): T => {
-            const rawProps = ObjectUtil.merge({ sources: propsList });
-            if (typeof config?.patcher !== 'function') {
-                return rawProps as T;
-            }
-            return ObjectUtil.merge({ sources: [rawProps, config.patcher(...propsList)] });
-        };
-        const Context = createContext<ComponentConfig<T>>(config);
-        const Provider: React.FC<ComponentProviderProps<T>> = ({ defaults, presets, overrides, children }) => {
+    public static create<T extends Record<string, any>>(createOptions?: ComponentProviderCreateOptions<T>) {
+        const Context = createContext<ComponentProviderValue<T>>(createOptions);
+        const Provider: React.FC<ComponentProviderProps<T>> = ({ children, presetProps }) => {
             return (
                 <Context.Provider
-                    value={ObjectUtil.merge({
-                        sources: [
-                            _.pick(config, ['defaults', 'overrides', 'presets']),
-                            {
-                                defaults,
-                                overrides: (context) => {
-                                    return generateProps(config?.overrides?.(context), overrides?.(context));
-                                },
-                                presets: (context) => {
-                                    return generateProps(config?.presets?.(context), presets?.(context));
-                                },
-                            },
-                        ],
-                    })}
+                    value={{
+                        ...createOptions,
+                        presetProps,
+                    }}
                 >
                     {children}
                 </Context.Provider>
             );
         };
 
-        const useComponentConfig = (inputProps: T) => {
+        const useComponentProps = (inputProps: T) => {
             const update = useUpdate();
             const context = useContext(Context);
             const resultRef = useRef<Partial<T>>({});
@@ -149,14 +165,37 @@ export class ComponentProviderUtil {
             const direction = useDirection();
 
             useEffect(() => {
-                let finalProps = generateProps(config?.defaults, inputProps);
-                const generatorContext: PropsGeneratorContext<T> = {
-                    props: finalProps,
-                    direction,
-                    colorScheme,
-                };
-                finalProps = generateProps(finalProps, context?.presets?.(generatorContext));
-                finalProps = generateProps(finalProps, inputProps, context?.overrides?.(generatorContext));
+                const defaultProps =
+                    context?.defaultProps?.({
+                        direction,
+                        colorScheme,
+                    }) ?? {};
+                const presetProps =
+                    context?.presetProps?.({
+                        defaultProps,
+                        direction,
+                        colorScheme,
+                        inputProps,
+                    }) ?? {};
+                let finalProps = mergeProps<Partial<T>>({
+                    sources: [defaultProps, presetProps, inputProps],
+                });
+
+                if (_.isFunction(context?.merger)) {
+                    finalProps = mergeProps({
+                        sources: [
+                            finalProps,
+                            context.merger({
+                                direction,
+                                colorScheme,
+                                defaultProps,
+                                presetProps,
+                                inputProps,
+                                finalProps,
+                            }),
+                        ],
+                    });
+                }
 
                 if (_.isEqual(resultRef.current, finalProps)) {
                     return;
@@ -209,7 +248,7 @@ export class ComponentProviderUtil {
         return {
             Provider,
             useClassNames,
-            useComponentConfig,
+            useComponentConfig: useComponentProps,
         };
     }
 }

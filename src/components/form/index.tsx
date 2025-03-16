@@ -200,27 +200,29 @@ const {
     useComponentConfig: useFormComponentConfig,
     useClassNames: useFormClassNames,
 } = ComponentProviderUtil.create<FormProps>({
-    defaults: {
+    defaultProps: () => ({
         disabled: false,
         readOnly: false,
         dense: 4,
         dangerColor: '#FF0000',
-    },
-    presets: ({ props }) => {
-        return {
-            sx: {
-                wrapper: {
-                    display: 'flex',
-                    flexDirection: 'column',
-                    flexWrap: 'wrap',
-                    alignItems: 'flex-start',
-                    '& > *': {
-                        marginBottom: 2 * props?.dense,
-                    },
+        sx: {
+            wrapper: {
+                display: 'flex',
+                flexDirection: 'column',
+                flexWrap: 'wrap',
+                alignItems: 'flex-start',
+            },
+        },
+    }),
+    merger: (context) => ({
+        sx: {
+            wrapper: {
+                '& > *': {
+                    marginBottom: 2 * context?.finalProps?.dense,
                 },
             },
-        };
-    },
+        },
+    }),
 });
 
 export const FormProvider: React.FC<React.PropsWithChildren<Parameters<typeof FormBaseProvider>[0]>> = ({
@@ -240,12 +242,12 @@ const {
     useComponentConfig: useFormItemComponentConfig,
     useClassNames: useFormItemClassNames,
 } = ComponentProviderUtil.create<FormItemProps>({
-    defaults: {
+    defaultProps: () => ({
         required: false,
         validators: [],
         effects: [],
-    },
-    presets: ({ props, direction }) => {
+    }),
+    merger: ({ finalProps, direction }) => {
         return {
             sx: {
                 wrapper: {
@@ -261,12 +263,12 @@ const {
                     userSelect: 'none',
                     position: 'relative',
                     ...(() => {
-                        if (props?.required) {
+                        if (finalProps?.required) {
                             return {
                                 '&::before': {
                                     content: '"*"',
                                     lineHeight: 1,
-                                    color: props?.dangerColor,
+                                    color: finalProps?.dangerColor,
                                     fontWeight: 'bolder',
                                 },
                             };
@@ -308,19 +310,19 @@ const {
                     display: 'inline-block',
                     position: 'relative',
                     boxSizing: 'border-box',
-                    color: props?.dangerColor,
+                    color: finalProps?.dangerColor,
                     lineHeight: 1,
                     marginTop: 4,
                     ...(() => {
                         switch (direction) {
                             case Direction.LTR: {
                                 return {
-                                    paddingLeft: props?.dense,
+                                    paddingLeft: finalProps?.dense,
                                 };
                             }
                             case Direction.RTL: {
                                 return {
-                                    paddingRight: props?.dense,
+                                    paddingRight: finalProps?.dense,
                                 };
                             }
                         }
