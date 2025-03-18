@@ -1,53 +1,58 @@
 import * as React from 'react';
-import { useEffect } from 'react';
+// import { useEffect } from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { Form, useForm, registerTemplate, FormProvider } from './components/form';
+import { Form, FormItem, FormProvider } from './components/form/ng';
 import { ProviderFactory } from './components/provider-factory';
 
-registerTemplate('demo', () => {
-    return [
-        {
-            label: 'test1',
-            name: 'test1',
-            required: '必填项',
-            children: () => {
-                return <input placeholder="Input something..." />;
-            },
-        },
-        {
-            label: 'test2',
-            name: 'test2',
-            required: true,
-            children: () => {
-                return <input placeholder="Input something..." />;
-            },
-        },
-    ];
-});
+// registerTemplate('demo', () => {
+//     return [
+//         {
+//             label: 'test1',
+//             name: 'test1',
+//             required: '必填项',
+//             children: () => {
+//                 return <input placeholder="Input something..." />;
+//             },
+//         },
+//         {
+//             label: 'test2',
+//             name: 'test2',
+//             required: true,
+//             children: () => {
+//                 return <input placeholder="Input something..." />;
+//             },
+//         },
+//     ];
+// });
 
 const App: React.FC = () => {
-    const formInstance = useForm();
+    // const formInstance = useForm();
 
-    useEffect(() => {
-        console.log('LENCONDA:formInstance:', formInstance?.getValues?.());
-    }, [formInstance]);
+    // useEffect(() => {
+    //     console.log('LENCONDA:formInstance:', formInstance?.getValues?.());
+    // }, [formInstance]);
 
     return (
         <div>
             <Form
-                instance={formInstance}
-                defaultValues={{
-                    test2: 'asd',
-                }}
+            // instance={formInstance}
+            // defaultValues={{
+            //     test2: 'asd',
+            // }}
             >
-                {({ getPartialTemplate, render }) => render(getPartialTemplate('demo'))}
+                <FormItem label="Test1" name="test1" required="必填项">
+                    <input placeholder="Input something..." />
+                </FormItem>
+                <FormItem label="Test2" name="test2" defaultValue="DEFAULT" required="必填项">
+                    <input placeholder="Input something..." />
+                </FormItem>
             </Form>
             <button
-                onClick={() => {
-                    formInstance?.submit?.()?.then((values) => {
-                        console.log('LENCONDA:DEMO:values', values);
-                    });
-                }}
+            // onClick={() => {
+            //     formInstance?.validate?.()?.then((values) => {
+            //         console.log('LENCONDA:DEMO:values', values);
+            //     });
+            // }}
             >
                 Submit
             </button>
@@ -56,19 +61,7 @@ const App: React.FC = () => {
 };
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-    <ProviderFactory
-        providers={(creator) => [
-            creator(FormProvider, {
-                presetProps: () => ({
-                    sx: {
-                        wrapper: {
-                            fontSize: 15,
-                        },
-                    },
-                }),
-            }),
-        ]}
-    >
+    <ProviderFactory providers={(creator) => [creator(FormProvider)]}>
         <App />
     </ProviderFactory>,
     // <FormProvider>

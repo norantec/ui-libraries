@@ -21,6 +21,7 @@ interface FormItemBaseProps
     labelProps?: React.HTMLAttributes<HTMLDivElement>;
     maxWidth?: number | string;
     minWidth?: number | string;
+    validateOnChange?: boolean;
 }
 
 type GetPartialTemplateFn = (id: string, names?: string[]) => FormItemProps[];
@@ -82,7 +83,7 @@ interface FormInnerInstance {
     resetValues: (names?: string[]) => void;
     setValue: (name: string, value?: any) => void;
     setValues: (values?: Value) => void;
-    submit: () => Promise<SubmitValue>;
+    validate: (names?: string[]) => Promise<SubmitValue>;
 }
 
 export class FormInstance implements FormInnerInstance {
@@ -118,8 +119,8 @@ export class FormInstance implements FormInnerInstance {
         return this.innerInstance?.setValues?.(values);
     }
 
-    submit() {
-        return this.innerInstance?.submit?.();
+    validate(names?: string[]) {
+        return this.innerInstance?.validate?.(names);
     }
 
     getValue(name: string) {
@@ -179,6 +180,7 @@ export interface FormItemProps extends FormItemBaseProps {
 }
 
 const EVENTS = {
+    ASYNCHORONIZE_VALIDATE: Symbol(''),
     CHANGE: Symbol(''),
     CLEAR_VALUES: Symbol(''),
     DEFAULT_VALUE_REQUEST: Symbol(''),
@@ -253,6 +255,7 @@ const {
             sx: {
                 wrapper: {
                     maxWidth: '100%',
+                    fontSize: 14,
                 },
                 headerWrapper: {
                     display: 'flex',
@@ -361,6 +364,7 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
         labelProps,
         maxWidth,
         minWidth,
+        validateOnChange = true,
         componentProps = {},
         disabled = false,
         readOnly = false,
@@ -522,6 +526,10 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             }
 
             handleChange(newRawValue, changedFields);
+
+            if (Object.values(value ?? {})?.length > 0) {
+                formInnerInstanceRef.current?.validate?.(Object.values(value));
+            }
         });
         eventEmitter?.addListener?.(EVENTS.RESET_VALUES, (names?: string[]) =>
             handleResetOrClear(EVENTS.RESET_VALUES, names),
@@ -560,7 +568,7 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             setValues: (values) => {
                 eventEmitter?.emit?.(EVENTS.SET_VALUES, values);
             },
-            submit: async () => {
+            validate: async () => {
                 const names = await new Promise<string[]>((resolve) => {
                     const requestId = Symbol('');
                     const namesResponseHandler = (currentRequestId: symbol, names: string[]) => {
@@ -573,6 +581,10 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
                     eventEmitter?.addListener?.(EVENTS.NAMES_RESPONSE, namesResponseHandler);
                     eventEmitter?.emit?.(EVENTS.NAMES_REQUEST, requestId);
                 });
+                // TODO:
+                // const validateFieldNames = Array.isArray(inputNames)
+                //     ? inputNames.filter((item) => !StringUtil.isFalsyString(item) && names.includes(item))
+                //     : names;
                 const value = await new Promise<Value>((resolve) => {
                     const requestId = Symbol('');
                     const valueResponseHandler = (currentRequestId: symbol, names: string[]) => {
@@ -667,13 +679,14 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
                             {normalizedChildren.map((childItem, index) => {
                                 return cloneElement(childItem, {
                                     key: index,
-                                    dense,
-                                    dangerColor,
-                                    labelProps,
-                                    maxWidth,
-                                    minWidth,
-                                    disabled,
-                                    readOnly,
+                                    dense: childItem?.props?.dense ?? dense,
+                                    dangerColor: childItem?.props?.dangerColor ?? dangerColor,
+                                    labelProps: childItem?.props?.labelProps ?? labelProps,
+                                    maxWidth: childItem?.props?.maxWidth ?? maxWidth,
+                                    minWidth: childItem?.props?.minWidth ?? minWidth,
+                                    disabled: childItem?.props?.disabled ?? disabled,
+                                    readOnly: childItem?.props?.readOnly ?? readOnly,
+                                    validateOnChange: childItem?.props?.validateOnChange ?? validateOnChange,
                                 });
                             })}
                         </div>
@@ -702,6 +715,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
         errorMessageProps,
         sx,
         extra,
+        validateOnChange = true,
         registerCondition,
         hideCondition,
         ...props
@@ -782,6 +796,10 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                     set: (value) => eventEmitter?.emit?.(EVENTS.SET_VALUES, { [name]: value }),
                 });
             }
+
+            if (validateOnChange) {
+                eventEmitter?.emit?.(EVENTS.ASYNCHORONIZE_VALIDATE, [name]);
+            }
         };
         const handleDefaultValueRequest = (currentName: string, requestId: symbol) => {
             if (currentName !== name) {
@@ -797,7 +815,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
             eventEmitter?.removeListener?.(EVENTS.CHANGE, handleChange);
             eventEmitter?.removeListener?.(EVENTS.DEFAULT_VALUE_REQUEST, handleDefaultValueRequest);
         };
-    }, [eventEmitter, validators, name, formValueMap, required, effects, defaultValueRef.current]);
+    }, [eventEmitter, validators, name, formValueMap, required, effects, defaultValueRef.current, validateOnChange]);
 
     useEffect(() => {
         if (defaultValueRef.current === UNINITIALIZED) {
