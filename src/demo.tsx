@@ -1,45 +1,19 @@
 import * as React from 'react';
-// import { useEffect } from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { Form, FormItem, FormProvider } from './components/form/ng';
+import { Form, FormItem, FormProvider, useForm } from './components/form/ng';
 import { ProviderFactory } from './components/provider-factory';
-
-// registerTemplate('demo', () => {
-//     return [
-//         {
-//             label: 'test1',
-//             name: 'test1',
-//             required: '必填项',
-//             children: () => {
-//                 return <input placeholder="Input something..." />;
-//             },
-//         },
-//         {
-//             label: 'test2',
-//             name: 'test2',
-//             required: true,
-//             children: () => {
-//                 return <input placeholder="Input something..." />;
-//             },
-//         },
-//     ];
-// });
+import { useEffect } from 'react';
 
 const App: React.FC = () => {
-    // const formInstance = useForm();
+    const form = useForm();
 
-    // useEffect(() => {
-    //     console.log('LENCONDA:formInstance:', formInstance?.getValues?.());
-    // }, [formInstance]);
+    useEffect(() => {
+        console.log('LENCONDA:formInstance:', form);
+    }, [form]);
 
     return (
         <div>
-            <Form
-            // instance={formInstance}
-            // defaultValues={{
-            //     test2: 'asd',
-            // }}
-            >
+            <Form>
                 <FormItem label="Test1" name="test1" required="必填项">
                     <input placeholder="Input something..." />
                 </FormItem>
@@ -48,11 +22,11 @@ const App: React.FC = () => {
                 </FormItem>
             </Form>
             <button
-            // onClick={() => {
-            //     formInstance?.validate?.()?.then((values) => {
-            //         console.log('LENCONDA:DEMO:values', values);
-            //     });
-            // }}
+                onClick={() => {
+                    form?.validate?.()?.then((values) => {
+                        console.log('LENCONDA:DEMO:values', values);
+                    });
+                }}
             >
                 Submit
             </button>
@@ -64,6 +38,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <ProviderFactory providers={(creator) => [creator(FormProvider)]}>
         <App />
     </ProviderFactory>,
-    // <FormProvider>
-    // </FormProvider>,
 );
