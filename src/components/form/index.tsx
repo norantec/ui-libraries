@@ -3,7 +3,7 @@ import * as React from 'react';
 import { BaseSyntheticEvent, cloneElement, isValidElement, JSX, useContext, useEffect, useRef } from 'react';
 import { useUpdate } from 'ahooks';
 import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
-import EventEmitter from 'eventemitter3';
+import { EventEmitter } from 'eventemitter3';
 import { Map as ImmutableMap } from 'immutable';
 import { CSSObject } from '@emotion/react';
 import { cx } from '@emotion/css';
@@ -158,6 +158,7 @@ export interface FormItemProps extends FormItemBaseProps {
     effects?: EffectItem[];
     errorMessageProps?: React.HTMLAttributes<HTMLDivElement>;
     errorWrapperProps?: React.HTMLAttributes<HTMLDivElement> | false;
+    extra?: React.ReactNode;
     label?: React.ReactNode;
     readOnly?: boolean | ((context: ItemContext) => boolean);
     required?: boolean;
@@ -716,6 +717,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
         errorWrapperProps,
         errorMessageProps,
         sx,
+        extra,
         registerCondition,
         hideCondition,
         ...props
@@ -916,6 +918,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                     }),
                 )}
             </div>
+            {extra}
             {errorMessagesMap?.[name]?.length > 0 && errorWrapperProps !== false && (
                 <div {...errorWrapperProps} className={cx(classNames?.errorWrapper, errorWrapperProps?.className)}>
                     {errorMessagesMap?.[name].map((errorMessage, index) => (
