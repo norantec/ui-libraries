@@ -8,7 +8,6 @@ import { Map as ImmutableMap } from 'immutable';
 import { CSSObject } from '@emotion/react';
 import { cx } from '@emotion/css';
 import { ComponentProviderUtil } from '../../utilities/component-provider-util.class';
-import { Direction } from '../../enums/direction.enum';
 import { PiXCircleFill } from 'react-icons/pi';
 import { UUIDUtil } from '@open-norantec/utilities/dist/uuid-util.class';
 import { usePreviousValueEffect } from '../../hooks/use-previous-value-effect';
@@ -161,7 +160,7 @@ export interface FormItemProps extends FormItemBaseProps {
     extra?: React.ReactNode;
     label?: React.ReactNode;
     readOnly?: boolean | ((context: ItemContext) => boolean);
-    required?: boolean;
+    required?: boolean | string;
     serializer?: FormItemSerializer;
     sx?: {
         wrapper?: CSSObject;
@@ -171,6 +170,7 @@ export interface FormItemProps extends FormItemBaseProps {
         elementWrapper?: CSSObject;
         errorWrapper?: CSSObject;
         errorMessage?: CSSObject;
+        errorMessageContent?: CSSObject;
         errorMessageIcon?: CSSObject;
     };
     validators?: Validator[];
@@ -248,7 +248,7 @@ const {
         validators: [],
         effects: [],
     }),
-    merger: ({ finalProps, direction }) => {
+    merger: ({ finalProps }) => {
         return {
             sx: {
                 wrapper: {
@@ -264,7 +264,7 @@ const {
                     userSelect: 'none',
                     position: 'relative',
                     ...(() => {
-                        if (finalProps?.required) {
+                        if (finalProps?.required === true || !StringUtil.isFalsyString(finalProps?.required)) {
                             return {
                                 '&::before': {
                                     content: '"*"',
@@ -308,44 +308,27 @@ const {
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
-                    display: 'inline-block',
+                    display: 'flex',
+                    flexDirection: 'row',
+                    flexWrap: 'nowrap',
                     position: 'relative',
                     boxSizing: 'border-box',
                     color: finalProps?.dangerColor,
                     lineHeight: 1,
                     marginTop: 4,
-                    ...(() => {
-                        switch (direction) {
-                            case Direction.LTR: {
-                                return {
-                                    paddingLeft: finalProps?.dense,
-                                };
-                            }
-                            case Direction.RTL: {
-                                return {
-                                    paddingRight: finalProps?.dense,
-                                };
-                            }
-                        }
-                    })(),
                 },
                 errorMessageIcon: {
-                    position: 'absolute',
-                    top: 0,
-                    ...(() => {
-                        switch (direction) {
-                            case Direction.LTR: {
-                                return {
-                                    left: 0,
-                                };
-                            }
-                            case Direction.RTL: {
-                                return {
-                                    right: 0,
-                                };
-                            }
-                        }
-                    })(),
+                    display: 'inline-block',
+                    flexShrink: 0,
+                    flexGrow: 0,
+                },
+                errorMessageContent: {
+                    display: 'inline-block',
+                    flexShrink: 1,
+                    flexGrow: 1,
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                    textOverflow: 'ellipsis',
                 },
             },
         };
@@ -681,8 +664,9 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
                         }}
                     >
                         <div ref={ref} className={cx(classNames?.wrapper)}>
-                            {normalizedChildren.map((childItem) => {
+                            {normalizedChildren.map((childItem, index) => {
                                 return cloneElement(childItem, {
+                                    key: index,
                                     dense,
                                     dangerColor,
                                     labelProps,
@@ -755,10 +739,10 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                 ? validators.filter((validator) => typeof validator === 'function')
                 : [];
 
-            if (required) {
+            if (required === true || !StringUtil.isFalsyString(required)) {
                 normalizedValidators.unshift((value) => {
                     if (typeof value === 'undefined') {
-                        return 'It is a required field';
+                        return !StringUtil.isFalsyString(required) ? (required as string) : 'It is a required field';
                     }
                     return;
                 });
@@ -886,6 +870,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
             <div className={cx(classNames?.elementWrapper)}>
                 {normalizedChildren.slice(0, 1).map((element, elementIndex) =>
                     cloneElement(element, {
+                        key: elementIndex,
                         disabled:
                             element.props?.disabled ??
                             (() => {
@@ -918,7 +903,6 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                     }),
                 )}
             </div>
-            {extra}
             {errorMessagesMap?.[name]?.length > 0 && errorWrapperProps !== false && (
                 <div {...errorWrapperProps} className={cx(classNames?.errorWrapper, errorWrapperProps?.className)}>
                     {errorMessagesMap?.[name].map((errorMessage, index) => (
@@ -928,11 +912,12 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                             className={cx(classNames?.errorMessage, errorMessageProps?.className)}
                         >
                             <PiXCircleFill className={classNames?.errorMessageIcon} />
-                            {errorMessage}
+                            <div className={classNames?.errorMessageContent}>{errorMessage}</div>
                         </div>
                     ))}
                 </div>
             )}
+            {extra}
         </div>
     );
 };

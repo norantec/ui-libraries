@@ -2,12 +2,14 @@ import * as React from 'react';
 import { useEffect } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { Form, useForm, registerTemplate, FormProvider } from './components/form';
+import { ProviderFactory } from './components/provider-factory';
 
 registerTemplate('demo', () => {
     return [
         {
             label: 'test1',
             name: 'test1',
+            required: '必填项',
             children: () => {
                 return <input placeholder="Input something..." />;
             },
@@ -54,7 +56,21 @@ const App: React.FC = () => {
 };
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-    <FormProvider>
+    <ProviderFactory
+        providers={(creator) => [
+            creator(FormProvider, {
+                presetProps: () => ({
+                    sx: {
+                        wrapper: {
+                            fontSize: 15,
+                        },
+                    },
+                }),
+            }),
+        ]}
+    >
         <App />
-    </FormProvider>,
+    </ProviderFactory>,
+    // <FormProvider>
+    // </FormProvider>,
 );
