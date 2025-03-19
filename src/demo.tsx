@@ -46,6 +46,30 @@ const App: React.FC = () => {
             >
                 Submit
             </button>
+            <button
+                onClick={() => {
+                    form?.setValues?.({
+                        test1: '123908',
+                        test2: '123909',
+                    });
+                }}
+            >
+                Set Values
+            </button>
+            <button
+                onClick={() => {
+                    form?.resetValues?.();
+                }}
+            >
+                Reset Values
+            </button>
+            <button
+                onClick={() => {
+                    form?.clearValues?.(['test1', 'test2']);
+                }}
+            >
+                Clear Values
+            </button>
         </div>
     );
 };

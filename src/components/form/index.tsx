@@ -1,6 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-constraint */
 import * as React from 'react';
-import { BaseSyntheticEvent, cloneElement, isValidElement, JSX, useContext, useEffect, useMemo, useRef } from 'react';
+import {
+    BaseSyntheticEvent,
+    cloneElement,
+    isValidElement,
+    JSX,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useRef,
+} from 'react';
 import { useUpdate } from 'ahooks';
 import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
 import { EventEmitter } from 'eventemitter3';
@@ -193,10 +203,12 @@ export const registerTemplate = (name: string, registry: FormTemplateRegistry) =
 
 const EventContext = React.createContext<EventEmitter>(null);
 const EVENT_NAMES = {
+    EXTERNAL_BULK_ALTER_VALUES: Symbol(''),
+    EXTERNAL_SET_VALUES: Symbol(''),
+    INSTANCE_UPDATE: Symbol(''),
     PARTIAL_CHANGE: Symbol(''),
     REGISTER_ITEM: Symbol(''),
     UNREGISTER_ITEM: Symbol(''),
-    INSTANCE_UPDATE: Symbol(''),
 };
 
 const eventEmitter = new EventEmitter();
@@ -462,6 +474,16 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
     const formValueStateMapRef = useRef<ImmutableMap<string, ValueState>>(ImmutableMap());
     const formInstanceRef = useRef<IFormInstance>(undefined);
 
+    const getFinalNames = useCallback(
+        (inputNames?: string[]): string[] => {
+            const names = Array.isArray(inputNames)
+                ? inputNames.filter((inputName) => formValueStateMapRef.current.has(inputName))
+                : Array.from(formValueStateMapRef.current.keys());
+            return names;
+        },
+        [formValueStateMapRef.current],
+    );
+
     usePreviousValueEffect(
         () => {
             const useFormId = getDefinedPropertyValue(form, 'useFormId');
@@ -484,19 +506,22 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
 
     usePreviousValueEffect(
         () => {
-            const getFinalNames = (inputNames?: string[]): string[] => {
-                const names = Array.isArray(inputNames)
-                    ? inputNames.filter((inputName) => formValueStateMapRef.current.has(inputName))
-                    : Array.from(formValueStateMapRef.current.keys());
-                return names;
-            };
-
+            if (!(eventEmitterRef.current instanceof EventEmitter)) return;
             if (!formValueStateMapRef.current) {
                 formInstanceRef.current = {
-                    clearValues: () => {},
-                    resetValues: () => {},
-                    setValue: () => {},
-                    setValues: () => {},
+                    clearValues: (inputNames) => {
+                        eventEmitterRef.current.emit(EVENT_NAMES.EXTERNAL_BULK_ALTER_VALUES, inputNames, false);
+                    },
+                    resetValues: (inputNames) => {
+                        eventEmitterRef.current.emit(EVENT_NAMES.EXTERNAL_BULK_ALTER_VALUES, inputNames, true);
+                    },
+                    setValue: (name, value) => {
+                        if (StringUtil.isFalsyString(name)) return;
+                        eventEmitterRef.current.emit(EVENT_NAMES.EXTERNAL_SET_VALUES, { [name]: value });
+                    },
+                    setValues: (newValues) => {
+                        eventEmitterRef.current.emit(EVENT_NAMES.EXTERNAL_SET_VALUES, newValues);
+                    },
                     getValues: () => {
                         return null;
                     },
@@ -510,51 +535,17 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             } else {
                 formInstanceRef.current = {
                     clearValues: (inputNames) => {
-                        const names = getFinalNames(inputNames);
-                        if (names.length === 0) return;
-                        let currentFormValueStateMap = formValueStateMapRef.current;
-                        names.forEach((name) => {
-                            currentFormValueStateMap = currentFormValueStateMap.set(name, undefined);
-                        });
-                        formValueStateMapRef.current = currentFormValueStateMap;
-                        update();
-                        onChange?.(getFormValue(currentFormValueStateMap), names);
+                        eventEmitterRef.current.emit(EVENT_NAMES.EXTERNAL_BULK_ALTER_VALUES, inputNames, false);
                     },
                     resetValues: (inputNames) => {
-                        const names = getFinalNames(inputNames);
-                        if (names.length === 0) return;
-                        let currentFormValueStateMap = formValueStateMapRef.current;
-                        names.forEach((name) => {
-                            currentFormValueStateMap = currentFormValueStateMap.set(name, undefined);
-                        });
-                        formValueStateMapRef.current = currentFormValueStateMap;
-                        update();
-                        onChange?.(getFormValue(currentFormValueStateMap), names);
+                        eventEmitterRef.current.emit(EVENT_NAMES.EXTERNAL_BULK_ALTER_VALUES, inputNames, true);
                     },
                     setValue: (name, value) => {
-                        if (!formValueStateMapRef.current.has(name)) return;
-                        let currentFormValueStateMap = formValueStateMapRef.current;
-                        currentFormValueStateMap = currentFormValueStateMap.set(name, {
-                            ...currentFormValueStateMap.get(name),
-                            data: value,
-                        });
-                        update();
-                        onChange?.(getFormValue(currentFormValueStateMap), [name]);
+                        if (StringUtil.isFalsyString(name)) return;
+                        eventEmitterRef.current.emit(EVENT_NAMES.EXTERNAL_SET_VALUES, { [name]: value });
                     },
                     setValues: (newValues) => {
-                        if (!_.isObjectLike(newValues)) return;
-                        const names = getFinalNames(Object.keys(newValues));
-                        if (names.length === 0) return;
-                        let currentFormValueStateMap = formValueStateMapRef.current;
-                        names.forEach((name) => {
-                            currentFormValueStateMap = currentFormValueStateMap.set(name, {
-                                ...currentFormValueStateMap.get(name),
-                                data: newValues?.[name],
-                            });
-                        });
-                        formValueStateMapRef.current = currentFormValueStateMap;
-                        update();
-                        onChange?.(getFormValue(currentFormValueStateMap), names);
+                        eventEmitterRef.current.emit(EVENT_NAMES.EXTERNAL_SET_VALUES, newValues);
                     },
                     getValues: () =>
                         Array.from(formValueStateMapRef.current.entries()).reduce(
@@ -637,11 +628,17 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
 
             update();
         },
-        [formValueStateMapRef.current],
-        (previousValue: ImmutableMap<string, ValueState>) => {
-            const previousFormValue = getFormValue(previousValue);
+        [formValueStateMapRef.current, eventEmitterRef.current],
+        (previousValue: [ImmutableMap<string, ValueState>, EventEmitter]) => {
+            const previousFormValue = getFormValue(previousValue?.[0]);
             const currentFormValue = getFormValue(formValueStateMapRef?.current);
-            return _.isEqual(previousFormValue, currentFormValue) ? undefined : formValueStateMapRef.current;
+            if (_.isEqual(previousFormValue, currentFormValue) && eventEmitterRef.current !== previousValue?.[1]) {
+                return;
+            }
+            return [formValueStateMapRef.current, eventEmitterRef.current] as [
+                ImmutableMap<string, ValueState>,
+                EventEmitter,
+            ];
         },
     );
 
@@ -694,16 +691,56 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             update();
         };
 
+        const externalSetValuesHandler = (newValues: Value) => {
+            if (!_.isObjectLike(newValues)) return;
+            const names = getFinalNames(Object.keys(newValues));
+            if (names.length === 0) return;
+            let currentFormValueStateMap = formValueStateMapRef.current;
+            names.forEach((name) => {
+                currentFormValueStateMap = currentFormValueStateMap.set(name, {
+                    ...currentFormValueStateMap.get(name),
+                    data: newValues?.[name],
+                });
+            });
+            formValueStateMapRef.current = currentFormValueStateMap;
+            update();
+            onChange?.(getFormValue(currentFormValueStateMap), names);
+        };
+
+        const externalBulkAlterValuesHandler = (inputNames: string[], isReset = false) => {
+            const names = getFinalNames(inputNames);
+            if (names.length === 0) return;
+            let currentFormValueStateMap = formValueStateMapRef.current;
+            names.forEach((name) => {
+                currentFormValueStateMap = currentFormValueStateMap.set(name, {
+                    data: isReset
+                        ? children?.find?.((child) => child?.props?.name === name)?.props?.defaultValue
+                        : undefined,
+                    errorMessages: [],
+                });
+            });
+            formValueStateMapRef.current = currentFormValueStateMap;
+            update();
+            onChange?.(getFormValue(currentFormValueStateMap), names);
+        };
+
         eventEmitterRef.current.addListener(EVENT_NAMES.PARTIAL_CHANGE, partialChangeHandler);
         eventEmitterRef.current.addListener(EVENT_NAMES.REGISTER_ITEM, registerHandler);
         eventEmitterRef.current.addListener(EVENT_NAMES.UNREGISTER_ITEM, unregisterHandler);
+        eventEmitterRef.current.addListener(EVENT_NAMES.EXTERNAL_SET_VALUES, externalSetValuesHandler);
+        eventEmitterRef.current.addListener(EVENT_NAMES.EXTERNAL_BULK_ALTER_VALUES, externalBulkAlterValuesHandler);
 
         return () => {
             eventEmitterRef.current.removeListener(EVENT_NAMES.PARTIAL_CHANGE, partialChangeHandler);
             eventEmitterRef.current.removeListener(EVENT_NAMES.REGISTER_ITEM, registerHandler);
             eventEmitterRef.current.removeListener(EVENT_NAMES.UNREGISTER_ITEM, unregisterHandler);
+            eventEmitterRef.current.removeListener(EVENT_NAMES.EXTERNAL_SET_VALUES, externalSetValuesHandler);
+            eventEmitterRef.current.removeListener(
+                EVENT_NAMES.EXTERNAL_BULK_ALTER_VALUES,
+                externalBulkAlterValuesHandler,
+            );
         };
-    }, [eventEmitterRef.current, children]);
+    }, [eventEmitterRef.current, formValueStateMapRef.current, children]);
 
     return (
         <EventContext.Provider value={eventEmitterRef.current}>
