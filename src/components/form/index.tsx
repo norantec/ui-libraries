@@ -283,8 +283,11 @@ const {
         return {
             sx: {
                 wrapper: {
-                    maxWidth: '100%',
-                    fontSize: 14,
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flexWrap: 'nowrap',
+                    marginBottom: finalProps?.dense * 4,
                 },
                 headerWrapper: {
                     display: 'flex',
@@ -324,9 +327,8 @@ const {
                 },
                 elementWrapper: {
                     display: 'flex',
-                    flexDirection: 'row',
+                    flexDirection: 'column',
                     flexWrap: 'nowrap',
-                    alignItems: 'flex-start',
                 },
                 errorWrapper: {
                     display: 'flex',
@@ -837,7 +839,10 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                                     let result: any;
                                     if (typeof serializer?.outgoing === 'function') {
                                         result = serializer.outgoing(value);
-                                    } else if ((value as any)?._reactName === 'onChange') {
+                                    } else if (
+                                        (value as any)?._reactName === 'onChange' ||
+                                        (value as BaseSyntheticEvent)?.target
+                                    ) {
                                         result = (value as BaseSyntheticEvent)?.target?.value;
                                     } else {
                                         result = value;
