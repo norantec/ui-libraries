@@ -785,7 +785,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
         return value;
     })();
 
-    if (!registratedFieldNames?.includes?.(name)) return;
+    if (!registratedFieldNames?.includes?.(name)) return null;
 
     return (
         <div
