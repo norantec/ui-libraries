@@ -1,16 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-constraint */
 import * as React from 'react';
-import {
-    BaseSyntheticEvent,
-    cloneElement,
-    isValidElement,
-    JSX,
-    useCallback,
-    useContext,
-    useEffect,
-    useMemo,
-    useRef,
-} from 'react';
+import { BaseSyntheticEvent, cloneElement, isValidElement, JSX, useContext, useEffect, useMemo, useRef } from 'react';
 import { useUpdate } from 'ahooks';
 import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
 import { EventEmitter } from 'eventemitter3';
@@ -20,6 +10,8 @@ import { cx } from '@emotion/css';
 import { ComponentProviderUtil } from '../../utilities/component-provider-util.class';
 import { PiXCircleFill } from 'react-icons/pi';
 import * as _ from 'lodash';
+import { usePreviousValueEffect } from '../../hooks/use-previous-value-effect';
+import { UUIDUtil } from '@open-norantec/utilities/dist/uuid-util.class';
 
 export type FormTemplateRegistry = (helpers: FormTemplateRegistryHelpers) => FormItemProps[];
 
@@ -64,7 +56,7 @@ export interface ComponentProps {
 export interface FormProps extends FormItemBaseProps {
     children?: JSX.Element | JSX.Element[] | ((helpers: FormChildrenRegistryHelpers) => JSX.Element | JSX.Element[]);
     disabled?: boolean;
-    form?: FormInnerInstance;
+    form?: FormInstance;
     readOnly?: boolean;
     sx?: {
         wrapper?: CSSObject;
@@ -139,7 +131,7 @@ export interface FormItemSerializer {
 
 export type Validator = (value: any, formValue: Value) => Promise<string> | string;
 
-interface FormInstance {
+interface IFormInstance {
     clearValues: (names?: string[]) => void;
     getValue: (name: string) => any;
     getValues: () => Value;
@@ -149,18 +141,57 @@ interface FormInstance {
     validate: (names?: string[]) => Promise<SubmitValue>;
 }
 
-interface FormInnerInstance extends FormInstance {
-    emitter: EventEmitter;
+class FormInstance {
+    public constructor(
+        useFormId: string,
+        instanceId: string,
+        private readonly innerInstance?: IFormInstance,
+    ) {
+        Object.defineProperty(this, 'useFormId', {
+            writable: false,
+            value: useFormId,
+        });
+        Object.defineProperty(this, 'instanceId', {
+            writable: false,
+            value: instanceId,
+        });
+    }
+
+    clearValues(names?: string[]) {
+        return this.innerInstance?.clearValues?.(names);
+    }
+
+    resetValues(names?: string[]) {
+        return this.innerInstance?.resetValues?.(names);
+    }
+
+    setValue(name: string, value?: any) {
+        return this.innerInstance?.setValue?.(name, value);
+    }
+
+    setValues(values?: Value) {
+        return this.innerInstance?.setValues?.(values);
+    }
+
+    getValue(name: string) {
+        return this.innerInstance?.getValue?.(name);
+    }
+
+    getValues() {
+        return this.innerInstance?.getValues?.();
+    }
+
+    validate(names?: string[]) {
+        return this.innerInstance?.validate?.(names);
+    }
 }
 
-const getDefinedPropertyValue = (instance: FormInstance, key: string | symbol) => {
+const getDefinedPropertyValue = (instance: IFormInstance, key: string | symbol) => {
     try {
         const result = Object.getOwnPropertyDescriptor(instance, key)?.value ?? null;
-        console.log('LENCONDA:FUCK:result', instance, result);
         return result;
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
-        console.log('LENCONDA:FUCK:e', e);
         return null;
     }
 };
@@ -172,45 +203,53 @@ export const registerTemplate = (name: string, registry: FormTemplateRegistry) =
     formTemplateMap.set(name, registry);
 };
 
-const FORM_INSTANCE_EVENT_EMITTER = Symbol('');
-const FORM_INSTANCE_UPDATE_EVENT = Symbol('');
+const EventContext = React.createContext<EventEmitter>(null);
+const EVENT_NAMES = {
+    CLEAR: Symbol(''),
+    PARTIAL_CHANGE: Symbol(''),
+    REGISTER_ITEM: Symbol(''),
+    RESET: Symbol(''),
+    UNREGISTER_ITEM: Symbol(''),
+    INSTANCE_UPDATE: Symbol(''),
+};
+
+const eventEmitter = new EventEmitter();
 
 export const useForm = () => {
+    // const eventEmitter = useContext(EventContext);
     const update = useUpdate();
-    const eventEmitterRef = useRef(new EventEmitter());
-    const instanceRef = useRef<FormInnerInstance>(undefined);
-    const handleFormInstanceUpdate = useCallback(
-        (formInstance: FormInstance) => {
-            if (!formInstance) return;
-            instanceRef.current = { ...formInstance, emitter: eventEmitterRef.current };
+    const instanceRef = useRef<FormInstance>(undefined);
+    const idRef = useRef<string>(undefined);
+
+    useEffect(() => {
+        const id = UUIDUtil.generateV4();
+        idRef.current = id;
+        instanceRef.current = new FormInstance(id, UUIDUtil.generateV4());
+        update();
+    }, []);
+
+    useEffect(() => {
+        if (StringUtil.isFalsyString(idRef.current) || !instanceRef.current) return;
+
+        const handler = (useFormId: string | null, instance: FormInstance) => {
+            if (
+                StringUtil.isFalsyString(useFormId) ||
+                useFormId !== idRef.current ||
+                getDefinedPropertyValue(instance, 'instanceId') ===
+                    getDefinedPropertyValue(instanceRef.current, 'instanceId')
+            ) {
+                return;
+            }
+            instanceRef.current = instance;
             update();
-        },
-        [eventEmitterRef.current],
-    );
-
-    useEffect(() => {
-        handleFormInstanceUpdate({
-            clearValues: () => {},
-            resetValues: () => {},
-            setValue: () => {},
-            setValues: () => {},
-            getValue: () => {},
-            getValues: () => {
-                return null;
-            },
-            validate: async () => {
-                return null;
-            },
-        });
-    }, [eventEmitterRef.current]);
-
-    useEffect(() => {
-        if (!(eventEmitterRef.current instanceof EventEmitter)) return;
-        eventEmitterRef.current.addListener(FORM_INSTANCE_UPDATE_EVENT, handleFormInstanceUpdate);
-        return () => {
-            eventEmitterRef.current.removeListener(FORM_INSTANCE_UPDATE_EVENT, handleFormInstanceUpdate);
         };
-    }, [eventEmitterRef.current]);
+
+        eventEmitter.addListener(EVENT_NAMES.INSTANCE_UPDATE, handler);
+
+        return () => {
+            eventEmitter.removeListener(EVENT_NAMES.INSTANCE_UPDATE, handler);
+        };
+    }, [idRef.current, instanceRef.current]);
 
     return instanceRef.current;
 };
@@ -244,15 +283,6 @@ const {
         },
     }),
 });
-
-const EventContext = React.createContext<EventEmitter>(null);
-const EVENT_NAMES = {
-    CLEAR: Symbol(''),
-    PARTIAL_CHANGE: Symbol(''),
-    REGISTER_ITEM: Symbol(''),
-    RESET: Symbol(''),
-    UNREGISTER_ITEM: Symbol(''),
-};
 
 const {
     Provider: FormItemProvider,
@@ -393,7 +423,6 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
         form,
         // onChange,
     } = useFormComponentConfig(inputProps);
-    console.log('LENCONDA:FUCK:res2', form);
     const update = useUpdate();
     const classNames = useFormClassNames(sx);
     const eventEmitterRef = useRef(new EventEmitter());
@@ -438,108 +467,158 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
     }, [inputChildren]);
     const registratedFieldNamesRef = useRef<ImmutableSet<string>>(ImmutableSet());
     const formValueStateMapRef = useRef<ImmutableMap<string, ValueState>>(ImmutableMap());
-    const formInstanceRef = useRef<FormInstance>(undefined);
+    const formInstanceRef = useRef<IFormInstance>(undefined);
 
-    useEffect(() => {
-        const formInstanceEventEmitter: EventEmitter = form?.emitter;
-        console.log('LENCONDA:FUCK:res1', form, formInstanceEventEmitter);
-        if (!form || !(formInstanceEventEmitter instanceof EventEmitter)) return;
-        // Object.defineProperty(formInstanceRef.current, FORM_INSTANCE_EVENT_EMITTER, {
-        //     writable: false,
-        //     enumerable: true,
-        //     value: eventEmitterRef.current,
-        // });
-        formInstanceEventEmitter.emit(FORM_INSTANCE_UPDATE_EVENT, formInstanceRef.current);
-    }, [form, formInstanceRef.current]);
+    usePreviousValueEffect(
+        () => {
+            const useFormId = getDefinedPropertyValue(form, 'useFormId');
+            if (StringUtil.isFalsyString(useFormId)) return;
+            const newInstance = new FormInstance(useFormId, UUIDUtil.generateV4(), formInstanceRef.current);
+            eventEmitter?.emit?.(EVENT_NAMES.INSTANCE_UPDATE, useFormId, newInstance);
+        },
+        [formInstanceRef.current, form],
+        (previousValue: [IFormInstance, FormInstance]) => {
+            if (
+                getDefinedPropertyValue(form, 'instanceId') ===
+                    getDefinedPropertyValue(previousValue?.[1], 'instanceId') ||
+                formInstanceRef.current === previousValue?.[0]
+            ) {
+                return;
+            }
+            return [formInstanceRef.current, form] as [IFormInstance, FormInstance];
+        },
+    );
 
-    useEffect(() => {
-        if (!formValueStateMapRef.current) return;
+    usePreviousValueEffect(
+        () => {
+            const getFinalNames = (inputNames?: string[]): string[] => {
+                const names = Array.isArray(inputNames)
+                    ? inputNames.filter((inputName) => formValueStateMapRef.current.has(inputName))
+                    : Array.from(formValueStateMapRef.current.keys());
+                return names;
+            };
 
-        const getFinalNames = (inputNames?: string[]): string[] => {
-            const names = Array.isArray(inputNames)
-                ? inputNames.filter((inputName) => formValueStateMapRef.current.has(inputName))
-                : Array.from(formValueStateMapRef.current.keys());
-            return names;
-        };
-
-        formInstanceRef.current = {
-            clearValues: (inputNames) => {
-                const names = getFinalNames(inputNames);
-                if (names.length === 0) return;
-                let currentFormValueStateMap = formValueStateMapRef.current;
-                names.forEach((name) => {
-                    currentFormValueStateMap = currentFormValueStateMap.set(name, undefined);
-                });
-                formValueStateMapRef.current = currentFormValueStateMap;
-                update();
-            },
-            resetValues: (inputNames) => {
-                const names = getFinalNames(inputNames);
-                if (names.length === 0) return;
-                let currentFormValueStateMap = formValueStateMapRef.current;
-                names.forEach((name) => {
-                    currentFormValueStateMap = currentFormValueStateMap.set(name, undefined);
-                });
-                formValueStateMapRef.current = currentFormValueStateMap;
-                update();
-            },
-            setValue: (name, value) => {
-                if (!formValueStateMapRef.current.has(name)) return;
-                formValueStateMapRef.current = formValueStateMapRef.current.set(name, {
-                    ...formValueStateMapRef.current.get(name),
-                    data: value,
-                });
-                update();
-            },
-            setValues: (newValues) => {
-                if (!_.isObjectLike(newValues)) return;
-                const names = getFinalNames(Object.keys(newValues));
-                if (names.length === 0) return;
-                let currentFormValueStateMap = formValueStateMapRef.current;
-                names.forEach((name) => {
-                    currentFormValueStateMap = currentFormValueStateMap.set(name, newValues?.[name]);
-                });
-                formValueStateMapRef.current = currentFormValueStateMap;
-                update();
-            },
-            getValues: () =>
-                Array.from(formValueStateMapRef.current.entries()).reduce(
-                    (result, currentEntry) => {
-                        result[currentEntry?.[0]] = currentEntry?.[1]?.data;
-                        return result;
+            if (!formValueStateMapRef.current) {
+                formInstanceRef.current = {
+                    clearValues: () => {},
+                    resetValues: () => {},
+                    setValue: () => {},
+                    setValues: () => {},
+                    getValues: () => {
+                        return null;
                     },
-                    {} as Record<string, any>,
-                ),
-            getValue: (name) => {
-                if (StringUtil.isFalsyString(name)) return;
-                return formValueStateMapRef.current.get(name)?.data;
-            },
-            validate: async () => {
-                return {
-                    value: Array.from(formValueStateMapRef.current.entries()).reduce(
-                        (result, currentEntry) => {
-                            result[currentEntry?.[0]] = currentEntry?.[1]?.data;
-                            return result;
-                        },
-                        {} as Record<string, any>,
-                    ),
-                    errors: null,
+                    getValue: () => {
+                        return null;
+                    },
+                    validate: async () => {
+                        return null;
+                    },
                 };
-            },
-        };
-    }, [formValueStateMapRef.current]);
+            } else {
+                formInstanceRef.current = {
+                    clearValues: (inputNames) => {
+                        const names = getFinalNames(inputNames);
+                        if (names.length === 0) return;
+                        let currentFormValueStateMap = formValueStateMapRef.current;
+                        names.forEach((name) => {
+                            currentFormValueStateMap = currentFormValueStateMap.set(name, undefined);
+                        });
+                        formValueStateMapRef.current = currentFormValueStateMap;
+                        update();
+                    },
+                    resetValues: (inputNames) => {
+                        const names = getFinalNames(inputNames);
+                        if (names.length === 0) return;
+                        let currentFormValueStateMap = formValueStateMapRef.current;
+                        names.forEach((name) => {
+                            currentFormValueStateMap = currentFormValueStateMap.set(name, undefined);
+                        });
+                        formValueStateMapRef.current = currentFormValueStateMap;
+                        update();
+                    },
+                    setValue: (name, value) => {
+                        if (!formValueStateMapRef.current.has(name)) return;
+                        formValueStateMapRef.current = formValueStateMapRef.current.set(name, {
+                            ...formValueStateMapRef.current.get(name),
+                            data: value,
+                        });
+                        update();
+                    },
+                    setValues: (newValues) => {
+                        if (!_.isObjectLike(newValues)) return;
+                        const names = getFinalNames(Object.keys(newValues));
+                        if (names.length === 0) return;
+                        let currentFormValueStateMap = formValueStateMapRef.current;
+                        names.forEach((name) => {
+                            currentFormValueStateMap = currentFormValueStateMap.set(name, newValues?.[name]);
+                        });
+                        formValueStateMapRef.current = currentFormValueStateMap;
+                        update();
+                    },
+                    getValues: () =>
+                        Array.from(formValueStateMapRef.current.entries()).reduce(
+                            (result, currentEntry) => {
+                                result[currentEntry?.[0]] = currentEntry?.[1]?.data;
+                                return result;
+                            },
+                            {} as Record<string, any>,
+                        ),
+                    getValue: (name) => {
+                        if (StringUtil.isFalsyString(name)) return;
+                        return formValueStateMapRef.current.get(name)?.data;
+                    },
+                    validate: async () => {
+                        return {
+                            value: Array.from(formValueStateMapRef.current.entries()).reduce(
+                                (result, currentEntry) => {
+                                    result[currentEntry?.[0]] = currentEntry?.[1]?.data;
+                                    return result;
+                                },
+                                {} as Record<string, any>,
+                            ),
+                            errors: null,
+                        };
+                    },
+                };
+            }
 
-    useEffect(() => {
-        let formValueStateMap = ImmutableMap<string, ValueState>();
-        children.forEach((child) => {
-            formValueStateMap = formValueStateMap.set(child?.props?.name, {
-                data: child?.props?.defaultValue,
-                errorMessages: [],
+            update();
+        },
+        [formValueStateMapRef.current],
+        (previousValue: ImmutableMap<string, ValueState>) => {
+            const previousFormValue = Array.from(previousValue?.entries?.() ?? []).reduce((result, [key, value]) => {
+                result[key] = value?.data;
+                return result;
+            }, {});
+            const currentFormValue = Array.from(formValueStateMapRef?.current?.entries?.() ?? []).reduce(
+                (result, [key, value]) => {
+                    result[key] = value?.data;
+                    return result;
+                },
+                {},
+            );
+            return _.isEqual(previousFormValue, currentFormValue) ? undefined : formValueStateMapRef.current;
+        },
+    );
+
+    usePreviousValueEffect(
+        () => {
+            let formValueStateMap = ImmutableMap<string, ValueState>();
+            children.forEach((child) => {
+                formValueStateMap = formValueStateMap.set(child?.props?.name, {
+                    data: child?.props?.defaultValue,
+                    errorMessages: [],
+                });
             });
-        });
-        formValueStateMapRef.current = formValueStateMap;
-        update();
-    }, [children]);
+            formValueStateMapRef.current = formValueStateMap;
+            update();
+        },
+        [children],
+        (previousValue: any[]) => {
+            const childrenPropsList = children?.map?.((child) => _.omit(child?.props, ['children']));
+            return _.isEqual(previousValue, childrenPropsList) ? undefined : childrenPropsList;
+        },
+    );
 
     useEffect(() => {
         if (!(eventEmitterRef.current instanceof EventEmitter)) return;

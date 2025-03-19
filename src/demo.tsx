@@ -8,12 +8,12 @@ const App: React.FC = () => {
     const form = useForm();
 
     useEffect(() => {
-        console.log('LENCONDA:formInstance:', form);
+        console.log('LENCONDA:FUCK:4', form?.getValues?.());
     }, [form]);
 
     return (
         <div>
-            <Form>
+            <Form form={form}>
                 <FormItem label="Test1" name="test1" required="必填项">
                     <input placeholder="Input something..." />
                 </FormItem>
