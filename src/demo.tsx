@@ -3,6 +3,7 @@ import * as ReactDOM from 'react-dom/client';
 import { Form, FormItem, FormProvider, useForm } from './components/form';
 import { ProviderFactory } from './components/provider-factory';
 import { useEffect } from 'react';
+import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
 
 const App: React.FC = () => {
     const form = useForm();
@@ -19,21 +20,19 @@ const App: React.FC = () => {
                     console.log('LENCONDA:4.1', values, changedFields);
                 }}
             >
-                <FormItem label="Test1" name="test1">
+                <FormItem
+                    label="Test1"
+                    name="test1"
+                    required="必填项"
+                    validators={[
+                        {
+                            validate: (value) => (StringUtil.isFalsyString(value) ? '请输入合法字符串' : undefined),
+                        },
+                    ]}
+                >
                     <input placeholder="Input something..." />
                 </FormItem>
-                <FormItem
-                    label="Test2"
-                    name="test2"
-                    defaultValue="DEFAULT"
-                    // validators={[
-                    //     (value) => {
-                    //         console.log('LENCONDA:FUCK:0', value);
-                    //         if (value?.length > 10) return 'LENGTH <= 10';
-                    //         return;
-                    //     },
-                    // ]}
-                >
+                <FormItem label="Test2" name="test2" defaultValue="DEFAULT">
                     <input placeholder="Input something..." />
                 </FormItem>
             </Form>

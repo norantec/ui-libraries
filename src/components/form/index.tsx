@@ -39,7 +39,6 @@ interface FormItemBaseProps
     labelProps?: React.HTMLAttributes<HTMLDivElement>;
     maxWidth?: number | string;
     minWidth?: number | string;
-    validateOnChange?: boolean;
 }
 
 type GetPartialTemplateFn = (id: string, names?: string[]) => FormItemProps[];
@@ -127,7 +126,11 @@ export interface FormItemSerializer {
     outgoing?: (outgoingValue: any) => any;
 }
 
-export type Validator = (value: any, formValue: Value) => Promise<string> | string;
+export type Validator = {
+    validateOnChange?: boolean;
+    validateOnValidation?: boolean;
+    validate: (value: any, formValue: Value) => Promise<string> | string;
+};
 
 interface IFormInstance {
     clearValues: (names?: string[]) => void;
@@ -404,7 +407,6 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
         labelProps,
         maxWidth,
         minWidth,
-        validateOnChange = true,
         disabled = false,
         readOnly = false,
         sx,
@@ -449,7 +451,6 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
                     minWidth: child?.props?.minWidth ?? minWidth,
                     disabled: child?.props?.disabled ?? disabled,
                     readOnly: child?.props?.readOnly ?? readOnly,
-                    validateOnChange: child?.props?.validateOnChange ?? validateOnChange,
                 });
             });
     }, [inputChildren]);
@@ -494,6 +495,94 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             eventEmitterRef?.current?.emit?.(EVENT_NAMES.EXTERNAL_SET_VALUES, newValues);
         },
         [eventEmitterRef.current],
+    );
+
+    const validate = useCallback(
+        async (inputNames?: string[], isChangeMode = false) => {
+            const names = getFinalNames(inputNames);
+
+            if (names.length === 0) return;
+
+            const formValue = getFormValue(formValueStateMapRef.current);
+            const result: SubmitValue = {
+                value: formValue,
+                errors: await Promise.all(
+                    children.map((child) => {
+                        const required = child?.props?.required;
+                        const validators: Validator[] = child?.props?.validators;
+                        let normalizedValidators = Array.isArray(validators)
+                            ? validators.filter((validator) => typeof validator?.validate === 'function')
+                            : [];
+
+                        if (required === true || !StringUtil.isFalsyString(required)) {
+                            normalizedValidators.unshift({
+                                validateOnChange: true,
+                                validateOnValidation: true,
+                                validate: (value) => {
+                                    if (typeof value === 'undefined') {
+                                        return !StringUtil.isFalsyString(required)
+                                            ? (required as string)
+                                            : 'It is a required field';
+                                    }
+                                    return;
+                                },
+                            });
+                        }
+
+                        normalizedValidators = normalizedValidators.filter((validator) => {
+                            return (
+                                (isChangeMode && validator?.validateOnChange !== false) ||
+                                (!isChangeMode && validator?.validateOnValidation !== false)
+                            );
+                        });
+
+                        if (normalizedValidators.length === 0) {
+                            return Promise.resolve([child?.props?.name, []] as [string, string[]]);
+                        }
+
+                        return Promise.all(
+                            normalizedValidators.map((validator) => {
+                                return validator.validate(formValue?.[child?.props?.name], formValue);
+                            }),
+                        ).then((messages) => {
+                            return [
+                                child?.props?.name,
+                                messages.filter((message) => !StringUtil.isFalsyString(message)),
+                            ] as [string, string[]];
+                        });
+                    }),
+                ).then((result: Array<[string, string[]]>) => {
+                    const finalErrors = Object.fromEntries(result.filter(([, messages]) => messages?.length > 0));
+                    if (Object.keys(finalErrors).length === 0) return null;
+                    return finalErrors;
+                }),
+            };
+
+            let currentValueStateMap = formValueStateMapRef.current;
+
+            if (Object.keys(result.errors ?? {}).length === 0) {
+                Array.from(formValueStateMapRef.current?.entries?.() ?? []).forEach(([fieldName, valueState]) => {
+                    currentValueStateMap = currentValueStateMap.set(fieldName, {
+                        ...valueState,
+                        errorMessages: [],
+                    });
+                });
+            } else {
+                Object.entries(result.errors ?? {}).forEach(([key, errors]) => {
+                    if (!currentValueStateMap.has(key)) return;
+                    currentValueStateMap = currentValueStateMap.set(key, {
+                        ...currentValueStateMap.get(key),
+                        errorMessages: errors,
+                    });
+                });
+            }
+
+            formValueStateMapRef.current = currentValueStateMap;
+            update();
+
+            return result;
+        },
+        [children, formValueStateMapRef.current],
     );
 
     usePreviousValueEffect(
@@ -541,81 +630,21 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
                     resetValues,
                     setValue,
                     setValues,
-                    getValues: () =>
-                        Array.from(formValueStateMapRef.current.entries()).reduce(
+                    getValues: () => {
+                        return Array.from(formValueStateMapRef.current.entries()).reduce(
                             (result, currentEntry) => {
                                 result[currentEntry?.[0]] = currentEntry?.[1]?.data;
                                 return result;
                             },
                             {} as Record<string, any>,
-                        ),
+                        );
+                    },
                     getValue: (name) => {
                         if (StringUtil.isFalsyString(name)) return;
                         return formValueStateMapRef.current.get(name)?.data;
                     },
                     validate: async (inputNames) => {
-                        const names = getFinalNames(inputNames);
-
-                        if (names.length === 0) return;
-
-                        const formValue = getFormValue(formValueStateMapRef.current);
-                        const result: SubmitValue = {
-                            value: formValue,
-                            errors: await Promise.all(
-                                children.map((child) => {
-                                    const required = child?.props?.required;
-                                    const validators = child?.props?.validators;
-                                    const normalizedValidators = Array.isArray(validators)
-                                        ? validators.filter((validator) => typeof validator === 'function')
-                                        : [];
-
-                                    if (required === true || !StringUtil.isFalsyString(required)) {
-                                        normalizedValidators.unshift((value) => {
-                                            if (typeof value === 'undefined') {
-                                                return !StringUtil.isFalsyString(required)
-                                                    ? (required as string)
-                                                    : 'It is a required field';
-                                            }
-                                            return;
-                                        });
-                                    }
-
-                                    if (normalizedValidators.length === 0) {
-                                        return Promise.resolve([child?.props?.name, []] as [string, string[]]);
-                                    }
-
-                                    return Promise.all(
-                                        normalizedValidators.map((validator) => {
-                                            return validator(formValue?.[child?.props?.name], formValue);
-                                        }),
-                                    ).then((messages) => {
-                                        return [
-                                            child?.props?.name,
-                                            messages.filter((message) => !StringUtil.isFalsyString(message)),
-                                        ] as [string, string[]];
-                                    });
-                                }),
-                            ).then((result: Array<[string, string[]]>) => {
-                                const finalErrors = Object.fromEntries(
-                                    result.filter(([, messages]) => messages?.length > 0),
-                                );
-                                if (Object.keys(finalErrors).length === 0) return null;
-                                return finalErrors;
-                            }),
-                        };
-
-                        let currentValueStateMap = formValueStateMapRef.current;
-                        Object.entries(result.errors ?? {}).forEach(([key, errors]) => {
-                            if (!currentValueStateMap.has(key)) return;
-                            currentValueStateMap = currentValueStateMap.set(key, {
-                                ...currentValueStateMap.get(key),
-                                errorMessages: errors,
-                            });
-                        });
-                        formValueStateMapRef.current = currentValueStateMap;
-                        update();
-
-                        return result;
+                        return await validate(inputNames);
                     },
                 };
             }
@@ -673,6 +702,7 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             formValueStateMapRef.current = currentFormValueStateMap;
             update();
             onChange?.(getFormValue(currentFormValueStateMap), updatedFields);
+            validate(updatedFields, true);
         };
 
         const registerHandler = (name: string) => {
@@ -699,6 +729,7 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             formValueStateMapRef.current = currentFormValueStateMap;
             update();
             onChange?.(getFormValue(currentFormValueStateMap), names);
+            validate(names, true);
         };
 
         const externalBulkAlterValuesHandler = (inputNames: string[], isReset = false) => {
@@ -716,6 +747,7 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             formValueStateMapRef.current = currentFormValueStateMap;
             update();
             onChange?.(getFormValue(currentFormValueStateMap), names);
+            validate(names, true);
         };
 
         eventEmitterRef.current.addListener(EVENT_NAMES.PARTIAL_CHANGE, partialChangeHandler);
@@ -831,7 +863,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
 
     return (
         <div
-            {..._.omit(props, ['required', 'validators', 'validateOnChange', 'dangerColor', 'minWidth', 'maxWidth'])}
+            {..._.omit(props, ['required', 'validators', 'dangerColor', 'minWidth', 'maxWidth'])}
             className={cx(classNames?.wrapper, props?.className)}
             style={{
                 ...props?.style,
