@@ -140,11 +140,15 @@ interface IFormInstance {
 }
 
 class FormInstance {
-    public constructor(
-        useFormId: string,
-        instanceId: string,
-        private readonly innerInstance?: IFormInstance,
-    ) {
+    public clearValues: (names?: string[]) => void;
+    public getValue: (name: string) => any;
+    public getValues: () => Value;
+    public resetValues: (names?: string[]) => void;
+    public setValue: (name: string, value?: any) => void;
+    public setValues: (values?: Value) => void;
+    public validate: (names?: string[]) => Promise<SubmitValue>;
+
+    public constructor(useFormId: string, instanceId: string, innerInstance?: IFormInstance) {
         Object.defineProperty(this, 'useFormId', {
             writable: false,
             value: useFormId,
@@ -153,34 +157,13 @@ class FormInstance {
             writable: false,
             value: instanceId,
         });
-    }
-
-    clearValues(names?: string[]) {
-        return this.innerInstance?.clearValues?.(names);
-    }
-
-    resetValues(names?: string[]) {
-        return this.innerInstance?.resetValues?.(names);
-    }
-
-    setValue(name: string, value?: any) {
-        return this.innerInstance?.setValue?.(name, value);
-    }
-
-    setValues(values?: Value) {
-        return this.innerInstance?.setValues?.(values);
-    }
-
-    getValue(name: string) {
-        return this.innerInstance?.getValue?.(name);
-    }
-
-    getValues() {
-        return this.innerInstance?.getValues?.();
-    }
-
-    validate(names?: string[]) {
-        return this.innerInstance?.validate?.(names);
+        this.clearValues = innerInstance?.clearValues;
+        this.getValue = innerInstance?.getValue;
+        this.getValues = innerInstance?.getValues;
+        this.resetValues = innerInstance?.resetValues;
+        this.setValue = innerInstance?.setValue;
+        this.setValues = innerInstance?.setValues;
+        this.validate = innerInstance?.validate;
     }
 }
 
@@ -484,6 +467,35 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
         [formValueStateMapRef.current],
     );
 
+    const clearValues = useCallback(
+        (inputNames?: string[]) => {
+            eventEmitterRef?.current?.emit?.(EVENT_NAMES.EXTERNAL_BULK_ALTER_VALUES, inputNames, false);
+        },
+        [eventEmitterRef.current],
+    );
+
+    const resetValues = useCallback(
+        (inputNames?: string[]) => {
+            eventEmitterRef?.current?.emit?.(EVENT_NAMES.EXTERNAL_BULK_ALTER_VALUES, inputNames, true);
+        },
+        [eventEmitterRef.current],
+    );
+
+    const setValue = useCallback(
+        (name: string, value: any) => {
+            if (StringUtil.isFalsyString(name)) return;
+            eventEmitterRef?.current?.emit?.(EVENT_NAMES.EXTERNAL_SET_VALUES, { [name]: value });
+        },
+        [eventEmitterRef.current],
+    );
+
+    const setValues = useCallback(
+        (newValues: Value) => {
+            eventEmitterRef?.current?.emit?.(EVENT_NAMES.EXTERNAL_SET_VALUES, newValues);
+        },
+        [eventEmitterRef.current],
+    );
+
     usePreviousValueEffect(
         () => {
             const useFormId = getDefinedPropertyValue(form, 'useFormId');
@@ -509,19 +521,10 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             if (!(eventEmitterRef.current instanceof EventEmitter)) return;
             if (!formValueStateMapRef.current) {
                 formInstanceRef.current = {
-                    clearValues: (inputNames) => {
-                        eventEmitterRef.current.emit(EVENT_NAMES.EXTERNAL_BULK_ALTER_VALUES, inputNames, false);
-                    },
-                    resetValues: (inputNames) => {
-                        eventEmitterRef.current.emit(EVENT_NAMES.EXTERNAL_BULK_ALTER_VALUES, inputNames, true);
-                    },
-                    setValue: (name, value) => {
-                        if (StringUtil.isFalsyString(name)) return;
-                        eventEmitterRef.current.emit(EVENT_NAMES.EXTERNAL_SET_VALUES, { [name]: value });
-                    },
-                    setValues: (newValues) => {
-                        eventEmitterRef.current.emit(EVENT_NAMES.EXTERNAL_SET_VALUES, newValues);
-                    },
+                    clearValues,
+                    resetValues,
+                    setValue,
+                    setValues,
                     getValues: () => {
                         return null;
                     },
@@ -534,19 +537,10 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
                 };
             } else {
                 formInstanceRef.current = {
-                    clearValues: (inputNames) => {
-                        eventEmitterRef.current.emit(EVENT_NAMES.EXTERNAL_BULK_ALTER_VALUES, inputNames, false);
-                    },
-                    resetValues: (inputNames) => {
-                        eventEmitterRef.current.emit(EVENT_NAMES.EXTERNAL_BULK_ALTER_VALUES, inputNames, true);
-                    },
-                    setValue: (name, value) => {
-                        if (StringUtil.isFalsyString(name)) return;
-                        eventEmitterRef.current.emit(EVENT_NAMES.EXTERNAL_SET_VALUES, { [name]: value });
-                    },
-                    setValues: (newValues) => {
-                        eventEmitterRef.current.emit(EVENT_NAMES.EXTERNAL_SET_VALUES, newValues);
-                    },
+                    clearValues,
+                    resetValues,
+                    setValue,
+                    setValues,
                     getValues: () =>
                         Array.from(formValueStateMapRef.current.entries()).reduce(
                             (result, currentEntry) => {
