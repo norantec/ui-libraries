@@ -547,7 +547,10 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
                         if (names.length === 0) return;
                         let currentFormValueStateMap = formValueStateMapRef.current;
                         names.forEach((name) => {
-                            currentFormValueStateMap = currentFormValueStateMap.set(name, newValues?.[name]);
+                            currentFormValueStateMap = currentFormValueStateMap.set(name, {
+                                ...currentFormValueStateMap.get(name),
+                                data: newValues?.[name],
+                            });
                         });
                         formValueStateMapRef.current = currentFormValueStateMap;
                         update();
