@@ -592,6 +592,10 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
                                         });
                                     }
 
+                                    if (normalizedValidators.length === 0) {
+                                        return Promise.resolve([child?.props?.name, []] as [string, string[]]);
+                                    }
+
                                     return Promise.all(
                                         normalizedValidators.map((validator) => {
                                             return validator(formValue?.[child?.props?.name], formValue);
@@ -604,7 +608,11 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
                                     });
                                 }),
                             ).then((result: Array<[string, string[]]>) => {
-                                return Object.fromEntries(result.filter(([, messages]) => messages?.length > 0));
+                                const finalErrors = Object.fromEntries(
+                                    result.filter(([, messages]) => messages?.length > 0),
+                                );
+                                if (Object.keys(finalErrors).length === 0) return null;
+                                return finalErrors;
                             }),
                         };
 
