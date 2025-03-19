@@ -10,6 +10,7 @@ import {
     useEffect,
     useMemo,
     useRef,
+    useState,
 } from 'react';
 import { useUpdate } from 'ahooks';
 import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
@@ -193,6 +194,7 @@ const EVENT_NAMES = {
     EXTERNAL_SET_VALUES: Symbol(''),
     INSTANCE_UPDATE: Symbol(''),
     PARTIAL_CHANGE: Symbol(''),
+    REFRESH_ITEM_VALUE_STATE: Symbol(''),
     REGISTER_ITEM: Symbol(''),
     UNREGISTER_ITEM: Symbol(''),
 };
@@ -507,50 +509,52 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             const result: SubmitValue = {
                 value: formValue,
                 errors: await Promise.all(
-                    children.map((child) => {
-                        const required = child?.props?.required;
-                        const validators: Validator[] = child?.props?.validators;
-                        let normalizedValidators = Array.isArray(validators)
-                            ? validators.filter((validator) => typeof validator?.validate === 'function')
-                            : [];
+                    children
+                        .filter((child) => names.includes(child?.props?.name))
+                        .map((child) => {
+                            const required = child?.props?.required;
+                            const validators: Validator[] = child?.props?.validators;
+                            let normalizedValidators = Array.isArray(validators)
+                                ? validators.filter((validator) => typeof validator?.validate === 'function')
+                                : [];
 
-                        if (required === true || !StringUtil.isFalsyString(required)) {
-                            normalizedValidators.unshift({
-                                validateOnChange: true,
-                                validateOnValidation: true,
-                                validate: (value) => {
-                                    if (typeof value === 'undefined') {
-                                        return !StringUtil.isFalsyString(required)
-                                            ? (required as string)
-                                            : 'It is a required field';
-                                    }
-                                    return;
-                                },
+                            if (required === true || !StringUtil.isFalsyString(required)) {
+                                normalizedValidators.unshift({
+                                    validateOnChange: true,
+                                    validateOnValidation: true,
+                                    validate: (value) => {
+                                        if (typeof value === 'undefined') {
+                                            return !StringUtil.isFalsyString(required)
+                                                ? (required as string)
+                                                : 'It is a required field';
+                                        }
+                                        return;
+                                    },
+                                });
+                            }
+
+                            normalizedValidators = normalizedValidators.filter((validator) => {
+                                return (
+                                    (isChangeMode && validator?.validateOnChange !== false) ||
+                                    (!isChangeMode && validator?.validateOnValidation !== false)
+                                );
                             });
-                        }
 
-                        normalizedValidators = normalizedValidators.filter((validator) => {
-                            return (
-                                (isChangeMode && validator?.validateOnChange !== false) ||
-                                (!isChangeMode && validator?.validateOnValidation !== false)
-                            );
-                        });
+                            if (normalizedValidators.length === 0) {
+                                return Promise.resolve([child?.props?.name, []] as [string, string[]]);
+                            }
 
-                        if (normalizedValidators.length === 0) {
-                            return Promise.resolve([child?.props?.name, []] as [string, string[]]);
-                        }
-
-                        return Promise.all(
-                            normalizedValidators.map((validator) => {
-                                return validator.validate(formValue?.[child?.props?.name], formValue);
-                            }),
-                        ).then((messages) => {
-                            return [
-                                child?.props?.name,
-                                messages.filter((message) => !StringUtil.isFalsyString(message)),
-                            ] as [string, string[]];
-                        });
-                    }),
+                            return Promise.all(
+                                normalizedValidators.map((validator) => {
+                                    return validator.validate(formValue?.[child?.props?.name], formValue);
+                                }),
+                            ).then((messages) => {
+                                return [
+                                    child?.props?.name,
+                                    messages.filter((message) => !StringUtil.isFalsyString(message)),
+                                ] as [string, string[]];
+                            });
+                        }),
                 ).then((result: Array<[string, string[]]>) => {
                     const finalErrors = Object.fromEntries(result.filter(([, messages]) => messages?.length > 0));
                     if (Object.keys(finalErrors).length === 0) return null;
@@ -559,25 +563,15 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             };
 
             let currentValueStateMap = formValueStateMapRef.current;
-
-            if (Object.keys(result.errors ?? {}).length === 0) {
-                Array.from(formValueStateMapRef.current?.entries?.() ?? []).forEach(([fieldName, valueState]) => {
-                    currentValueStateMap = currentValueStateMap.set(fieldName, {
-                        ...valueState,
-                        errorMessages: [],
-                    });
+            names.forEach((name) => {
+                if (!currentValueStateMap.has(name)) return;
+                currentValueStateMap = currentValueStateMap.set(name, {
+                    ...currentValueStateMap.get(name),
+                    errorMessages: result.errors?.[name],
                 });
-            } else {
-                Object.entries(result.errors ?? {}).forEach(([key, errors]) => {
-                    if (!currentValueStateMap.has(key)) return;
-                    currentValueStateMap = currentValueStateMap.set(key, {
-                        ...currentValueStateMap.get(key),
-                        errorMessages: errors,
-                    });
-                });
-            }
-
+            });
             formValueStateMapRef.current = currentValueStateMap;
+
             update();
 
             return result;
@@ -707,6 +701,11 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
 
         const registerHandler = (name: string) => {
             registratedFieldNamesRef.current = registratedFieldNamesRef.current.add(name);
+            eventEmitterRef.current.emit(
+                EVENT_NAMES.REFRESH_ITEM_VALUE_STATE,
+                name,
+                formValueStateMapRef.current?.get?.(name),
+            );
             update();
         };
 
@@ -806,6 +805,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
     const hiddenRef = useRef(true);
     const formItemContextRef = useRef<ItemContext>(undefined);
     const registratedFieldNames = useContext(RegisteredFieldNamesContext);
+    const [innerValue, setInnerValue] = useState(undefined);
 
     const getCurrentValueState = () => formValueStateMap?.get?.(name);
 
@@ -818,6 +818,26 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
             errorMessages: currentValueState?.errorMessages,
         };
     };
+
+    const generateIncomingValue = (value: any) => {
+        if (typeof serializer?.incoming === 'function') return serializer.incoming(value);
+        return value;
+    };
+
+    useEffect(() => {
+        if (!(eventEmitter instanceof EventEmitter)) return;
+
+        const refreshItmeValueStateHandler = (fieldName: string, valueState: ValueState) => {
+            if (fieldName !== name) return;
+            setInnerValue(valueState?.data);
+        };
+
+        eventEmitter.addListener(EVENT_NAMES.REFRESH_ITEM_VALUE_STATE, refreshItmeValueStateHandler);
+
+        return () => {
+            eventEmitter.removeListener(EVENT_NAMES.REFRESH_ITEM_VALUE_STATE, refreshItmeValueStateHandler);
+        };
+    }, [eventEmitter, name]);
 
     useEffect(() => {
         formItemContextRef.current = getContext();
@@ -848,16 +868,6 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
     if (!Array.isArray(normalizedChildren)) {
         normalizedChildren = normalizedChildren ? [normalizedChildren] : [];
     }
-
-    const parsedValue = (() => {
-        const value = formValueStateMap?.get?.(name)?.data;
-
-        if (typeof serializer?.incoming === 'function') {
-            return serializer.incoming(value);
-        }
-
-        return value;
-    })();
 
     if (!registratedFieldNames?.includes?.(name)) return null;
 
@@ -906,24 +916,26 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                             (() => {
                                 return typeof readOnly === 'function' ? readOnly(getContext()) : readOnly;
                             })(),
-                        value: parsedValue,
+                        value: generateIncomingValue(innerValue),
                         onChange: (value: any, ...others: any[]) => {
+                            const outgoingValue = (() => {
+                                let result: any;
+                                if (typeof serializer?.outgoing === 'function') {
+                                    result = serializer.outgoing(value);
+                                } else if (
+                                    (value as any)?._reactName === 'onChange' ||
+                                    (value as BaseSyntheticEvent)?.target
+                                ) {
+                                    result = (value as BaseSyntheticEvent)?.target?.value;
+                                } else {
+                                    result = value;
+                                }
+                                return result;
+                            })();
                             eventEmitter?.emit?.(EVENT_NAMES.PARTIAL_CHANGE, {
-                                [name]: (() => {
-                                    let result: any;
-                                    if (typeof serializer?.outgoing === 'function') {
-                                        result = serializer.outgoing(value);
-                                    } else if (
-                                        (value as any)?._reactName === 'onChange' ||
-                                        (value as BaseSyntheticEvent)?.target
-                                    ) {
-                                        result = (value as BaseSyntheticEvent)?.target?.value;
-                                    } else {
-                                        result = value;
-                                    }
-                                    return result;
-                                })(),
+                                [name]: outgoingValue,
                             });
+                            setInnerValue(generateIncomingValue(outgoingValue));
                             element?.props?.onChange?.(value, ...others);
                         },
                     }),
