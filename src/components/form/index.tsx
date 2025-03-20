@@ -778,18 +778,6 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
     const registratedFieldNames = useContext(RegisteredFieldNamesContext);
     const [innerValue, setInnerValue] = useState(undefined);
 
-    const getCurrentValueState = () => formValueStateMap?.get?.(name);
-
-    const getContext = (): ItemContext => {
-        const currentValueState = getCurrentValueState();
-        return {
-            formValueStateMap,
-            defaultValue,
-            value: currentValueState?.data,
-            errorMessages: currentValueState?.errorMessages,
-        };
-    };
-
     const generateIncomingValue = (value: any) => {
         if (typeof serializer?.incoming === 'function') return serializer.incoming(value);
         return value;
@@ -810,12 +798,32 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
         };
     }, [contextEventEmitter, name]);
 
-    useEffect(() => {
-        formItemContextRef.current = getContext();
-        update();
-    }, [formValueStateMap, defaultValue]);
+    usePreviousValueEffect(
+        () => {
+            const currentValueState = formValueStateMap?.get?.(name);
+            formItemContextRef.current = {
+                formValueStateMap,
+                defaultValue,
+                value: currentValueState?.data,
+                errorMessages: currentValueState?.errorMessages,
+            };
+            update();
+        },
+        [formValueStateMap, defaultValue, name],
+        (previousValue: [Value, any, string]) => {
+            if (
+                CompareUtil.compare(getFormValue(formValueStateMap), previousValue?.[0]) &&
+                CompareUtil.compare(previousValue?.[1], defaultValue) &&
+                previousValue?.[2] === name
+            ) {
+                return undefined;
+            }
+            return [getFormValue(formValueStateMap), defaultValue, name] as [Value, any, string];
+        },
+    );
 
     useEffect(() => {
+        if (StringUtil.isFalsyString(name)) return;
         if (typeof registerCondition !== 'function' ? true : registerCondition?.(formItemContextRef.current)) {
             contextEventEmitter?.emit?.(EVENT_NAMES.REGISTER_ITEM, name);
         } else {
@@ -880,12 +888,12 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                         disabled:
                             element.props?.disabled ??
                             (() => {
-                                return typeof disabled === 'function' ? disabled(getContext()) : disabled;
+                                return typeof disabled === 'function' ? disabled(formItemContextRef.current) : disabled;
                             })(),
                         readOnly:
                             element.props?.readOnly ??
                             (() => {
-                                return typeof readOnly === 'function' ? readOnly(getContext()) : readOnly;
+                                return typeof readOnly === 'function' ? readOnly(formItemContextRef.current) : readOnly;
                             })(),
                         value: generateIncomingValue(innerValue),
                         onChange: (value: any, ...others: any[]) => {
@@ -913,7 +921,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                 )}
             </div>
             {(() => {
-                const currentValueState = getCurrentValueState();
+                const currentValueState = formValueStateMap?.get?.(name);
                 if (
                     Array.isArray(currentValueState?.errorMessages) &&
                     currentValueState?.errorMessages?.length > 0 &&
