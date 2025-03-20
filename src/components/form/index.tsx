@@ -601,7 +601,6 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
 
     usePreviousValueEffect(
         () => {
-            if (!(eventEmitterRef.current instanceof EventEmitter)) return;
             if (!formValueStateMapRef.current) {
                 formInstanceRef.current = {
                     clearValues,
@@ -645,17 +644,14 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
 
             update();
         },
-        [formValueStateMapRef.current, eventEmitterRef.current],
-        (previousValue: [ImmutableMap<string, ValueState>, EventEmitter]) => {
+        [formValueStateMapRef.current],
+        (previousValue: [ImmutableMap<string, ValueState>]) => {
             const previousFormValue = getFormValue(previousValue?.[0]);
             const currentFormValue = getFormValue(formValueStateMapRef?.current);
-            if (_.isEqual(previousFormValue, currentFormValue) && eventEmitterRef.current !== previousValue?.[1]) {
+            if (_.isEqual(previousFormValue, currentFormValue)) {
                 return;
             }
-            return [formValueStateMapRef.current, eventEmitterRef.current] as [
-                ImmutableMap<string, ValueState>,
-                EventEmitter,
-            ];
+            return [formValueStateMapRef.current] as [ImmutableMap<string, ValueState>];
         },
     );
 
@@ -679,8 +675,6 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
     );
 
     useEffect(() => {
-        if (!(eventEmitterRef.current instanceof EventEmitter)) return;
-
         const partialChangeHandler = (updatePart: Value) => {
             if (!updatePart || !_.isObjectLike(updatePart)) return;
             let currentFormValueStateMap = formValueStateMapRef.current;
@@ -764,7 +758,7 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
                 externalBulkAlterValuesHandler,
             );
         };
-    }, [eventEmitterRef.current, formValueStateMapRef.current, children]);
+    }, [formValueStateMapRef.current, children]);
 
     return (
         <EventContext.Provider value={eventEmitterRef.current}>
