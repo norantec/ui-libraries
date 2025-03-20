@@ -34,7 +34,15 @@ const App: React.FC = () => {
                 >
                     <input placeholder="Input something..." />
                 </FormItem>
-                <FormItem label="Test2" name="test2" defaultValue="DEFAULT">
+                <FormItem
+                    label="Test2"
+                    name="test2"
+                    defaultValue="DEFAULT"
+                    registerCondition={(context) => {
+                        const result = !StringUtil.isFalsyString(context?.formValueStateMap?.get?.('test1')?.data);
+                        return result;
+                    }}
+                >
                     <input placeholder="Input something..." />
                 </FormItem>
             </Form>

@@ -194,7 +194,7 @@ const EVENT_NAMES = {
     EXTERNAL_SET_VALUES: Symbol(''),
     INSTANCE_UPDATE: Symbol(''),
     PARTIAL_CHANGE: Symbol(''),
-    REFRESH_ITEMS_VALUE_STATE: Symbol(''),
+    REFRESH_ITEM_VALUE_STATE: Symbol(''),
     REGISTER_ITEM: Symbol(''),
     UNREGISTER_ITEM: Symbol(''),
 };
@@ -646,11 +646,18 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
         },
         [formValueStateMapRef.current],
         (previousValue: [ImmutableMap<string, ValueState>]) => {
-            const previousFormValue = getFormValue(previousValue?.[0]);
-            const currentFormValue = getFormValue(formValueStateMapRef?.current);
-            if (_.isEqual(previousFormValue, currentFormValue)) {
-                return;
-            }
+            const isFormValueEqual = _.isEqualWith(
+                getFormValue(previousValue?.[0]),
+                getFormValue(formValueStateMapRef?.current),
+                (value1, value2) => {
+                    if (typeof value1 !== 'function' || typeof value2 !== 'function') return undefined;
+                    return (
+                        Function.prototype.toString.call(value1).replace(/\s+/g, '') ===
+                        Function.prototype.toString.call(value2).replace(/\s+/g, '')
+                    );
+                },
+            );
+            if (isFormValueEqual) return undefined;
             return [formValueStateMapRef.current] as [ImmutableMap<string, ValueState>];
         },
     );
@@ -693,34 +700,18 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             validate(updatedFields, true);
         };
 
-        const externalBulkAlterValuesHandler = (inputNames: string[], isReset = false) => {
-            const names = getFinalNames(inputNames);
-            if (names.length === 0) return;
-            let currentFormValueStateMap = formValueStateMapRef.current;
-            names.forEach((name) => {
-                currentFormValueStateMap = currentFormValueStateMap.set(name, {
-                    data: isReset
-                        ? children?.find?.((child) => child?.props?.name === name)?.props?.defaultValue
-                        : undefined,
-                    errorMessages: [],
-                });
-            });
-            formValueStateMapRef.current = currentFormValueStateMap;
-            update();
-            eventEmitterRef.current.emit(EVENT_NAMES.REFRESH_ITEMS_VALUE_STATE, names, currentFormValueStateMap);
-            onChange?.(getFormValue(currentFormValueStateMap), names);
-            validate(names, true);
-        };
-
         const registerHandler = (name: string) => {
             registratedFieldNamesRef.current = registratedFieldNamesRef.current.add(name);
-            eventEmitterRef.current.emit(EVENT_NAMES.REFRESH_ITEMS_VALUE_STATE, [name], formValueStateMapRef.current);
+            eventEmitterRef.current.emit(
+                EVENT_NAMES.REFRESH_ITEM_VALUE_STATE,
+                name,
+                formValueStateMapRef.current?.get?.(name),
+            );
             update();
         };
 
         const unregisterHandler = (name: string) => {
             registratedFieldNamesRef.current = registratedFieldNamesRef.current.delete(name);
-            externalBulkAlterValuesHandler([name], true);
             update();
         };
 
@@ -737,7 +728,24 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             });
             formValueStateMapRef.current = currentFormValueStateMap;
             update();
-            eventEmitterRef.current.emit(EVENT_NAMES.REFRESH_ITEMS_VALUE_STATE, names, currentFormValueStateMap);
+            onChange?.(getFormValue(currentFormValueStateMap), names);
+            validate(names, true);
+        };
+
+        const externalBulkAlterValuesHandler = (inputNames: string[], isReset = false) => {
+            const names = getFinalNames(inputNames);
+            if (names.length === 0) return;
+            let currentFormValueStateMap = formValueStateMapRef.current;
+            names.forEach((name) => {
+                currentFormValueStateMap = currentFormValueStateMap.set(name, {
+                    data: isReset
+                        ? children?.find?.((child) => child?.props?.name === name)?.props?.defaultValue
+                        : undefined,
+                    errorMessages: [],
+                });
+            });
+            formValueStateMapRef.current = currentFormValueStateMap;
+            update();
             onChange?.(getFormValue(currentFormValueStateMap), names);
             validate(names, true);
         };
@@ -820,18 +828,15 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
     useEffect(() => {
         if (!(eventEmitter instanceof EventEmitter)) return;
 
-        const refreshItmeValueStateHandler = (
-            fieldNames: string[],
-            valueStateMap: ImmutableMap<string, ValueState>,
-        ) => {
-            if (!fieldNames?.includes?.(name)) return;
-            setInnerValue(valueStateMap?.get?.(name)?.data);
+        const refreshItmeValueStateHandler = (fieldName: string, valueState: ValueState) => {
+            if (fieldName !== name) return;
+            setInnerValue(valueState?.data);
         };
 
-        eventEmitter.addListener(EVENT_NAMES.REFRESH_ITEMS_VALUE_STATE, refreshItmeValueStateHandler);
+        eventEmitter.addListener(EVENT_NAMES.REFRESH_ITEM_VALUE_STATE, refreshItmeValueStateHandler);
 
         return () => {
-            eventEmitter.removeListener(EVENT_NAMES.REFRESH_ITEMS_VALUE_STATE, refreshItmeValueStateHandler);
+            eventEmitter.removeListener(EVENT_NAMES.REFRESH_ITEM_VALUE_STATE, refreshItmeValueStateHandler);
         };
     }, [eventEmitter, name]);
 
@@ -841,14 +846,12 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
     }, [formValueStateMap, defaultValue]);
 
     useEffect(() => {
-        const shouldRegister =
-            typeof registerCondition !== 'function' ? true : registerCondition?.(formItemContextRef.current);
-        if (shouldRegister && !registratedFieldNames?.includes?.(name)) {
+        if (typeof registerCondition !== 'function' ? true : registerCondition?.(formItemContextRef.current)) {
             eventEmitter?.emit?.(EVENT_NAMES.REGISTER_ITEM, name);
-        } else if (!shouldRegister) {
+        } else {
             eventEmitter?.emit?.(EVENT_NAMES.UNREGISTER_ITEM, name);
         }
-    }, [name, formItemContextRef.current, eventEmitter, registratedFieldNames, registerCondition]);
+    }, [name, formItemContextRef.current, eventEmitter, registerCondition]);
 
     useEffect(() => {
         if (typeof hideCondition === 'function') {
