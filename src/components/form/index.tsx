@@ -634,6 +634,11 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             if (registratedFieldNamesRef.current.has(name)) return;
             registratedFieldNamesRef.current = registratedFieldNamesRef.current.add(name);
             update();
+            eventEmitterRef.current.emit(
+                EVENT_NAMES.REFRESH_ITEM_VALUE_STATE,
+                name,
+                formValueStateMapRef.current?.get?.(name),
+            );
         };
 
         const unregisterHandler = (name: string) => {
@@ -643,17 +648,6 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             update();
         };
 
-        eventEmitterRef.current.addListener(EVENT_NAMES.REGISTER_ITEM, registerHandler);
-        eventEmitterRef.current.addListener(EVENT_NAMES.UNREGISTER_ITEM, unregisterHandler);
-
-        return () => {
-            eventEmitterRef.current.removeListener(EVENT_NAMES.REGISTER_ITEM, registerHandler);
-            eventEmitterRef.current.removeListener(EVENT_NAMES.UNREGISTER_ITEM, unregisterHandler);
-        };
-    }, [formValueStateMapRef.current, handleAlterValues]);
-
-    useEffect(() => {
-        const useFormId = getDefinedPropertyValue(formInstance, 'useFormId');
         const partialChangeHandler = (updatePart: Value) => {
             if (!updatePart || !_.isObjectLike(updatePart)) return;
             let currentFormValueStateMap = formValueStateMapRef.current;
@@ -671,6 +665,20 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             onChange?.(getFormValue(currentFormValueStateMap), updatedFields);
             validate(updatedFields, true);
         };
+
+        eventEmitterRef.current.addListener(EVENT_NAMES.REGISTER_ITEM, registerHandler);
+        eventEmitterRef.current.addListener(EVENT_NAMES.UNREGISTER_ITEM, unregisterHandler);
+        eventEmitterRef.current.addListener(EVENT_NAMES.PARTIAL_CHANGE, partialChangeHandler);
+
+        return () => {
+            eventEmitterRef.current.removeListener(EVENT_NAMES.REGISTER_ITEM, registerHandler);
+            eventEmitterRef.current.removeListener(EVENT_NAMES.UNREGISTER_ITEM, unregisterHandler);
+            eventEmitterRef.current.removeListener(EVENT_NAMES.PARTIAL_CHANGE, partialChangeHandler);
+        };
+    }, [formValueStateMapRef.current, handleAlterValues]);
+
+    useEffect(() => {
+        const useFormId = getDefinedPropertyValue(formInstance, 'useFormId');
 
         const externalSetValuesHandler = (currentUseFormId: string, newValues: Value) => {
             if (!_.isObjectLike(newValues) || currentUseFormId !== useFormId) return;
@@ -701,13 +709,11 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             });
         };
 
-        eventEmitterRef.current.addListener(EVENT_NAMES.PARTIAL_CHANGE, partialChangeHandler);
         eventEmitter.addListener(EVENT_NAMES.EXTERNAL_SET_VALUES, externalSetValuesHandler);
         eventEmitter.addListener(EVENT_NAMES.EXTERNAL_BULK_ALTER_VALUES, externalBulkAlterValuesHandler);
         eventEmitter.addListener(EVENT_NAMES.EXTERNAL_VALIDATE_REQUEST, externalValidateRequestHandler);
 
         return () => {
-            eventEmitterRef.current.removeListener(EVENT_NAMES.PARTIAL_CHANGE, partialChangeHandler);
             eventEmitter.removeListener(EVENT_NAMES.EXTERNAL_SET_VALUES, externalSetValuesHandler);
             eventEmitter.removeListener(EVENT_NAMES.EXTERNAL_BULK_ALTER_VALUES, externalBulkAlterValuesHandler);
             eventEmitter.removeListener(EVENT_NAMES.EXTERNAL_VALIDATE_REQUEST, externalValidateRequestHandler);
