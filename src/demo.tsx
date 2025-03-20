@@ -10,7 +10,7 @@ const App: React.FC = () => {
     const [validators, setValidators] = useState<Validator[]>([]);
 
     useEffect(() => {
-        console.log('LENCONDA:4', form?.getValues?.());
+        console.log('LENCONDA:4', form.getValues());
     }, [form]);
 
     return (
