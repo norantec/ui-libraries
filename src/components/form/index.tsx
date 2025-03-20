@@ -480,9 +480,9 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             const names = Array.isArray(inputNames)
                 ? inputNames.filter((inputName) => formValueStateMapRef.current.has(inputName))
                 : Array.from(formValueStateMapRef.current.keys());
-            return names;
+            return names.filter((name) => registratedFieldNamesRef.current.has(name));
         },
-        [formValueStateMapRef.current],
+        [formValueStateMapRef.current, registratedFieldNamesRef.current],
     );
 
     const handleAlterValues = useCallback(
@@ -502,6 +502,13 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             update();
             onChange?.(getFormValue(currentFormValueStateMap), names);
             validate(names, true);
+            names.forEach((name) => {
+                eventEmitterRef.current.emit(
+                    EVENT_NAMES.REFRESH_ITEM_VALUE_STATE,
+                    name,
+                    currentFormValueStateMap?.get?.(name),
+                );
+            });
         },
         [formValueStateMapRef.current],
     );
@@ -510,11 +517,15 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
         async (inputNames?: string[], isChangeMode = false) => {
             const names = getFinalNames(inputNames);
 
-            if (names.length === 0) return;
+            if (names.length === 0) return null;
 
             const formValue = getFormValue(formValueStateMapRef.current);
             const result: SubmitValue = {
-                value: formValue,
+                value: Object.entries(formValue).reduce((result, [name, value]) => {
+                    if (!names.includes(name)) return result;
+                    result[name] = value;
+                    return result;
+                }, {} as Value),
                 errors: await Promise.all(
                     children
                         .filter((child) => names.includes(child?.props?.name))
@@ -583,7 +594,7 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
 
             return result;
         },
-        [children, formValueStateMapRef.current],
+        [children, formValueStateMapRef.current, registratedFieldNamesRef.current],
     );
 
     usePreviousValueEffect(
@@ -695,6 +706,13 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             update();
             onChange?.(getFormValue(currentFormValueStateMap), names);
             validate(names, true);
+            names.forEach((name) => {
+                eventEmitterRef.current.emit(
+                    EVENT_NAMES.REFRESH_ITEM_VALUE_STATE,
+                    name,
+                    currentFormValueStateMap?.get?.(name),
+                );
+            });
         };
 
         const externalBulkAlterValuesHandler = (currentUseFormId: string, inputNames: string[], isReset = false) => {
@@ -782,7 +800,6 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
 
         const refreshItmeValueStateHandler = (fieldName: string, valueState: ValueState) => {
             if (fieldName !== name) return;
-            console.log('LENCONDA:FUCK:name', name, valueState);
             setInnerValue(valueState?.data);
         };
 
