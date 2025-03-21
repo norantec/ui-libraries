@@ -26,11 +26,9 @@ function mergeProps<T>({
     overrideFunctions?: boolean;
 }) {
     return _.mergeWith({}, ...sources, (objectValue: any, sourceValue: any, key: string) => {
-        if (key === 'ref' || key.endsWith('Ref')) {
-            return sourceValue;
-        }
-
         if (
+            key === 'ref' ||
+            key.endsWith('Ref') ||
             (_.isArray(sourceValue) && overrideArrays) ||
             (_.isFunction(sourceValue) && overrideFunctions) ||
             React.isValidElement(sourceValue) ||
@@ -133,7 +131,8 @@ export interface MergerContext<T> extends ProviderPresetPropsGeneratorContext<T>
 
 export interface ComponentProviderCreateOptions<T> {
     defaultProps?: (context: PropsGeneratorContext) => Partial<T>;
-    merger?: (context: MergerContext<T>) => Partial<T>;
+    postInputMerger?: (context: MergerContext<T>) => Partial<T>;
+    preInputMerger?: (context: MergerContext<T>) => Partial<T>;
 }
 
 export interface ComponentProviderProps<T> {
@@ -177,25 +176,35 @@ export class ComponentProviderUtil {
                         colorScheme,
                         inputProps,
                     }) ?? {};
-                let finalProps = mergeProps<Partial<T>>({
+                let finalProps = mergeProps({
                     sources: [defaultProps, presetProps, inputProps],
                 });
-
-                if (_.isFunction(context?.merger)) {
-                    finalProps = mergeProps({
-                        sources: [
+                finalProps = mergeProps({
+                    sources: [
+                        context?.preInputMerger?.({
+                            direction,
+                            colorScheme,
+                            defaultProps,
+                            presetProps,
+                            inputProps,
                             finalProps,
-                            context.merger({
-                                direction,
-                                colorScheme,
-                                defaultProps,
-                                presetProps,
-                                inputProps,
-                                finalProps,
-                            }),
-                        ],
-                    });
-                }
+                        }),
+                        finalProps,
+                    ],
+                });
+                finalProps = mergeProps({
+                    sources: [
+                        finalProps,
+                        context?.postInputMerger?.({
+                            direction,
+                            colorScheme,
+                            defaultProps,
+                            presetProps,
+                            inputProps,
+                            finalProps,
+                        }),
+                    ],
+                });
 
                 if (_.isEqual(resultRef.current, finalProps)) {
                     return;

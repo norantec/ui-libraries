@@ -276,7 +276,7 @@ const {
             },
         },
     }),
-    merger: (context) => ({
+    preInputMerger: (context) => ({
         sx: {
             wrapper: {
                 '& > *': {
@@ -295,9 +295,8 @@ const {
     defaultProps: () => ({
         required: false,
         validators: [],
-        effects: [],
     }),
-    merger: ({ finalProps }) => {
+    preInputMerger: ({ finalProps }) => {
         return {
             sx: {
                 wrapper: {

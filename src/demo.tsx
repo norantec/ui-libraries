@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { Form, FormItem, FormProvider, useForm, Validator } from './components/form';
+import { Form, FormItem, FormItemProvider, FormProvider, useForm, Validator } from './components/form';
 import { ProviderFactory } from './components/provider-factory';
 import { useEffect, useState } from 'react';
 import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
@@ -122,7 +122,22 @@ const App: React.FC = () => {
 };
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-    <ProviderFactory providers={(creator) => [creator(FormProvider)]}>
+    <ProviderFactory
+        providers={(creator) => [
+            creator(FormProvider),
+            creator(FormItemProvider, {
+                presetProps: () => {
+                    return {
+                        sx: {
+                            wrapper: {
+                                marginBottom: 24,
+                            },
+                        },
+                    };
+                },
+            }),
+        ]}
+    >
         <App />
     </ProviderFactory>,
 );
