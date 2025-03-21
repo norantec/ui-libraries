@@ -515,7 +515,10 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
                                     validateOnChange: true,
                                     validateOnValidation: true,
                                     validate: (value) => {
-                                        if (typeof value === 'undefined') {
+                                        if (
+                                            typeof value === 'undefined' ||
+                                            (typeof value === 'string' && value.length === 0)
+                                        ) {
                                             return !StringUtil.isFalsyString(required)
                                                 ? (required as string)
                                                 : 'It is a required field';
