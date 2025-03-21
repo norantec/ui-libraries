@@ -5,6 +5,33 @@ import { ProviderFactory } from './components/provider-factory';
 import { useEffect, useState } from 'react';
 import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
 
+interface InputProps extends Omit<React.HTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
+    value?: string;
+    placeholder?: string;
+    onChange?: (value: string, event: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+const Input = React.forwardRef<HTMLInputElement, InputProps>(({ value, onChange, ...props }, ref) => {
+    const innerRef = React.useRef<HTMLInputElement>(undefined);
+
+    React.useImperativeHandle(ref, () => innerRef.current);
+
+    useEffect(() => {
+        if (!(innerRef.current instanceof HTMLInputElement)) return;
+        innerRef.current.value = StringUtil.isFalsyString(value) ? '' : value;
+    }, [value, innerRef.current]);
+
+    return (
+        <input
+            {...props}
+            ref={innerRef}
+            onChange={(event) => {
+                onChange?.(StringUtil.isFalsyString(event?.target?.value) ? undefined : event.target.value, event);
+            }}
+        />
+    );
+});
+
 const App: React.FC = () => {
     const form = useForm();
     const [validators, setValidators] = useState<Validator[]>([]);
@@ -32,7 +59,7 @@ const App: React.FC = () => {
                         ...validators,
                     ]}
                 >
-                    <input placeholder="Input something..." />
+                    <Input placeholder="Input something..." />
                 </FormItem>
                 <FormItem
                     label="Test2"
@@ -43,7 +70,7 @@ const App: React.FC = () => {
                         return result;
                     }}
                 >
-                    <input placeholder="Input something..." />
+                    <Input placeholder="Input something..." />
                 </FormItem>
             </Form>
             <button

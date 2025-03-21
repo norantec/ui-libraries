@@ -34,8 +34,9 @@ const EVENT_NAMES = {
     EXTERNAL_VALIDATE_REQUEST: Symbol(''),
     EXTERNAL_VALIDATE_RESPONSE: Symbol(''),
     PARTIAL_CHANGE: Symbol(''),
+    REFRESH_ITEM_STATE: Symbol(''),
+    REFRESH_ITEM_VALUE: Symbol(''),
     REFRESH_REGISTRATION_STATE: Symbol(''),
-    REFRESH_VALUE_STATE: Symbol(''),
     REGISTER_ITEM: Symbol(''),
     UNREGISTER_ITEM: Symbol(''),
     USE_FORM_UPDATE: Symbol(''),
@@ -475,34 +476,13 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
     const formValueStateMapRef = useRef<ImmutableMap<string, ValueState>>(ImmutableMap());
 
     const getFinalNames = useCallback(
-        (inputNames?: string[], ignoreUnregisteredFieldNames = false): string[] => {
+        (inputNames?: string[], includeUnregisteredFieldNames = false): string[] => {
             const names = Array.isArray(inputNames)
                 ? inputNames.filter((inputName) => formValueStateMapRef.current.has(inputName))
                 : Array.from(formValueStateMapRef.current.keys());
-            return ignoreUnregisteredFieldNames
+            return !includeUnregisteredFieldNames
                 ? names.filter((name) => registratedFieldNamesRef.current.has(name))
                 : names;
-        },
-        [formValueStateMapRef.current, registratedFieldNamesRef.current],
-    );
-
-    const handleAlterValues = useCallback(
-        (inputNames: string[], isReset = false, ignoreUnregisteredFieldNames = false) => {
-            const names = getFinalNames(inputNames, ignoreUnregisteredFieldNames);
-            if (names.length === 0) return;
-            let currentFormValueStateMap = formValueStateMapRef.current;
-            names.forEach((name) => {
-                currentFormValueStateMap = currentFormValueStateMap.set(name, {
-                    data: isReset
-                        ? children?.find?.((child) => child?.props?.name === name)?.props?.defaultValue
-                        : undefined,
-                    errorMessages: [],
-                });
-            });
-            formValueStateMapRef.current = currentFormValueStateMap;
-            update();
-            onChange?.(getFormValue(currentFormValueStateMap), names);
-            validate(names, true);
         },
         [formValueStateMapRef.current, registratedFieldNamesRef.current],
     );
@@ -588,7 +568,30 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
 
             return result;
         },
-        [children, formValueStateMapRef.current, registratedFieldNamesRef.current],
+        [children, formValueStateMapRef.current, registratedFieldNamesRef.current, getFinalNames],
+    );
+
+    const handleAlterValues = useCallback(
+        (inputNames: string[], isReset = false, includeUnregisteredFieldNames = false) => {
+            const names = getFinalNames(inputNames, includeUnregisteredFieldNames);
+            if (names.length === 0) return;
+            let currentFormValueStateMap = formValueStateMapRef.current;
+            names.forEach((name) => {
+                currentFormValueStateMap = currentFormValueStateMap.set(name, {
+                    data: isReset
+                        ? children?.find?.((child) => child?.props?.name === name)?.props?.defaultValue
+                        : undefined,
+                    errorMessages: [],
+                });
+            });
+            formValueStateMapRef.current = currentFormValueStateMap;
+            update();
+            const newFormValue = getFormValue(currentFormValueStateMap);
+            onChange?.(newFormValue, names);
+            validate(names, true);
+            eventEmitterRef.current.emit(EVENT_NAMES.REFRESH_ITEM_VALUE, _.pick(newFormValue, names));
+        },
+        [formValueStateMapRef.current, validate, getFinalNames],
     );
 
     usePreviousValueEffect(
@@ -635,20 +638,23 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
     );
 
     useEffect(() => {
-        const registerHandler = (name: string) => {
+        const handleRegisterItem = (name: string) => {
             if (registratedFieldNamesRef.current.has(name)) return;
             registratedFieldNamesRef.current = registratedFieldNamesRef.current.add(name);
             update();
+            eventEmitterRef.current.emit(EVENT_NAMES.REFRESH_ITEM_VALUE, {
+                [name]: formValueStateMapRef.current?.get?.(name)?.data,
+            });
         };
 
-        const unregisterHandler = (name: string) => {
+        const handleUnregisterItem = (name: string) => {
             if (!registratedFieldNamesRef.current.has(name)) return;
             registratedFieldNamesRef.current = registratedFieldNamesRef.current.delete(name);
             handleAlterValues([name], true);
             update();
         };
 
-        const partialChangeHandler = (updatePart: Value) => {
+        const handlePartialChange = (updatePart: Value) => {
             if (!updatePart || !_.isObjectLike(updatePart)) return;
             let currentFormValueStateMap = formValueStateMapRef.current;
             const updatedFields: string[] = [];
@@ -666,21 +672,21 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             validate(updatedFields, true);
         };
 
-        eventEmitterRef.current.addListener(EVENT_NAMES.REGISTER_ITEM, registerHandler);
-        eventEmitterRef.current.addListener(EVENT_NAMES.UNREGISTER_ITEM, unregisterHandler);
-        eventEmitterRef.current.addListener(EVENT_NAMES.PARTIAL_CHANGE, partialChangeHandler);
+        eventEmitterRef.current.addListener(EVENT_NAMES.REGISTER_ITEM, handleRegisterItem);
+        eventEmitterRef.current.addListener(EVENT_NAMES.UNREGISTER_ITEM, handleUnregisterItem);
+        eventEmitterRef.current.addListener(EVENT_NAMES.PARTIAL_CHANGE, handlePartialChange);
 
         return () => {
-            eventEmitterRef.current.removeListener(EVENT_NAMES.REGISTER_ITEM, registerHandler);
-            eventEmitterRef.current.removeListener(EVENT_NAMES.UNREGISTER_ITEM, unregisterHandler);
-            eventEmitterRef.current.removeListener(EVENT_NAMES.PARTIAL_CHANGE, partialChangeHandler);
+            eventEmitterRef.current.removeListener(EVENT_NAMES.REGISTER_ITEM, handleRegisterItem);
+            eventEmitterRef.current.removeListener(EVENT_NAMES.UNREGISTER_ITEM, handleUnregisterItem);
+            eventEmitterRef.current.removeListener(EVENT_NAMES.PARTIAL_CHANGE, handlePartialChange);
         };
-    }, [formValueStateMapRef.current, handleAlterValues]);
+    }, [formValueStateMapRef.current, handleAlterValues, validate]);
 
     useEffect(() => {
         const useFormId = getDefinedPropertyValue(formInstance, 'useFormId');
 
-        const externalSetValuesHandler = (currentUseFormId: string, newValues: Value) => {
+        const handleExternalSetValues = (currentUseFormId: string, newValues: Value) => {
             if (!_.isObjectLike(newValues) || currentUseFormId !== useFormId) return;
             const names = getFinalNames(Object.keys(newValues));
             if (names.length === 0) return;
@@ -693,36 +699,38 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
             });
             formValueStateMapRef.current = currentFormValueStateMap;
             update();
-            onChange?.(getFormValue(currentFormValueStateMap), names);
+            const newFormValue = getFormValue(currentFormValueStateMap);
+            onChange?.(newFormValue, names);
             validate(names, true);
+            eventEmitterRef.current.emit(EVENT_NAMES.REFRESH_ITEM_VALUE, _.pick(newFormValue, names));
         };
 
-        const externalBulkAlterValuesHandler = (currentUseFormId: string, inputNames: string[], isReset = false) => {
+        const handleExternalBulkAlterValues = (currentUseFormId: string, inputNames: string[], isReset = false) => {
             if (currentUseFormId !== useFormId) return;
             handleAlterValues(inputNames, isReset);
         };
 
-        const externalValidateRequestHandler = (currentUseFormId: string, requestId: string, inputNames: string[]) => {
+        const handleExternalValidateRequest = (currentUseFormId: string, requestId: string, inputNames: string[]) => {
             if (currentUseFormId !== useFormId) return;
             validate(inputNames, false).then((result) => {
                 eventEmitter.emit(EVENT_NAMES.EXTERNAL_VALIDATE_RESPONSE, requestId, result);
             });
         };
 
-        eventEmitter.addListener(EVENT_NAMES.EXTERNAL_SET_VALUES, externalSetValuesHandler);
-        eventEmitter.addListener(EVENT_NAMES.EXTERNAL_BULK_ALTER_VALUES, externalBulkAlterValuesHandler);
-        eventEmitter.addListener(EVENT_NAMES.EXTERNAL_VALIDATE_REQUEST, externalValidateRequestHandler);
+        eventEmitter.addListener(EVENT_NAMES.EXTERNAL_SET_VALUES, handleExternalSetValues);
+        eventEmitter.addListener(EVENT_NAMES.EXTERNAL_BULK_ALTER_VALUES, handleExternalBulkAlterValues);
+        eventEmitter.addListener(EVENT_NAMES.EXTERNAL_VALIDATE_REQUEST, handleExternalValidateRequest);
 
         return () => {
-            eventEmitter.removeListener(EVENT_NAMES.EXTERNAL_SET_VALUES, externalSetValuesHandler);
-            eventEmitter.removeListener(EVENT_NAMES.EXTERNAL_BULK_ALTER_VALUES, externalBulkAlterValuesHandler);
-            eventEmitter.removeListener(EVENT_NAMES.EXTERNAL_VALIDATE_REQUEST, externalValidateRequestHandler);
+            eventEmitter.removeListener(EVENT_NAMES.EXTERNAL_SET_VALUES, handleExternalSetValues);
+            eventEmitter.removeListener(EVENT_NAMES.EXTERNAL_BULK_ALTER_VALUES, handleExternalBulkAlterValues);
+            eventEmitter.removeListener(EVENT_NAMES.EXTERNAL_VALIDATE_REQUEST, handleExternalValidateRequest);
         };
-    }, [formInstance, formValueStateMapRef.current, children]);
+    }, [formInstance, formValueStateMapRef.current, children, validate]);
 
     useEffect(() => {
         if (!Array.isArray(children)) return;
-        eventEmitterRef.current.emit(EVENT_NAMES.REFRESH_VALUE_STATE, formValueStateMapRef.current);
+        eventEmitterRef.current.emit(EVENT_NAMES.REFRESH_ITEM_STATE, formValueStateMapRef.current);
         update();
     }, [formValueStateMapRef.current]);
 
@@ -774,7 +782,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
     useEffect(() => {
         if (!(contextEventEmitter instanceof EventEmitter) || StringUtil.isFalsyString(name)) return;
 
-        const refreshItmeValueStateHandler = (formValueStateMap: ImmutableMap<string, ValueState>) => {
+        const handleRefreshItemState = (formValueStateMap: ImmutableMap<string, ValueState>) => {
             const newValue = formValueStateMap?.get?.(name)?.data;
             const newErrorMessages = formValueStateMap?.get?.(name)?.errorMessages;
             const context: ItemContext = {
@@ -797,27 +805,39 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                 errorMessagesRef.current = newErrorMessages;
                 update();
             }
-
-            if (!_.isEqual(innerValue, newValue)) {
-                setInnerValue(newValue);
-            }
         };
 
-        contextEventEmitter.addListener(EVENT_NAMES.REFRESH_VALUE_STATE, refreshItmeValueStateHandler);
+        contextEventEmitter.addListener(EVENT_NAMES.REFRESH_ITEM_STATE, handleRefreshItemState);
 
         return () => {
-            contextEventEmitter.removeListener(EVENT_NAMES.REFRESH_VALUE_STATE, refreshItmeValueStateHandler);
+            contextEventEmitter.removeListener(EVENT_NAMES.REFRESH_ITEM_STATE, handleRefreshItemState);
         };
     }, [
         contextEventEmitter,
         name,
-        innerValue,
         hiddenRef.current,
         defaultValue,
         errorMessagesRef.current,
         hideCondition,
         registerCondition,
     ]);
+
+    useEffect(() => {
+        if (!(contextEventEmitter instanceof EventEmitter) || StringUtil.isFalsyString(name)) return;
+
+        const handleRefreshItemValue = (value: Value) => {
+            if (!_.isObjectLike(value)) return;
+            if (Object.keys(value).includes(name)) {
+                setInnerValue(value?.[name]);
+            }
+        };
+
+        contextEventEmitter.addListener(EVENT_NAMES.REFRESH_ITEM_VALUE, handleRefreshItemValue);
+
+        return () => {
+            contextEventEmitter.removeListener(EVENT_NAMES.REFRESH_ITEM_VALUE, handleRefreshItemValue);
+        };
+    }, [name, contextEventEmitter]);
 
     useEffect(() => {
         if (!(contextEventEmitter instanceof EventEmitter) || StringUtil.isFalsyString(name)) return;
