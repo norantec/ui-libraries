@@ -304,7 +304,7 @@ const {
                     display: 'flex',
                     flexDirection: 'column',
                     flexWrap: 'nowrap',
-                    marginBottom: finalProps?.dense * 4,
+                    marginBottom: finalProps?.dense * 2,
                 },
                 headerWrapper: {
                     display: 'flex',
@@ -346,6 +346,7 @@ const {
                     display: 'flex',
                     flexDirection: 'column',
                     flexWrap: 'nowrap',
+                    marginBottom: finalProps?.dense / 2,
                 },
                 errorWrapper: {
                     display: 'flex',

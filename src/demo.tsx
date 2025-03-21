@@ -130,7 +130,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                     return {
                         sx: {
                             wrapper: {
-                                marginBottom: 24,
+                                marginBottom: 8,
                             },
                         },
                     };
