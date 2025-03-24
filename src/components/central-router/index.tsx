@@ -1,11 +1,13 @@
 import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
 import * as React from 'react';
-import { HashRouter, Route, Routes } from 'react-router-dom';
+import { HashRouter, Route, Routes, BrowserRouter, MemoryRouter, StaticRouter, Outlet } from 'react-router-dom';
 import * as _ from 'lodash';
 
+export { HashRouter, Route, Routes, BrowserRouter, MemoryRouter, StaticRouter, Outlet };
+
 export interface Page {
-    layoutPath?: string;
-    pagePath?: string;
+    layout?: React.LazyExoticComponent<() => React.JSX.Element>;
+    page?: React.LazyExoticComponent<() => React.JSX.Element>;
     children?: Record<string, Page>;
 }
 
@@ -19,19 +21,17 @@ const generateRoutes = (page: Page, pathname: string) => {
     if (!_.isPlainObject(page)) return null;
     return (
         <Route
-            path={StringUtil.isFalsyString(pathname) ? '/' : pathname}
-            element={React.createElement(
-                React.lazy(
-                    () => import(StringUtil.isFalsyString(page?.layoutPath) ? page?.pagePath : page?.layoutPath),
-                ),
-            )}
+            path={StringUtil.isFalsyString(pathname) ? '' : pathname}
+            element={React.createElement(page?.layout ?? page?.page)}
         >
-            {!StringUtil.isFalsyString(page?.layoutPath) && (
-                <Route path="" element={React.createElement(React.lazy(() => import(page?.pagePath)))} />
+            {page?.page && <Route path="" element={React.createElement(page?.page)} />}
+            {_.isPlainObject(page?.children) && (
+                <>
+                    {...Object.entries(page?.children).map(([subPathname, subPage]) => {
+                        return generateRoutes(subPage, subPathname);
+                    })}
+                </>
             )}
-            {...Object.entries(page?.children).map(([subPathname, subPage]) => {
-                return generateRoutes(subPage, subPathname);
-            })}
         </Route>
     );
 };
@@ -41,5 +41,11 @@ export const CentralRouter = <T extends object>({
     router: Router = HashRouter,
     routerProps,
 }: CentralRouterProps<T>) => {
-    return React.createElement(Router, routerProps, <Routes>{generateRoutes(page, '')}</Routes>);
+    return (
+        <React.Suspense>
+            <Router {...routerProps}>
+                <Routes>{generateRoutes(page, '')}</Routes>
+            </Router>
+        </React.Suspense>
+    );
 };
