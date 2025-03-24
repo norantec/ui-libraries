@@ -1,17 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-constraint */
 import * as React from 'react';
-import {
-    BaseSyntheticEvent,
-    cloneElement,
-    isValidElement,
-    JSX,
-    useCallback,
-    useContext,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from 'react';
+import { cloneElement, isValidElement, JSX, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import { useUpdate } from 'ahooks';
 import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
 import { EventEmitter } from 'eventemitter3';
@@ -23,7 +12,6 @@ import { PiXCircleFill } from 'react-icons/pi';
 import * as _ from 'lodash';
 import { usePreviousValueEffect } from '../../hooks/use-previous-value-effect';
 import { UUIDUtil } from '@open-norantec/utilities/dist/uuid-util.class';
-import { CompareUtil } from '../../utilities/compare-util.class';
 
 export type FormTemplateRegistry = (helpers: FormTemplateRegistryHelpers) => FormItemProps[];
 
@@ -66,7 +54,7 @@ export interface FormTemplateRegistryHelpers {
 
 export interface FormChildrenRegistryHelpers extends FormTemplateRegistryHelpers {
     getPartialTemplate: GetPartialTemplateFn;
-    render: (propsList: FormItemProps[]) => JSX.Element[];
+    render: (propsList: FormItemProps[]) => React.ReactNode[];
 }
 
 export interface FormStatic {
@@ -80,7 +68,10 @@ export interface ComponentProps {
 }
 
 export interface FormProps extends FormItemBaseProps {
-    children?: JSX.Element | JSX.Element[] | ((helpers: FormChildrenRegistryHelpers) => JSX.Element | JSX.Element[]);
+    children?:
+        | React.ReactNode
+        | React.ReactNode[]
+        | ((helpers: FormChildrenRegistryHelpers) => React.ReactNode | React.ReactNode[]);
     disabled?: boolean;
     form?: FormInstance;
     readOnly?: boolean;
@@ -101,8 +92,12 @@ export interface ErrorMap {
 export interface ItemContext {
     defaultValue: any;
     errorMessages: string[];
-    formValueStateMap: ImmutableMap<string, ValueState>;
     value: any;
+    valueStateMap: ImmutableMap<string, ValueState>;
+}
+
+export interface ItemChildrenContext extends ItemContext {
+    handleChange: (value?: any) => void;
 }
 
 export interface SubmitValue {
@@ -112,16 +107,14 @@ export interface SubmitValue {
 
 export interface FormItemProps extends FormItemBaseProps {
     name: string;
-    children?: JSX.Element;
     defaultValue?: any;
     disabled?: boolean;
     errorMessageProps?: React.HTMLAttributes<HTMLDivElement>;
     errorWrapperProps?: React.HTMLAttributes<HTMLDivElement> | false;
-    extra?: React.ReactNode;
-    label?: React.ReactNode;
+    extra?: React.ReactNode | ((context: ItemContext) => React.ReactNode);
+    label?: React.ReactNode | ((context: ItemContext) => React.ReactNode);
     readOnly?: boolean;
     required?: boolean | string;
-    serializer?: FormItemSerializer;
     sx?: {
         wrapper?: CSSObject;
         headerWrapper?: CSSObject;
@@ -134,13 +127,9 @@ export interface FormItemProps extends FormItemBaseProps {
         errorMessageIcon?: CSSObject;
     };
     validators?: Validator[];
+    children?: (context: ItemChildrenContext) => React.ReactNode;
     hideCondition?: (context: ItemContext) => boolean;
     registerCondition?: (context: ItemContext) => boolean;
-}
-
-export interface FormItemSerializer {
-    incoming?: (incomingValue: any) => any;
-    outgoing?: (outgoingValue: any) => any;
 }
 
 export type Validator = {
@@ -156,7 +145,7 @@ class FormInstance {
             useFormId: string;
         },
     ) {
-        Object.defineProperty(this, 'useFormId', {
+        Object.defineProperty(this, 'id', {
             writable: false,
             value: options?.useFormId,
         });
@@ -177,15 +166,6 @@ class FormInstance {
 
     public setValues(newValues: Value) {
         eventEmitter.emit(EVENT_NAMES.EXTERNAL_SET_VALUES, this.options?.useFormId, newValues);
-    }
-
-    public getValues() {
-        return { ...this.options?.formValue };
-    }
-
-    public getValue(name: string) {
-        if (StringUtil.isFalsyString(name)) return;
-        return { ...this.options?.formValue }[name];
     }
 
     public async validate(inputNames?: string) {
@@ -234,7 +214,7 @@ export const useForm = () => {
         const handler = (useFormId: string | null, formValue: Value) => {
             if (
                 StringUtil.isFalsyString(useFormId) ||
-                useFormId !== getDefinedPropertyValue(formInstanceRef.current, 'useFormId')
+                useFormId !== getDefinedPropertyValue(formInstanceRef.current, 'id')
             ) {
                 return;
             }
@@ -435,7 +415,7 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
     const classNames = useFormClassNames(sx);
     const eventEmitterRef = useRef(new EventEmitter());
     const children = useMemo(() => {
-        let result: JSX.Element[] = [];
+        let result: React.ReactNode[] = [];
 
         if (typeof inputChildren === 'function') {
             const generatedChildren = inputChildren({
@@ -458,17 +438,18 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
         }
 
         return result
-            .filter((child) => !StringUtil.isFalsyString(child?.props?.name))
+            .filter((child) => !StringUtil.isFalsyString((child as JSX.Element)?.props?.name))
             .map((child, index) => {
-                return cloneElement(child, {
+                const childElement = child as JSX.Element;
+                return cloneElement(childElement, {
                     key: index,
-                    dense: child?.props?.dense ?? dense,
-                    dangerColor: child?.props?.dangerColor ?? dangerColor,
-                    labelProps: child?.props?.labelProps ?? labelProps,
-                    maxWidth: child?.props?.maxWidth ?? maxWidth,
-                    minWidth: child?.props?.minWidth ?? minWidth,
-                    disabled: child?.props?.disabled ?? disabled,
-                    readOnly: child?.props?.readOnly ?? readOnly,
+                    dense: childElement?.props?.dense ?? dense,
+                    dangerColor: childElement?.props?.dangerColor ?? dangerColor,
+                    labelProps: childElement?.props?.labelProps ?? labelProps,
+                    maxWidth: childElement?.props?.maxWidth ?? maxWidth,
+                    minWidth: childElement?.props?.minWidth ?? minWidth,
+                    disabled: childElement?.props?.disabled ?? disabled,
+                    readOnly: childElement?.props?.readOnly ?? readOnly,
                 });
             });
     }, [inputChildren]);
@@ -599,30 +580,6 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
 
     usePreviousValueEffect(
         () => {
-            eventEmitter.emit(
-                EVENT_NAMES.USE_FORM_UPDATE,
-                getDefinedPropertyValue(formInstance, 'useFormId'),
-                getFormValue(formValueStateMapRef.current),
-            );
-        },
-        [formInstance, formValueStateMapRef.current],
-        (previousValue: [string, Value]) => {
-            if (
-                !(formInstance instanceof FormInstance) ||
-                (getDefinedPropertyValue(formInstance, 'useFormId') === previousValue?.[0] &&
-                    CompareUtil.compare(getFormValue(formValueStateMapRef.current), previousValue?.[1]))
-            ) {
-                return undefined;
-            }
-            return [getDefinedPropertyValue(formInstance, 'useFormId'), getFormValue(formValueStateMapRef.current)] as [
-                string,
-                Value,
-            ];
-        },
-    );
-
-    usePreviousValueEffect(
-        () => {
             let formValueStateMap = ImmutableMap<string, ValueState>();
             children.forEach((child) => {
                 formValueStateMap = formValueStateMap.set(child?.props?.name, {
@@ -687,7 +644,7 @@ export const Form = React.forwardRef<HTMLDivElement, FormProps>((inputProps, ref
     }, [formValueStateMapRef.current, handleAlterValues, validate]);
 
     useEffect(() => {
-        const useFormId = getDefinedPropertyValue(formInstance, 'useFormId');
+        const useFormId = getDefinedPropertyValue(formInstance, 'id');
 
         const handleExternalSetValues = (currentUseFormId: string, newValues: Value) => {
             if (!_.isObjectLike(newValues) || currentUseFormId !== useFormId) return;
@@ -759,7 +716,6 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
         children,
         label,
         defaultValue,
-        serializer,
         labelProps,
         errorWrapperProps,
         errorMessageProps,
@@ -771,16 +727,23 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
     } = useFormItemComponentConfig(inputProps);
     const classNames = useFormItemClassNames(sx);
     const contextEventEmitter = useContext(EventContext);
-    const [innerValue, setInnerValue] = useState(undefined);
     const errorMessagesRef = useRef<string[]>([]);
     const hiddenRef = useRef(true);
     const registeredRef = useRef(false);
+    const childrenRef = useRef<React.ReactNode>(null);
+    const labelRef = useRef<React.ReactNode>(null);
+    const extraRef = useRef<React.ReactNode>(null);
     const update = useUpdate();
 
-    const generateIncomingValue = (value: any) => {
-        if (typeof serializer?.incoming === 'function') return serializer.incoming(value);
-        return value;
-    };
+    const handleChange = useCallback(
+        (value: any) => {
+            if (!(contextEventEmitter instanceof EventEmitter) || StringUtil.isFalsyString(name)) return;
+            contextEventEmitter?.emit?.(EVENT_NAMES.PARTIAL_CHANGE, {
+                [name]: value,
+            });
+        },
+        [contextEventEmitter, name],
+    );
 
     useEffect(() => {
         if (!(contextEventEmitter instanceof EventEmitter) || StringUtil.isFalsyString(name)) return;
@@ -789,7 +752,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
             const newValue = formValueStateMap?.get?.(name)?.data;
             const newErrorMessages = formValueStateMap?.get?.(name)?.errorMessages;
             const context: ItemContext = {
-                formValueStateMap,
+                valueStateMap: formValueStateMap,
                 value: newValue,
                 errorMessages: newErrorMessages,
                 defaultValue,
@@ -797,17 +760,33 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
             const newHiddenState = typeof hideCondition === 'function' ? hideCondition(context) : false;
             const shouldRegister = typeof registerCondition === 'function' ? registerCondition(context) : true;
 
+            if (typeof children === 'function') {
+                childrenRef.current = children({ ...context, handleChange });
+            }
+
+            if (typeof label === 'function') {
+                labelRef.current = label(context);
+            } else if (labelRef.current !== label) {
+                labelRef.current = label;
+            }
+
+            if (typeof extra === 'function') {
+                extraRef.current = extra(context);
+            } else if (extraRef.current !== extra) {
+                extraRef.current = extra;
+            }
+
             if (newHiddenState !== hiddenRef.current) {
                 hiddenRef.current = newHiddenState;
-                update();
             }
 
             contextEventEmitter.emit(shouldRegister ? EVENT_NAMES.REGISTER_ITEM : EVENT_NAMES.UNREGISTER_ITEM, name);
 
             if (!_.isEqual(errorMessagesRef.current, newErrorMessages)) {
                 errorMessagesRef.current = newErrorMessages;
-                update();
             }
+
+            update();
         };
 
         contextEventEmitter.addListener(EVENT_NAMES.REFRESH_ITEM_STATE, handleRefreshItemState);
@@ -821,6 +800,13 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
         hiddenRef.current,
         defaultValue,
         errorMessagesRef.current,
+        children,
+        childrenRef.current,
+        extra,
+        extraRef.current,
+        label,
+        labelRef.current,
+        handleChange,
         hideCondition,
         registerCondition,
     ]);
@@ -828,24 +814,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
     useEffect(() => {
         if (!(contextEventEmitter instanceof EventEmitter) || StringUtil.isFalsyString(name)) return;
 
-        const handleRefreshItemValue = (value: Value) => {
-            if (!_.isObjectLike(value)) return;
-            if (Object.keys(value).includes(name)) {
-                setInnerValue(value?.[name]);
-            }
-        };
-
-        contextEventEmitter.addListener(EVENT_NAMES.REFRESH_ITEM_VALUE, handleRefreshItemValue);
-
-        return () => {
-            contextEventEmitter.removeListener(EVENT_NAMES.REFRESH_ITEM_VALUE, handleRefreshItemValue);
-        };
-    }, [name, contextEventEmitter]);
-
-    useEffect(() => {
-        if (!(contextEventEmitter instanceof EventEmitter) || StringUtil.isFalsyString(name)) return;
-
-        const refreshShowStateHandler = (registratedFieldNames: string[]) => {
+        const handleRefreshRegistrationState = (registratedFieldNames: string[]) => {
             const currentRestrated = registratedFieldNames?.includes?.(name);
             if (registeredRef.current !== currentRestrated) {
                 registeredRef.current = currentRestrated;
@@ -853,10 +822,10 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
             }
         };
 
-        contextEventEmitter.addListener(EVENT_NAMES.REFRESH_REGISTRATION_STATE, refreshShowStateHandler);
+        contextEventEmitter.addListener(EVENT_NAMES.REFRESH_REGISTRATION_STATE, handleRefreshRegistrationState);
 
         return () => {
-            contextEventEmitter.removeListener(EVENT_NAMES.REFRESH_REGISTRATION_STATE, refreshShowStateHandler);
+            contextEventEmitter.removeListener(EVENT_NAMES.REFRESH_REGISTRATION_STATE, handleRefreshRegistrationState);
         };
     }, [contextEventEmitter, name, registeredRef.current]);
 
@@ -888,9 +857,9 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
             }}
         >
             <div className={cx(classNames?.headerWrapper)}>
-                {label && (
+                {labelRef.current && (
                     <div {...labelProps} className={cx(classNames?.headerLabel, labelProps?.className)}>
-                        {label}
+                        {labelRef.current}
                     </div>
                 )}
                 <div
@@ -903,31 +872,13 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                 ></div>
             </div>
             <div className={cx(classNames?.elementWrapper)}>
-                {children &&
-                    cloneElement(children, {
-                        value: generateIncomingValue(innerValue),
-                        onChange: (value: any, ...others: any[]) => {
-                            const outgoingValue = (() => {
-                                let result: any;
-                                if (typeof serializer?.outgoing === 'function') {
-                                    result = serializer.outgoing(value);
-                                } else if (
-                                    (value as any)?._reactName === 'onChange' ||
-                                    (value as BaseSyntheticEvent)?.target
-                                ) {
-                                    result = (value as BaseSyntheticEvent)?.target?.value;
-                                } else {
-                                    result = value;
-                                }
-                                return result;
-                            })();
-                            contextEventEmitter?.emit?.(EVENT_NAMES.PARTIAL_CHANGE, {
-                                [name]: outgoingValue,
-                            });
-                            setInnerValue(generateIncomingValue(outgoingValue));
-                            children?.props?.onChange?.(value, ...others);
-                        },
-                    })}
+                {(() => {
+                    if (name === 'test1') {
+                        console.log('RERENDER');
+                    }
+                    return <></>;
+                })()}
+                {childrenRef.current}
             </div>
             {(() => {
                 if (
@@ -955,7 +906,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                 }
                 return null;
             })()}
-            {extra}
+            {extraRef.current}
         </div>
     );
 };

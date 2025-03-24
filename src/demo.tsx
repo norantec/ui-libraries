@@ -36,10 +36,6 @@ const App: React.FC = () => {
     const form = useForm();
     const [validators, setValidators] = useState<Validator[]>([]);
 
-    useEffect(() => {
-        console.log('LENCONDA:4', form.getValues());
-    }, [form]);
-
     return (
         <div>
             <Form
@@ -52,6 +48,7 @@ const App: React.FC = () => {
                     label="Test1"
                     name="test1"
                     required="必填项"
+                    extra={(context) => <small>value: {context?.value}</small>}
                     validators={[
                         {
                             validate: (value) => (StringUtil.isFalsyString(value) ? '请输入合法字符串' : undefined),
@@ -59,18 +56,39 @@ const App: React.FC = () => {
                         ...validators,
                     ]}
                 >
-                    <Input placeholder="Input something..." />
+                    {({ value, handleChange }) => (
+                        <Input
+                            value={value}
+                            onChange={(value) => handleChange(value)}
+                            placeholder="Input something..."
+                        />
+                    )}
                 </FormItem>
                 <FormItem
                     label="Test2"
                     name="test2"
                     defaultValue="DEFAULT"
                     registerCondition={(context) => {
-                        const result = !StringUtil.isFalsyString(context?.formValueStateMap?.get?.('test1')?.data);
+                        const result = !StringUtil.isFalsyString(context?.valueStateMap?.get?.('test1')?.data);
                         return result;
                     }}
                 >
-                    <Input placeholder="Input something..." />
+                    {({ value, handleChange }) => (
+                        <Input
+                            value={value}
+                            onChange={(value) => handleChange(value)}
+                            placeholder="Input something..."
+                        />
+                    )}
+                </FormItem>
+                <FormItem label="Test3" name="test3">
+                    {({ value, handleChange }) => (
+                        <Input
+                            value={value}
+                            onChange={(value) => handleChange(value)}
+                            placeholder="Input something..."
+                        />
+                    )}
                 </FormItem>
             </Form>
             <button
