@@ -929,6 +929,7 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                         },
                     })}
             </div>
+            {extra}
             {(() => {
                 if (
                     Array.isArray(errorMessagesRef.current) &&
@@ -955,7 +956,6 @@ export const FormItem: React.FC<FormItemProps> = (inputProps) => {
                 }
                 return null;
             })()}
-            {extra}
         </div>
     );
 };
