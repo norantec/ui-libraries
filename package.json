@@ -41,6 +41,7 @@
         "@types/color": "^4.2.0",
         "@types/lodash": "^4.17.13",
         "@types/node": "^20.3.1",
+        "@types/object-hash": "^3.0.6",
         "@types/react": "^19.0.1",
         "@types/react-dom": "^18.3.5",
         "@typescript-eslint/eslint-plugin": "^8.0.0",
@@ -70,12 +71,13 @@
         "ajv": "^8.17.1",
         "clsx": "^2.1.1",
         "color": "^4.2.3",
+        "deep-object-diff": "^1.1.9",
         "eventemitter3": "^5.0.1",
         "immutable": "^5.0.3",
         "lodash": "^4.17.21",
         "mustache": "^4.2.0",
+        "object-hash": "^3.0.0",
         "react-icons": "^5.4.0",
-        "react-router-dom": "^7.4.0",
         "type-fest": "^4.30.2",
         "yup": "^1.6.1"
     }
