@@ -8,7 +8,7 @@ function getLeafPaths<T extends object>(inputObject: T, parentPath: Paths<T>[] =
     let paths: Paths<T>[] = [];
     _.forOwn(inputObject, (value, key) => {
         const currentPath = [...parentPath, key] as Paths<T>[];
-        if (_.isObject(value) && !_.isArray(value)) {
+        if (_.isObject(value) && Object.keys(value).length > 0 && !_.isArray(value)) {
             paths = paths.concat(getLeafPaths(value as T, currentPath));
         } else {
             paths.push(currentPath.join('.') as Paths<T>);
@@ -34,17 +34,19 @@ export const usePromise = <T extends GenericFunction>(promiseFn: T) => {
     const update = useUpdate();
     const run = useMemo<UsePromiseReturn<T>['run']>(() => {
         return (async (...params) => {
-            pendingParamsRef.current = getLeafPaths(diff(lastRequestObjectRef.current, params));
+            const finalParams = Array.isArray(params) ? params : [];
+            pendingParamsRef.current = getLeafPaths(diff(lastRequestObjectRef.current, finalParams));
             update();
 
             try {
-                resultRef.current = (await promiseFn(...params)) as unknown as UsePromiseReturn<T>['result'];
+                resultRef.current = (await promiseFn(...finalParams)) as unknown as UsePromiseReturn<T>['result'];
                 errorRef.current = undefined;
             } catch (error) {
                 resultRef.current = undefined;
                 errorRef.current = error as unknown as Error;
             } finally {
                 pendingParamsRef.current = [];
+                lastRequestObjectRef.current = finalParams as PartialDeep<Parameters<T>>;
             }
 
             update();
