@@ -17,40 +17,38 @@ function getLeafPaths<T extends object>(inputObject: T, parentPath: Paths<T>[] =
     return paths;
 }
 
-type GenericFunction = (...params: unknown[]) => Promise<unknown>;
-
-export interface UsePromiseReturn<T extends GenericFunction> {
-    pendingParams: Paths<Parameters<T>>[];
+export interface UsePromiseReturn<P extends unknown[], R, T extends (...params: P) => Promise<R>> {
+    pendingParams: Paths<P>[];
     error?: Error;
-    result?: Extract<ReturnType<T>, Promise<unknown>>;
-    run: (...params: Parameters<T>) => ReturnType<T>;
+    result?: R;
+    run: T;
 }
 
-export const usePromise = <T extends GenericFunction>(promiseFn: T) => {
-    const lastRequestObjectRef = useRef<PartialDeep<Parameters<T>>>(null);
-    const pendingParamsRef = useRef<UsePromiseReturn<T>['pendingParams']>([]);
+export const usePromise = <P extends any[], R, T extends (...params: P) => Promise<R>>(promiseFn: T) => {
+    const lastRequestObjectRef = useRef<PartialDeep<P>>(null);
+    const pendingParamsRef = useRef<UsePromiseReturn<P, R, T>['pendingParams']>([]);
     const errorRef = useRef<Error>(undefined);
-    const resultRef = useRef<UsePromiseReturn<T>['result']>(undefined);
+    const resultRef = useRef<UsePromiseReturn<P, R, T>['result']>(undefined);
     const update = useUpdate();
-    const run = useMemo<UsePromiseReturn<T>['run']>(() => {
+    const run = useMemo<UsePromiseReturn<P, R, T>['run']>(() => {
         return (async (...params) => {
-            const finalParams = Array.isArray(params) ? params : [];
+            const finalParams: P = Array.isArray(params) ? params : ([] as P);
             pendingParamsRef.current = getLeafPaths(diff(lastRequestObjectRef.current, finalParams));
             update();
 
             try {
-                resultRef.current = (await promiseFn(...finalParams)) as unknown as UsePromiseReturn<T>['result'];
+                resultRef.current = await promiseFn(...finalParams);
                 errorRef.current = undefined;
             } catch (error) {
                 resultRef.current = undefined;
                 errorRef.current = error as unknown as Error;
             } finally {
                 pendingParamsRef.current = [];
-                lastRequestObjectRef.current = finalParams as PartialDeep<Parameters<T>>;
+                lastRequestObjectRef.current = finalParams as PartialDeep<P>;
             }
 
             update();
-        }) as UsePromiseReturn<T>['run'];
+        }) as UsePromiseReturn<P, R, T>['run'];
     }, [promiseFn, lastRequestObjectRef.current]);
 
     return {
