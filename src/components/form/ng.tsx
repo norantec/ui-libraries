@@ -23,7 +23,6 @@ const getDefinedPropertyValue = (instance: FormInstance, key: string | symbol) =
 
 interface FormConfig {
     registeredFields: Set<string>;
-    value: FormValue;
 }
 
 const eventEmitter = new EventEmitter();
@@ -37,19 +36,39 @@ const getRegisteredFieldNames = (id: string, inputNames?: string[]) => {
         : Array.from(formItemsMap.get(id)?.registeredFields ?? []);
 };
 
-const getFormValue = (id: string): FormValue => {
-    if (StringUtil.isFalsyString(id)) return null;
-    const registeredFields = getRegisteredFieldNames(id);
-    return Object.fromEntries(
-        Object.entries(formItemsMap.get(id)?.value ?? {}).filter(([key]) => {
-            return registeredFields.includes(key);
-        }),
-    );
+const getFormValue = async (id: string): Promise<FormValue> => {
+    return await new Promise((resolve) => {
+        const registeredFieldNames = getRegisteredFieldNames(id);
+        const requestId = UUIDUtil.generateV4();
+        const resultMap = new Map<string, any>();
+        const handleGetItemValueResponse = (
+            currentId: string,
+            eventMessage: EventMessage<EventName.GET_ITEM_VALUE_RESPONSE>,
+        ) => {
+            if (
+                id !== currentId ||
+                eventMessage?.data?.[0] !== requestId ||
+                StringUtil.isFalsyString(eventMessage?.data?.[1]) ||
+                !registeredFieldNames.includes(eventMessage?.data?.[1])
+            ) {
+                return;
+            }
+            resultMap.set(eventMessage.data[1], eventMessage.data[2]);
+            if (resultMap.size === registeredFieldNames.length) {
+                eventEmitter.removeListener(EventName.GET_ITEM_VALUE_RESPONSE, handleGetItemValueResponse);
+                resolve(Object.fromEntries(resultMap.entries()));
+            }
+        };
+        eventEmitter.addListener(EventName.GET_ITEM_VALUE_RESPONSE, handleGetItemValueResponse);
+        eventEmitter.emit(EventName.GET_ITEMS_VALUE, id, new EventMessage(EventName.GET_ITEMS_VALUE, requestId));
+    });
 };
 
 enum EventName {
     CLEAR_ITEMS_VALUE = 'CLEAR_ITEMS_VALUE',
     FORM_VALUE_CHANGE = 'FORM_VALUE_CHANGE',
+    GET_ITEM_VALUE_RESPONSE = 'GET_ITEM_VALUE_RESPONSE',
+    GET_ITEMS_VALUE = 'GET_ITEMS_VALUE',
     ITEMS_VALUE_CHANGE = 'ITEMS_VALUE_CHANGE',
     REGISTER_ITEM = 'REGISTER_ITEM',
     RESET_ITEMS_VALUE = 'RESET_ITEMS_VALUE',
@@ -89,10 +108,11 @@ interface EventMessageDataMap {
     [EventName.SET_ITEMS_VALUE]: FormValue;
     [EventName.UNREGISTER_ITEM]: string;
     [EventName.ITEMS_VALUE_CHANGE]: FormValue;
-    // [EventName.SET_ITEM_VALUE]: [string, any];
     [EventName.VALIDATE_ITEMS]: [string, string[]];
-    // requestId, fieldName, errorMessage[];
     [EventName.VALIDATE_ITEM_RESULT]: [string, string, string[]];
+    [EventName.GET_ITEMS_VALUE]: string;
+    // requestId, fieldName, value
+    [EventName.GET_ITEM_VALUE_RESPONSE]: [string, string, any];
 }
 
 class EventMessage<T extends EventName> {
@@ -148,6 +168,7 @@ class FormInstance {
 
     public async validate(inputNames?: string[]) {
         const names = getRegisteredFieldNames(this.id, inputNames);
+        const value = await getFormValue(this.id);
         return await new Promise<FormValidateResult>((resolve) => {
             const requestId = UUIDUtil.generateV4();
             const errorMessageMap = new Map<string, string[]>();
@@ -179,11 +200,7 @@ class FormInstance {
                     );
                     resolve({
                         errors: Object.keys(errors).length === 0 ? null : errors,
-                        value: Object.fromEntries(
-                            Object.entries(formItemsMap.get(this.id)?.value ?? {}).filter(([key]) => {
-                                return formItemsMap.get(this.id)?.registeredFields?.has?.(key);
-                            }),
-                        ),
+                        value,
                     });
                 }
             };
@@ -281,14 +298,16 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
     const innerRef = useRef<HTMLFormElement>(null);
     const update = useUpdate();
     const handleChange = React.useCallback(
-        (...parameters: Parameters<FormProps['onChange']>) => {
-            onChange?.(...parameters);
+        async (changedFields?: string[]) => {
+            if (StringUtil.isFalsyString(idRef.current)) return;
+            const currentFormValue = await getFormValue(idRef.current);
+            onChange?.(currentFormValue, changedFields);
             if (!StringUtil.isFalsyString(idRef.current)) {
                 setTimeout(() => {
                     eventEmitter.emit(
                         EventName.FORM_VALUE_CHANGE,
                         idRef.current,
-                        new EventMessage(EventName.FORM_VALUE_CHANGE, [parameters?.[0], parameters?.[1]]),
+                        new EventMessage(EventName.FORM_VALUE_CHANGE, [currentFormValue, changedFields]),
                     );
                 }, 0);
             }
@@ -304,7 +323,6 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
             if (StringUtil.isFalsyString(currentFormId)) return;
             idRef.current = currentFormId;
             formItemsMap.set(currentFormId, {
-                value: {},
                 registeredFields: new Set(),
             });
             update();
@@ -329,39 +347,30 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
                 return;
             }
             formItemsMap.get(id)?.registeredFields?.add?.(eventMessage.data[0]);
-            handleChange(getFormValue(id), [eventMessage.data[0]]);
+            handleChange([eventMessage.data[0]]);
         };
 
         const handleUnregisterItem = (id: string, eventMessage: EventMessage<EventName.UNREGISTER_ITEM>) => {
             if (id !== idRef.current || StringUtil.isFalsyString(eventMessage?.data)) return;
             formItemsMap.get(id)?.registeredFields?.delete?.(eventMessage.data);
-            handleChange(getFormValue(id), [eventMessage.data]);
+            handleChange([eventMessage.data]);
         };
 
-        const handleItemsValueChange = (id: string, eventMessage: EventMessage<EventName.ITEMS_VALUE_CHANGE>) => {
+        const handleItemsValueChange = async (id: string, eventMessage: EventMessage<EventName.ITEMS_VALUE_CHANGE>) => {
             if (id !== idRef.current) return;
 
             const changedFields: string[] = [];
+            const formValue = await getFormValue(id);
 
             Object.entries(eventMessage?.data ?? {}).forEach(([key, value]) => {
-                if (
-                    !formItemsMap.get(id)?.registeredFields?.has?.(key) ||
-                    formItemsMap.get(id)?.value?.[key] === value
-                ) {
+                if (!formItemsMap.get(id)?.registeredFields?.has?.(key) || formValue?.[key] === value) {
                     return;
                 }
                 changedFields.push(key);
-                formItemsMap.set(id, {
-                    ...formItemsMap.get(id),
-                    value: {
-                        ...formItemsMap.get(id)?.value,
-                        [key]: value,
-                    },
-                });
             });
 
             if (changedFields.length > 0) {
-                handleChange(getFormValue(id), changedFields);
+                handleChange(changedFields);
             }
         };
 
@@ -677,6 +686,21 @@ Form.Item = function (inputProps: FormItemProps) {
             eventEmitter.removeListener(EventName.VALIDATE_ITEMS, handleValidateItems);
         };
     }, [id, name, required, normalizedValidators, errorMessages, value, formValueRef.current]);
+
+    useEffect(() => {
+        const handleGetItemsValue = (currentId: string, eventMessage: EventMessage<EventName.GET_ITEMS_VALUE>) => {
+            if (id !== currentId || StringUtil.isFalsyString(eventMessage?.data)) return;
+            eventEmitter.emit(
+                EventName.GET_ITEM_VALUE_RESPONSE,
+                id,
+                new EventMessage(EventName.GET_ITEM_VALUE_RESPONSE, [eventMessage.data, name, value]),
+            );
+        };
+        eventEmitter.addListener(EventName.GET_ITEMS_VALUE, handleGetItemsValue);
+        return () => {
+            eventEmitter.removeListener(EventName.GET_ITEMS_VALUE, handleGetItemsValue);
+        };
+    }, [value, id, name]);
 
     useEffect(() => {
         if (StringUtil.isFalsyString(name)) return;
