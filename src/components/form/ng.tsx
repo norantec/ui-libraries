@@ -34,13 +34,17 @@ enum EventName {
     SET_ITEM_VALUE = 'SET_ITEM_VALUE',
     SET_ITEMS_VALUE = 'SET_ITEMS_VALUE',
     UNREGISTER_ITEM = 'UNREGISTER_ITEM',
-    VALIDATE_ITEM = 'VALIDATE_ITEM',
     VALIDATE_ITEM_RESULT = 'VALIDATE_ITEM_RESULT',
     VALIDATE_ITEMS = 'VALIDATE_ITEMS',
 }
 
 export interface FormValue {
     [name: string]: any;
+}
+
+export interface FormValidateResult {
+    errors?: Record<string, string[]> | null;
+    value?: FormValue;
 }
 
 export interface FormItemContext {
@@ -65,9 +69,9 @@ interface EventMessageDataMap {
     [EventName.UNREGISTER_ITEM]: string;
     [EventName.ITEMS_VALUE_CHANGE]: FormValue;
     [EventName.SET_ITEM_VALUE]: [string, any];
-    [EventName.VALIDATE_ITEM]: string;
-    [EventName.VALIDATE_ITEMS]: string[];
-    [EventName.VALIDATE_ITEM_RESULT]: [string, string[]];
+    [EventName.VALIDATE_ITEMS]: [string, string[]];
+    // requestId, fieldName, errorMessage[];
+    [EventName.VALIDATE_ITEM_RESULT]: [string, string, string[]];
 }
 
 class EventMessage<T extends EventName> {
@@ -127,11 +131,53 @@ class FormInstance {
         return { ...this.values }[name];
     }
 
-    // TODO:
     public async validate(inputNames?: string) {
         const names = Array.isArray(inputNames)
             ? inputNames.filter((inputName) => formItemsMap.get(this.id)?.has?.(inputName))
             : Array.from(formItemsMap.get(this.id)?.keys?.());
+        return await new Promise<FormValidateResult>((resolve) => {
+            const requestId = UUIDUtil.generateV4();
+            const errorMessageMap = new Map<string, string[]>();
+            const handleResult = (id: string, eventMessage: EventMessage<EventName.VALIDATE_ITEM_RESULT>) => {
+                if (
+                    id !== this.id ||
+                    eventMessage?.data?.[0] !== requestId ||
+                    !names.includes(eventMessage?.data?.[1])
+                ) {
+                    return;
+                }
+
+                let errorMessages = Array.isArray(eventMessage.data?.[2])
+                    ? eventMessage.data[2].filter((message) => !StringUtil.isFalsyString(message))
+                    : null;
+
+                if (Array.isArray(errorMessages) && errorMessages.length === 0) {
+                    errorMessages = null;
+                }
+
+                errorMessageMap.set(eventMessage.data[1], errorMessages);
+
+                if (Array.from(errorMessageMap.keys()).length === names.length) {
+                    eventEmitter.removeListener(EventName.VALIDATE_ITEM_RESULT, handleResult);
+                    const errors = Object.fromEntries(
+                        Array.from(errorMessageMap.entries()).filter(([, value]) => {
+                            return Array.isArray(value) && value.length > 0;
+                        }),
+                    );
+                    resolve({
+                        errors: Object.keys(errors).length === 0 ? null : errors,
+                        value: Object.fromEntries(formItemsMap.get(id).entries()),
+                    });
+                }
+            };
+
+            eventEmitter.addListener(EventName.VALIDATE_ITEM_RESULT, handleResult);
+            eventEmitter.emit(
+                EventName.VALIDATE_ITEMS,
+                this.id,
+                new EventMessage(EventName.VALIDATE_ITEMS, [requestId, names]),
+            );
+        });
     }
 }
 
@@ -534,6 +580,46 @@ Form.Item = function (inputProps: FormItemProps) {
             eventEmitter.removeListener(EventName.SET_ITEM_VALUE, handleSetItemValue);
         };
     }, [id, name, registeredRef.current]);
+
+    useEffect(() => {
+        const handleValidateItems = (currentId: string, eventMessage: EventMessage<EventName.VALIDATE_ITEMS>) => {
+            if (
+                currentId !== id ||
+                StringUtil.isFalsyString(eventMessage?.data?.[0]) ||
+                !eventMessage?.data?.[1]?.includes?.(name)
+            ) {
+                return;
+            }
+
+            const submitValidators = normalizedValidators.filter(
+                (validator) => validator?.validateOnValidation !== false,
+            );
+
+            Promise.all(
+                submitValidators.map((validator) => Promise.resolve(validator.validate(value, formValueRef.current))),
+            )
+                .then((resultList) => {
+                    return resultList.filter((result) => !StringUtil.isFalsyString(result));
+                })
+                .then((result) => {
+                    eventEmitter.emit(
+                        EventName.VALIDATE_ITEM_RESULT,
+                        id,
+                        new EventMessage(EventName.VALIDATE_ITEM_RESULT, [eventMessage.data[0], name, result]),
+                    );
+                    if (!_.isEqual(errorMessagesRef.current, result)) {
+                        errorMessagesRef.current = result;
+                        update();
+                    }
+                });
+        };
+
+        eventEmitter.addListener(EventName.VALIDATE_ITEMS, handleValidateItems);
+
+        return () => {
+            eventEmitter.removeListener(EventName.VALIDATE_ITEMS, handleValidateItems);
+        };
+    }, [id, name, required, normalizedValidators, value, formValueRef.current]);
 
     useEffect(() => {
         if (StringUtil.isFalsyString(name)) return;
