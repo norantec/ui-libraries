@@ -234,6 +234,8 @@ export interface FormProps
     extends FormItemBaseProps,
         Omit<React.HTMLAttributes<HTMLFormElement>, 'value' | 'onChange' | 'children' | 'defaultValue'> {
     form: FormInstance;
+    action?: string;
+    method?: 'get' | 'post';
     children?: JSX.Element | JSX.Element[];
     disabled?: boolean;
     readOnly?: boolean;
@@ -277,10 +279,13 @@ export { FormProvider };
 
 const IDContext = createContext<string>(null);
 
-function Form(inputProps: FormProps) {
-    const { sx, form, children, onChange, ...props } = useFormComponentConfig(inputProps);
+const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTMLFormElement>> & {
+    Item: React.FC<FormItemProps>;
+} = React.forwardRef<HTMLFormElement, FormProps>(function (inputProps, outerRef) {
+    const { sx, form, children, action, method, onChange, ...props } = useFormComponentConfig(inputProps);
     const classNames = useFormClassNames(sx);
     const idRef = useRef<string>(getDefinedPropertyValue(form, 'id'));
+    const innerRef = useRef<HTMLFormElement>(null);
     const update = useUpdate();
     const handleChange = React.useCallback(
         (...parameters: Parameters<FormProps['onChange']>) => {
@@ -295,6 +300,8 @@ function Form(inputProps: FormProps) {
         },
         [onChange, idRef.current],
     );
+
+    React.useImperativeHandle(outerRef, () => innerRef.current);
 
     usePreviousValueEffect(
         () => {
@@ -407,11 +414,19 @@ function Form(inputProps: FormProps) {
     if (StringUtil.isFalsyString(idRef.current) || !children) return <></>;
 
     return (
-        <form {...props} className={cx(classNames?.wrapper, props?.className)}>
+        <form
+            {...props}
+            action={action}
+            method={method}
+            ref={innerRef}
+            className={cx(classNames?.wrapper, props?.className)}
+        >
             <IDContext.Provider value={idRef.current}>{children}</IDContext.Provider>
         </form>
     );
-}
+}) as React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTMLFormElement>> & {
+    Item: React.FC<FormItemProps>;
+};
 
 const {
     Provider: FormItemProvider,
@@ -734,6 +749,7 @@ Form.Item = function (inputProps: FormItemProps) {
                 {children &&
                     React.cloneElement(children, {
                         value,
+                        name,
                         onChange: (value: any, ...others: any[]) => {
                             const outgoingValue = (() => {
                                 let result: any;
