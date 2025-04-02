@@ -21,9 +21,29 @@ const getDefinedPropertyValue = (instance: FormInstance, key: string | symbol) =
     }
 };
 
+interface FormConfig {
+    registeredFields: Set<string>;
+    value: FormValue;
+}
+
 const eventEmitter = new EventEmitter();
 // <formId, <fieldName, value>
-const formItemsMap = new Map<string, Map<string, any>>();
+const formItemsMap = new Map<string, FormConfig>();
+
+const getRegisteredFieldNames = (id: string) => {
+    if (StringUtil.isFalsyString(id)) return [];
+    return Array.from(formItemsMap.get(id)?.registeredFields ?? []);
+};
+
+const getFormValue = (id: string): FormValue => {
+    if (StringUtil.isFalsyString(id)) return null;
+    const registeredFields = getRegisteredFieldNames(id);
+    return Object.fromEntries(
+        Object.entries(formItemsMap.get(id)?.value ?? {}).filter(([key]) => {
+            return registeredFields.includes(key);
+        }),
+    );
+};
 
 enum EventName {
     CLEAR_ITEM_VALUE = 'CLEAR_ITEM_VALUE',
@@ -133,8 +153,8 @@ class FormInstance {
 
     public async validate(inputNames?: string) {
         const names = Array.isArray(inputNames)
-            ? inputNames.filter((inputName) => formItemsMap.get(this.id)?.has?.(inputName))
-            : Array.from(formItemsMap.get(this.id)?.keys?.());
+            ? inputNames.filter((inputName) => formItemsMap.get(this.id)?.registeredFields?.has?.(inputName))
+            : getRegisteredFieldNames(this.id);
         return await new Promise<FormValidateResult>((resolve) => {
             const requestId = UUIDUtil.generateV4();
             const errorMessageMap = new Map<string, string[]>();
@@ -166,7 +186,11 @@ class FormInstance {
                     );
                     resolve({
                         errors: Object.keys(errors).length === 0 ? null : errors,
-                        value: Object.fromEntries(formItemsMap.get(id).entries()),
+                        value: Object.fromEntries(
+                            Object.entries(formItemsMap.get(this.id)?.value ?? {}).filter(([key]) => {
+                                return formItemsMap.get(this.id)?.registeredFields?.has?.(key);
+                            }),
+                        ),
                     });
                 }
             };
@@ -277,7 +301,10 @@ function Form(inputProps: FormProps) {
             const currentFormId = getDefinedPropertyValue(form, 'id');
             if (StringUtil.isFalsyString(currentFormId)) return;
             idRef.current = currentFormId;
-            formItemsMap.set(currentFormId, new Map());
+            formItemsMap.set(currentFormId, {
+                value: {},
+                registeredFields: new Set(),
+            });
             update();
         },
         [form],
@@ -295,18 +322,25 @@ function Form(inputProps: FormProps) {
             if (
                 id !== idRef.current ||
                 StringUtil.isFalsyString(eventMessage?.data?.[0]) ||
-                formItemsMap.get(id).has(eventMessage.data[0])
+                formItemsMap.get(id)?.registeredFields?.has?.(eventMessage.data[0])
             ) {
                 return;
             }
-            formItemsMap.get(id).set(eventMessage.data[0], eventMessage.data[1]);
-            handleChange(Object.fromEntries(formItemsMap.get(id).entries()), [eventMessage.data[0]]);
+            formItemsMap.set(id, {
+                ...formItemsMap.get(id),
+                value: {
+                    ...formItemsMap.get(id)?.value,
+                    [eventMessage.data[0]]: eventMessage.data[1],
+                },
+            });
+            formItemsMap.get(id)?.registeredFields?.add?.(eventMessage.data[0]);
+            handleChange(getFormValue(id), [eventMessage.data[0]]);
         };
 
         const handleUnregisterItem = (id: string, eventMessage: EventMessage<EventName.UNREGISTER_ITEM>) => {
             if (id !== idRef.current || StringUtil.isFalsyString(eventMessage?.data)) return;
-            formItemsMap.get(id).delete(eventMessage.data);
-            handleChange(Object.fromEntries(formItemsMap.get(id).entries()), [eventMessage.data]);
+            formItemsMap.get(id)?.registeredFields?.delete?.(eventMessage.data);
+            handleChange(getFormValue(id), [eventMessage.data]);
         };
 
         const handleSetItemsValue = (id: string, eventMessage: EventMessage<EventName.SET_ITEMS_VALUE>) => {
@@ -315,9 +349,14 @@ function Form(inputProps: FormProps) {
             const changedFields: string[] = [];
 
             Object.entries(eventMessage?.data ?? {}).forEach(([key, value]) => {
-                if (!formItemsMap.get(id).has(key)) return;
                 changedFields.push(key);
-                formItemsMap.get(id).set(key, value);
+                formItemsMap.set(id, {
+                    ...formItemsMap.get(id),
+                    value: {
+                        ...formItemsMap.get(id)?.value,
+                        [key]: value,
+                    },
+                });
                 eventEmitter.emit(
                     EventName.SET_ITEM_VALUE,
                     id,
@@ -326,7 +365,7 @@ function Form(inputProps: FormProps) {
             });
 
             if (changedFields.length > 0) {
-                handleChange(Object.fromEntries(formItemsMap.get(id).entries()), changedFields);
+                handleChange(getFormValue(id), changedFields);
             }
         };
 
@@ -336,13 +375,19 @@ function Form(inputProps: FormProps) {
             const changedFields: string[] = [];
 
             Object.entries(eventMessage?.data ?? {}).forEach(([key, value]) => {
-                if (!formItemsMap.get(id).has(key)) return;
+                if (!formItemsMap.get(id)?.registeredFields?.has?.(key)) return;
                 changedFields.push(key);
-                formItemsMap.get(id).set(key, value);
+                formItemsMap.set(id, {
+                    ...formItemsMap.get(id),
+                    value: {
+                        ...formItemsMap.get(id)?.value,
+                        [key]: value,
+                    },
+                });
             });
 
             if (changedFields.length > 0) {
-                handleChange(Object.fromEntries(formItemsMap.get(id).entries()), changedFields);
+                handleChange(getFormValue(id), changedFields);
             }
         };
 
@@ -359,7 +404,7 @@ function Form(inputProps: FormProps) {
         };
     }, [idRef.current, handleChange]);
 
-    if (StringUtil.isFalsyString(idRef.current)) return null;
+    if (StringUtil.isFalsyString(idRef.current) || !children) return <></>;
 
     return (
         <form {...props} className={cx(classNames?.wrapper, props?.className)}>
@@ -520,16 +565,16 @@ Form.Item = function (inputProps: FormItemProps) {
     const id = React.useContext(IDContext);
     const classNames = useFormItemClassNames(sx);
     const formValueRef = useRef<FormValue>({});
-    const errorMessagesRef = useRef<string[]>([]);
+    const [errorMessages, setErrorMessages] = React.useState<string[]>([]);
     const [value, setValue] = React.useState(defaultValue);
     const context = React.useMemo<FormItemContext>(() => {
         return {
             value,
             defaultValue,
             values: formValueRef.current,
-            errorMessages: errorMessagesRef.current,
+            errorMessages,
         };
-    }, [defaultValue, value, formValueRef.current]);
+    }, [defaultValue, value, errorMessages, formValueRef.current]);
     const registeredRef = useRef(false);
     const hiddenRef = useRef(false);
     const update = useUpdate();
@@ -607,9 +652,8 @@ Form.Item = function (inputProps: FormItemProps) {
                         id,
                         new EventMessage(EventName.VALIDATE_ITEM_RESULT, [eventMessage.data[0], name, result]),
                     );
-                    if (!_.isEqual(errorMessagesRef.current, result)) {
-                        errorMessagesRef.current = result;
-                        update();
+                    if (!_.isEqual(errorMessages, result)) {
+                        setErrorMessages(result);
                     }
                 });
         };
@@ -619,7 +663,7 @@ Form.Item = function (inputProps: FormItemProps) {
         return () => {
             eventEmitter.removeListener(EventName.VALIDATE_ITEMS, handleValidateItems);
         };
-    }, [id, name, required, normalizedValidators, value, formValueRef.current]);
+    }, [id, name, required, normalizedValidators, errorMessages, value, formValueRef.current]);
 
     useEffect(() => {
         if (StringUtil.isFalsyString(name)) return;
@@ -653,7 +697,7 @@ Form.Item = function (inputProps: FormItemProps) {
         }
     }, [hiddenRef.current, registeredRef.current, context, registerCondition, hideCondition, name, id]);
 
-    if (!registeredRef.current) return null;
+    if (!registeredRef.current || !children) return <></>;
 
     return (
         <div
@@ -723,27 +767,22 @@ Form.Item = function (inputProps: FormItemProps) {
                                     return resultList.filter((result) => !StringUtil.isFalsyString(result));
                                 })
                                 .then((result) => {
-                                    if (!_.isEqual(errorMessagesRef.current, result)) {
-                                        errorMessagesRef.current = result;
-                                        update();
+                                    if (!_.isEqual(errorMessages, result)) {
+                                        setErrorMessages(result);
                                     }
                                 });
                         },
                     })}
             </div>
-            {typeof extra === 'function' ? extra(context) : extra}
+            {typeof extra !== 'undefined' && (typeof extra === 'function' ? extra(context) : extra)}
             {(() => {
-                if (
-                    Array.isArray(context?.errorMessages) &&
-                    context?.errorMessages?.length > 0 &&
-                    errorWrapperProps !== false
-                ) {
+                if (Array.isArray(errorMessages) && errorMessages?.length > 0 && errorWrapperProps !== false) {
                     return (
                         <div
                             {...errorWrapperProps}
                             className={cx(classNames?.errorWrapper, errorWrapperProps?.className)}
                         >
-                            {context?.errorMessages?.map((errorMessage, index) => (
+                            {errorMessages?.map((errorMessage, index) => (
                                 <div
                                     key={index}
                                     {...errorMessageProps}
@@ -756,7 +795,7 @@ Form.Item = function (inputProps: FormItemProps) {
                         </div>
                     );
                 }
-                return null;
+                return <></>;
             })()}
         </div>
     );
