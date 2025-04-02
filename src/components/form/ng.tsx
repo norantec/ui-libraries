@@ -359,7 +359,7 @@ function Form(inputProps: FormProps) {
         };
     }, [idRef.current, handleChange]);
 
-    if (StringUtil.isFalsyString(idRef.current)) return;
+    if (StringUtil.isFalsyString(idRef.current)) return null;
 
     return (
         <form {...props} className={cx(classNames?.wrapper, props?.className)}>
