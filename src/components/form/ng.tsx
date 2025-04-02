@@ -30,9 +30,11 @@ const eventEmitter = new EventEmitter();
 // <formId, <fieldName, value>
 const formItemsMap = new Map<string, FormConfig>();
 
-const getRegisteredFieldNames = (id: string) => {
+const getRegisteredFieldNames = (id: string, inputNames?: string[]) => {
     if (StringUtil.isFalsyString(id)) return [];
-    return Array.from(formItemsMap.get(id)?.registeredFields ?? []);
+    return Array.isArray(inputNames)
+        ? inputNames.filter((inputName) => formItemsMap.get(id)?.registeredFields?.has?.(inputName))
+        : Array.from(formItemsMap.get(id)?.registeredFields ?? []);
 };
 
 const getFormValue = (id: string): FormValue => {
@@ -46,12 +48,11 @@ const getFormValue = (id: string): FormValue => {
 };
 
 enum EventName {
-    CLEAR_ITEM_VALUE = 'CLEAR_ITEM_VALUE',
+    CLEAR_ITEMS_VALUE = 'CLEAR_ITEMS_VALUE',
     FORM_VALUE_CHANGE = 'FORM_VALUE_CHANGE',
     ITEMS_VALUE_CHANGE = 'ITEMS_VALUE_CHANGE',
     REGISTER_ITEM = 'REGISTER_ITEM',
-    RESET_ITEM_VALUE = 'RESET_ITEM_VALUE',
-    SET_ITEM_VALUE = 'SET_ITEM_VALUE',
+    RESET_ITEMS_VALUE = 'RESET_ITEMS_VALUE',
     SET_ITEMS_VALUE = 'SET_ITEMS_VALUE',
     UNREGISTER_ITEM = 'UNREGISTER_ITEM',
     VALIDATE_ITEM_RESULT = 'VALIDATE_ITEM_RESULT',
@@ -81,14 +82,14 @@ export type Validator = {
 };
 
 interface EventMessageDataMap {
-    [EventName.CLEAR_ITEM_VALUE]: string[];
+    [EventName.CLEAR_ITEMS_VALUE]: string[];
     [EventName.FORM_VALUE_CHANGE]: [FormValue, string[]];
     [EventName.REGISTER_ITEM]: [string, any];
-    [EventName.RESET_ITEM_VALUE]: string[];
+    [EventName.RESET_ITEMS_VALUE]: string[];
     [EventName.SET_ITEMS_VALUE]: FormValue;
     [EventName.UNREGISTER_ITEM]: string;
     [EventName.ITEMS_VALUE_CHANGE]: FormValue;
-    [EventName.SET_ITEM_VALUE]: [string, any];
+    // [EventName.SET_ITEM_VALUE]: [string, any];
     [EventName.VALIDATE_ITEMS]: [string, string[]];
     // requestId, fieldName, errorMessage[];
     [EventName.VALIDATE_ITEM_RESULT]: [string, string, string[]];
@@ -113,25 +114,19 @@ class FormInstance {
     }
 
     public clearValues(inputNames?: string[]) {
-        eventEmitter.emit(
-            EventName.CLEAR_ITEM_VALUE,
-            this.id,
-            new EventMessage(EventName.CLEAR_ITEM_VALUE, inputNames),
-        );
+        const names = getRegisteredFieldNames(this.id, inputNames);
+        eventEmitter.emit(EventName.CLEAR_ITEMS_VALUE, this.id, new EventMessage(EventName.CLEAR_ITEMS_VALUE, names));
     }
 
     public resetValues(inputNames?: string[]) {
-        eventEmitter.emit(
-            EventName.RESET_ITEM_VALUE,
-            this.id,
-            new EventMessage(EventName.RESET_ITEM_VALUE, inputNames),
-        );
+        const names = getRegisteredFieldNames(this.id, inputNames);
+        eventEmitter.emit(EventName.RESET_ITEMS_VALUE, this.id, new EventMessage(EventName.RESET_ITEMS_VALUE, names));
     }
 
     public setValue(name: string, value: any) {
         if (StringUtil.isFalsyString(name)) return;
         eventEmitter.emit(
-            EventName.RESET_ITEM_VALUE,
+            EventName.SET_ITEMS_VALUE,
             this.id,
             new EventMessage(EventName.SET_ITEMS_VALUE, { [name]: value }),
         );
@@ -151,10 +146,8 @@ class FormInstance {
         return { ...this.values }[name];
     }
 
-    public async validate(inputNames?: string) {
-        const names = Array.isArray(inputNames)
-            ? inputNames.filter((inputName) => formItemsMap.get(this.id)?.registeredFields?.has?.(inputName))
-            : getRegisteredFieldNames(this.id);
+    public async validate(inputNames?: string[]) {
+        const names = getRegisteredFieldNames(this.id, inputNames);
         return await new Promise<FormValidateResult>((resolve) => {
             const requestId = UUIDUtil.generateV4();
             const errorMessageMap = new Map<string, string[]>();
@@ -364,11 +357,6 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
                         [key]: value,
                     },
                 });
-                eventEmitter.emit(
-                    EventName.SET_ITEM_VALUE,
-                    id,
-                    new EventMessage(EventName.SET_ITEM_VALUE, [key, value]),
-                );
             });
 
             if (changedFields.length > 0) {
@@ -623,23 +611,62 @@ Form.Item = function (inputProps: FormItemProps) {
     }, [id]);
 
     useEffect(() => {
-        const handleSetItemValue = (currentId: string, eventMessage: EventMessage<EventName.SET_ITEM_VALUE>) => {
+        const handleSetItemValue = (currentId: string, eventMessage: EventMessage<EventName.SET_ITEMS_VALUE>) => {
             if (
                 id !== currentId ||
                 StringUtil.isFalsyString(name) ||
-                StringUtil.isFalsyString(eventMessage?.data?.[0]) ||
-                !registeredRef.current ||
-                name !== eventMessage.data[0]
+                !Object.keys(eventMessage.data ?? {}).includes(name) ||
+                !registeredRef.current
             ) {
                 return;
             }
-            setValue(eventMessage?.data?.[1]);
+            setValue(eventMessage?.data?.[name]);
         };
-        eventEmitter.addListener(EventName.SET_ITEM_VALUE, handleSetItemValue);
+
+        const handleResetItemValue = (currentId: string, eventMessage: EventMessage<EventName.RESET_ITEMS_VALUE>) => {
+            if (
+                id !== currentId ||
+                StringUtil.isFalsyString(name) ||
+                !(eventMessage.data ?? []).includes(name) ||
+                !registeredRef.current
+            ) {
+                return;
+            }
+            setValue(eventMessage?.data?.[name]);
+            eventEmitter.emit(
+                EventName.ITEMS_VALUE_CHANGE,
+                id,
+                new EventMessage(EventName.ITEMS_VALUE_CHANGE, { [name]: defaultValue }),
+            );
+        };
+
+        const handleClearItemValue = (currentId: string, eventMessage: EventMessage<EventName.CLEAR_ITEMS_VALUE>) => {
+            if (
+                id !== currentId ||
+                StringUtil.isFalsyString(name) ||
+                !(eventMessage.data ?? []).includes(name) ||
+                !registeredRef.current
+            ) {
+                return;
+            }
+            setValue(eventMessage?.data?.[name]);
+            eventEmitter.emit(
+                EventName.ITEMS_VALUE_CHANGE,
+                id,
+                new EventMessage(EventName.ITEMS_VALUE_CHANGE, { [name]: undefined }),
+            );
+        };
+
+        eventEmitter.addListener(EventName.SET_ITEMS_VALUE, handleSetItemValue);
+        eventEmitter.addListener(EventName.RESET_ITEMS_VALUE, handleResetItemValue);
+        eventEmitter.addListener(EventName.CLEAR_ITEMS_VALUE, handleClearItemValue);
+
         return () => {
-            eventEmitter.removeListener(EventName.SET_ITEM_VALUE, handleSetItemValue);
+            eventEmitter.removeListener(EventName.SET_ITEMS_VALUE, handleSetItemValue);
+            eventEmitter.removeListener(EventName.RESET_ITEMS_VALUE, handleResetItemValue);
+            eventEmitter.removeListener(EventName.CLEAR_ITEMS_VALUE, handleClearItemValue);
         };
-    }, [id, name, registeredRef.current]);
+    }, [id, defaultValue, name, registeredRef.current]);
 
     useEffect(() => {
         const handleValidateItems = (currentId: string, eventMessage: EventMessage<EventName.VALIDATE_ITEMS>) => {
