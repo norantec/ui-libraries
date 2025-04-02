@@ -284,11 +284,13 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
         (...parameters: Parameters<FormProps['onChange']>) => {
             onChange?.(...parameters);
             if (!StringUtil.isFalsyString(idRef.current)) {
-                eventEmitter.emit(
-                    EventName.FORM_VALUE_CHANGE,
-                    idRef.current,
-                    new EventMessage(EventName.FORM_VALUE_CHANGE, [parameters?.[0], parameters?.[1]]),
-                );
+                setTimeout(() => {
+                    eventEmitter.emit(
+                        EventName.FORM_VALUE_CHANGE,
+                        idRef.current,
+                        new EventMessage(EventName.FORM_VALUE_CHANGE, [parameters?.[0], parameters?.[1]]),
+                    );
+                }, 0);
             }
         },
         [onChange, idRef.current],
@@ -326,13 +328,6 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
             ) {
                 return;
             }
-            formItemsMap.set(id, {
-                ...formItemsMap.get(id),
-                value: {
-                    ...formItemsMap.get(id)?.value,
-                    [eventMessage.data[0]]: eventMessage.data[1],
-                },
-            });
             formItemsMap.get(id)?.registeredFields?.add?.(eventMessage.data[0]);
             handleChange(getFormValue(id), [eventMessage.data[0]]);
         };
@@ -343,34 +338,18 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
             handleChange(getFormValue(id), [eventMessage.data]);
         };
 
-        const handleSetItemsValue = (id: string, eventMessage: EventMessage<EventName.SET_ITEMS_VALUE>) => {
-            if (id !== idRef.current) return;
-
-            const changedFields: string[] = [];
-
-            Object.entries(eventMessage?.data ?? {}).forEach(([key, value]) => {
-                changedFields.push(key);
-                formItemsMap.set(id, {
-                    ...formItemsMap.get(id),
-                    value: {
-                        ...formItemsMap.get(id)?.value,
-                        [key]: value,
-                    },
-                });
-            });
-
-            if (changedFields.length > 0) {
-                handleChange(getFormValue(id), changedFields);
-            }
-        };
-
         const handleItemsValueChange = (id: string, eventMessage: EventMessage<EventName.ITEMS_VALUE_CHANGE>) => {
             if (id !== idRef.current) return;
 
             const changedFields: string[] = [];
 
             Object.entries(eventMessage?.data ?? {}).forEach(([key, value]) => {
-                if (!formItemsMap.get(id)?.registeredFields?.has?.(key)) return;
+                if (
+                    !formItemsMap.get(id)?.registeredFields?.has?.(key) ||
+                    formItemsMap.get(id)?.value?.[key] === value
+                ) {
+                    return;
+                }
                 changedFields.push(key);
                 formItemsMap.set(id, {
                     ...formItemsMap.get(id),
@@ -388,13 +367,11 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
 
         eventEmitter.addListener(EventName.REGISTER_ITEM, handleRegisterItem);
         eventEmitter.addListener(EventName.UNREGISTER_ITEM, handleUnregisterItem);
-        eventEmitter.addListener(EventName.SET_ITEMS_VALUE, handleSetItemsValue);
         eventEmitter.addListener(EventName.ITEMS_VALUE_CHANGE, handleItemsValueChange);
 
         return () => {
             eventEmitter.removeListener(EventName.REGISTER_ITEM, handleRegisterItem);
             eventEmitter.removeListener(EventName.UNREGISTER_ITEM, handleUnregisterItem);
-            eventEmitter.removeListener(EventName.SET_ITEMS_VALUE, handleSetItemsValue);
             eventEmitter.removeListener(EventName.ITEMS_VALUE_CHANGE, handleItemsValueChange);
         };
     }, [idRef.current, handleChange]);
@@ -569,7 +546,7 @@ Form.Item = function (inputProps: FormItemProps) {
     const classNames = useFormItemClassNames(sx);
     const formValueRef = useRef<FormValue>({});
     const [errorMessages, setErrorMessages] = React.useState<string[]>([]);
-    const [value, setValue] = React.useState(defaultValue);
+    const [value, setValue] = React.useState(undefined);
     const context = React.useMemo<FormItemContext>(() => {
         return {
             value,
@@ -615,21 +592,20 @@ Form.Item = function (inputProps: FormItemProps) {
             if (
                 id !== currentId ||
                 StringUtil.isFalsyString(name) ||
-                !Object.keys(eventMessage.data ?? {}).includes(name) ||
-                !registeredRef.current
+                !Object.keys(eventMessage.data ?? {}).includes(name)
             ) {
                 return;
             }
             setValue(eventMessage?.data?.[name]);
+            eventEmitter.emit(
+                EventName.ITEMS_VALUE_CHANGE,
+                id,
+                new EventMessage(EventName.ITEMS_VALUE_CHANGE, { [name]: eventMessage?.data?.[name] }),
+            );
         };
 
         const handleResetItemValue = (currentId: string, eventMessage: EventMessage<EventName.RESET_ITEMS_VALUE>) => {
-            if (
-                id !== currentId ||
-                StringUtil.isFalsyString(name) ||
-                !(eventMessage.data ?? []).includes(name) ||
-                !registeredRef.current
-            ) {
+            if (id !== currentId || StringUtil.isFalsyString(name) || !(eventMessage.data ?? []).includes(name)) {
                 return;
             }
             setValue(eventMessage?.data?.[name]);
@@ -641,12 +617,7 @@ Form.Item = function (inputProps: FormItemProps) {
         };
 
         const handleClearItemValue = (currentId: string, eventMessage: EventMessage<EventName.CLEAR_ITEMS_VALUE>) => {
-            if (
-                id !== currentId ||
-                StringUtil.isFalsyString(name) ||
-                !(eventMessage.data ?? []).includes(name) ||
-                !registeredRef.current
-            ) {
+            if (id !== currentId || StringUtil.isFalsyString(name) || !(eventMessage.data ?? []).includes(name)) {
                 return;
             }
             setValue(eventMessage?.data?.[name]);
@@ -666,7 +637,7 @@ Form.Item = function (inputProps: FormItemProps) {
             eventEmitter.removeListener(EventName.RESET_ITEMS_VALUE, handleResetItemValue);
             eventEmitter.removeListener(EventName.CLEAR_ITEMS_VALUE, handleClearItemValue);
         };
-    }, [id, defaultValue, name, registeredRef.current]);
+    }, [id, defaultValue, name]);
 
     useEffect(() => {
         const handleValidateItems = (currentId: string, eventMessage: EventMessage<EventName.VALIDATE_ITEMS>) => {
@@ -728,7 +699,16 @@ Form.Item = function (inputProps: FormItemProps) {
                     id,
                     new EventMessage(EventName.REGISTER_ITEM, [name, defaultValue]),
                 );
-                setValue(defaultValue);
+                if (typeof value === 'undefined') {
+                    setValue(defaultValue);
+                }
+                eventEmitter.emit(
+                    EventName.ITEMS_VALUE_CHANGE,
+                    id,
+                    new EventMessage(EventName.ITEMS_VALUE_CHANGE, {
+                        [name]: typeof value === 'undefined' ? defaultValue : value,
+                    }),
+                );
             } else {
                 eventEmitter.emit(EventName.UNREGISTER_ITEM, id, new EventMessage(EventName.UNREGISTER_ITEM, name));
             }
@@ -737,7 +717,7 @@ Form.Item = function (inputProps: FormItemProps) {
         if (updated) {
             update();
         }
-    }, [hiddenRef.current, registeredRef.current, context, registerCondition, hideCondition, name, id]);
+    }, [hiddenRef.current, registeredRef.current, value, context, registerCondition, hideCondition, name, id]);
 
     if (!registeredRef.current || !children) return <></>;
 
