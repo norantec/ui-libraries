@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { Form, FormItem, FormItemProvider, FormProvider, useForm, Validator } from './components/form';
+import { Form, FormItemProvider, FormProvider, useForm, Validator } from './components/form/ng';
 import { ProviderFactory } from './components/provider-factory';
 import { useEffect, useState } from 'react';
 import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
@@ -48,7 +48,7 @@ const App: React.FC = () => {
                     console.log('LENCONDA:4.1', values, changedFields);
                 }}
             >
-                <FormItem
+                <Form.Item
                     label="Test1"
                     name="test1"
                     required="必填项"
@@ -60,18 +60,18 @@ const App: React.FC = () => {
                     ]}
                 >
                     <Input placeholder="Input something..." />
-                </FormItem>
-                <FormItem
+                </Form.Item>
+                <Form.Item
                     label="Test2"
                     name="test2"
                     defaultValue="DEFAULT"
                     registerCondition={(context) => {
-                        const result = !StringUtil.isFalsyString(context?.formValueStateMap?.get?.('test1')?.data);
+                        const result = !StringUtil.isFalsyString(context?.values?.test1);
                         return result;
                     }}
                 >
                     <Input placeholder="Input something..." />
-                </FormItem>
+                </Form.Item>
             </Form>
             <button
                 onClick={() => {
