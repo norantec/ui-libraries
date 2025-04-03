@@ -627,7 +627,7 @@ Form.Item = function (inputProps: FormItemProps) {
             if (id !== currentId || StringUtil.isFalsyString(name) || !(eventMessage.data ?? []).includes(name)) {
                 return;
             }
-            valueRef.current = eventMessage?.data?.[name];
+            valueRef.current = defaultValue;
             update();
         };
 
