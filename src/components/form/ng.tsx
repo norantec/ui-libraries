@@ -21,8 +21,26 @@ const getDefinedPropertyValue = (instance: FormInstance, key: string | symbol) =
     }
 };
 
+const shallowObjectCompare = (object1: object, object2: object): string[] => {
+    if (object1 === object2) return [];
+
+    const object1Keys = Object.keys(_.isObject(object1) ? object1 : {});
+    const object2Keys = Object.keys(_.isObject(object2) ? object2 : {});
+    const xorKeys = _.xor(object1Keys, object2Keys);
+    const intersectedKeys = _.intersection(object1Keys, object2Keys);
+
+    if (xorKeys.length === 0 && intersectedKeys.length === 0) return [];
+
+    return intersectedKeys
+        .filter((intersectedKey) => {
+            return object1[intersectedKey] !== object2[intersectedKey];
+        })
+        .concat(xorKeys);
+};
+
 interface FormConfig {
     registeredFields: Set<string>;
+    previousValue: FormValue;
 }
 
 const eventEmitter = new EventEmitter();
@@ -56,11 +74,17 @@ const getFormValue = async (id: string): Promise<FormValue> => {
             resultMap.set(eventMessage.data[1], eventMessage.data[2]);
             if (resultMap.size === registeredFieldNames.length) {
                 eventEmitter.removeListener(EventName.GET_ITEM_VALUE_RESPONSE, handleGetItemValueResponse);
-                resolve(Object.fromEntries(resultMap.entries()));
+                resolve(
+                    Object.fromEntries(
+                        Array.from(resultMap.entries()).filter(([, value]) => typeof value !== 'undefined'),
+                    ),
+                );
             }
         };
         eventEmitter.addListener(EventName.GET_ITEM_VALUE_RESPONSE, handleGetItemValueResponse);
-        eventEmitter.emit(EventName.GET_ITEMS_VALUE, id, new EventMessage(EventName.GET_ITEMS_VALUE, requestId));
+        setTimeout(() => {
+            eventEmitter.emit(EventName.GET_ITEMS_VALUE, id, new EventMessage(EventName.GET_ITEMS_VALUE, requestId));
+        }, 0);
     });
 };
 
@@ -70,7 +94,6 @@ enum EventName {
     GET_ITEM_VALUE_RESPONSE = 'GET_ITEM_VALUE_RESPONSE',
     GET_ITEMS_VALUE = 'GET_ITEMS_VALUE',
     ITEMS_VALUE_CHANGE = 'ITEMS_VALUE_CHANGE',
-    REGISTER_ITEM = 'REGISTER_ITEM',
     RESET_ITEMS_VALUE = 'RESET_ITEMS_VALUE',
     SET_ITEMS_VALUE = 'SET_ITEMS_VALUE',
     UNREGISTER_ITEM = 'UNREGISTER_ITEM',
@@ -103,11 +126,10 @@ export type Validator = {
 interface EventMessageDataMap {
     [EventName.CLEAR_ITEMS_VALUE]: string[];
     [EventName.FORM_VALUE_CHANGE]: [FormValue, string[]];
-    [EventName.REGISTER_ITEM]: [string, any];
     [EventName.RESET_ITEMS_VALUE]: string[];
     [EventName.SET_ITEMS_VALUE]: FormValue;
     [EventName.UNREGISTER_ITEM]: string;
-    [EventName.ITEMS_VALUE_CHANGE]: FormValue;
+    [EventName.ITEMS_VALUE_CHANGE]: null;
     [EventName.VALIDATE_ITEMS]: [string, string[]];
     [EventName.VALIDATE_ITEM_RESULT]: [string, string, string[]];
     [EventName.GET_ITEMS_VALUE]: string;
@@ -297,23 +319,23 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
     const idRef = useRef<string>(getDefinedPropertyValue(form, 'id'));
     const innerRef = useRef<HTMLFormElement>(null);
     const update = useUpdate();
-    const handleChange = React.useCallback(
-        async (changedFields?: string[]) => {
-            if (StringUtil.isFalsyString(idRef.current)) return;
-            const currentFormValue = await getFormValue(idRef.current);
-            onChange?.(currentFormValue, changedFields);
-            if (!StringUtil.isFalsyString(idRef.current)) {
-                setTimeout(() => {
-                    eventEmitter.emit(
-                        EventName.FORM_VALUE_CHANGE,
-                        idRef.current,
-                        new EventMessage(EventName.FORM_VALUE_CHANGE, [currentFormValue, changedFields]),
-                    );
-                }, 0);
-            }
-        },
-        [onChange, idRef.current],
-    );
+    const handleChange = React.useCallback(async () => {
+        if (StringUtil.isFalsyString(idRef.current)) return;
+        const currentFormValue = await getFormValue(idRef.current);
+        const changedFields = shallowObjectCompare(formItemsMap.get(idRef.current)?.previousValue, currentFormValue);
+        if (changedFields.length === 0) return;
+        formItemsMap.get(idRef.current).previousValue = currentFormValue;
+        onChange?.(currentFormValue, changedFields);
+        if (!StringUtil.isFalsyString(idRef.current)) {
+            setTimeout(() => {
+                eventEmitter.emit(
+                    EventName.FORM_VALUE_CHANGE,
+                    idRef.current,
+                    new EventMessage(EventName.FORM_VALUE_CHANGE, [currentFormValue, changedFields]),
+                );
+            }, 0);
+        }
+    }, [onChange, idRef.current]);
 
     React.useImperativeHandle(outerRef, () => innerRef.current);
 
@@ -324,6 +346,7 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
             idRef.current = currentFormId;
             formItemsMap.set(currentFormId, {
                 registeredFields: new Set(),
+                previousValue: {},
             });
             update();
         },
@@ -338,48 +361,21 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
     useEffect(() => {
         if (StringUtil.isFalsyString(idRef.current)) return;
 
-        const handleRegisterItem = (id: string, eventMessage: EventMessage<EventName.REGISTER_ITEM>) => {
-            if (
-                id !== idRef.current ||
-                StringUtil.isFalsyString(eventMessage?.data?.[0]) ||
-                formItemsMap.get(id)?.registeredFields?.has?.(eventMessage.data[0])
-            ) {
-                return;
-            }
-            formItemsMap.get(id)?.registeredFields?.add?.(eventMessage.data[0]);
-            handleChange([eventMessage.data[0]]);
-        };
-
         const handleUnregisterItem = (id: string, eventMessage: EventMessage<EventName.UNREGISTER_ITEM>) => {
             if (id !== idRef.current || StringUtil.isFalsyString(eventMessage?.data)) return;
             formItemsMap.get(id)?.registeredFields?.delete?.(eventMessage.data);
-            handleChange([eventMessage.data]);
+            // handleChange();
         };
 
-        const handleItemsValueChange = async (id: string, eventMessage: EventMessage<EventName.ITEMS_VALUE_CHANGE>) => {
+        const handleItemsValueChange = async (id: string) => {
             if (id !== idRef.current) return;
-
-            const changedFields: string[] = [];
-            const formValue = await getFormValue(id);
-
-            Object.entries(eventMessage?.data ?? {}).forEach(([key, value]) => {
-                if (!formItemsMap.get(id)?.registeredFields?.has?.(key) || formValue?.[key] === value) {
-                    return;
-                }
-                changedFields.push(key);
-            });
-
-            if (changedFields.length > 0) {
-                handleChange(changedFields);
-            }
+            handleChange();
         };
 
-        eventEmitter.addListener(EventName.REGISTER_ITEM, handleRegisterItem);
         eventEmitter.addListener(EventName.UNREGISTER_ITEM, handleUnregisterItem);
         eventEmitter.addListener(EventName.ITEMS_VALUE_CHANGE, handleItemsValueChange);
 
         return () => {
-            eventEmitter.removeListener(EventName.REGISTER_ITEM, handleRegisterItem);
             eventEmitter.removeListener(EventName.UNREGISTER_ITEM, handleUnregisterItem);
             eventEmitter.removeListener(EventName.ITEMS_VALUE_CHANGE, handleItemsValueChange);
         };
@@ -389,7 +385,7 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
 
     return (
         <form
-            {...props}
+            {..._.omit(props, ['dangerColor'])}
             action={action}
             method={method}
             ref={innerRef}
@@ -555,15 +551,15 @@ Form.Item = function (inputProps: FormItemProps) {
     const classNames = useFormItemClassNames(sx);
     const formValueRef = useRef<FormValue>({});
     const [errorMessages, setErrorMessages] = React.useState<string[]>([]);
-    const [value, setValue] = React.useState(undefined);
+    const valueRef = React.useRef<any>(undefined);
     const context = React.useMemo<FormItemContext>(() => {
         return {
-            value,
+            value: valueRef.current,
             defaultValue,
             values: formValueRef.current,
             errorMessages,
         };
-    }, [defaultValue, value, errorMessages, formValueRef.current]);
+    }, [defaultValue, valueRef.current, errorMessages, formValueRef.current]);
     const registeredRef = useRef(false);
     const hiddenRef = useRef(false);
     const update = useUpdate();
@@ -596,6 +592,24 @@ Form.Item = function (inputProps: FormItemProps) {
         };
     }, [id]);
 
+    usePreviousValueEffect(
+        () => {
+            setTimeout(() => {
+                eventEmitter.emit(
+                    EventName.ITEMS_VALUE_CHANGE,
+                    id,
+                    new EventMessage(EventName.ITEMS_VALUE_CHANGE, null),
+                );
+            }, 0);
+        },
+        [valueRef.current, registeredRef.current, id],
+        (previousValue: [any, boolean]) => {
+            return valueRef.current === previousValue?.[0] && registeredRef.current === previousValue?.[1]
+                ? undefined
+                : ([valueRef.current, registeredRef.current] as [any, boolean]);
+        },
+    );
+
     useEffect(() => {
         const handleSetItemValue = (currentId: string, eventMessage: EventMessage<EventName.SET_ITEMS_VALUE>) => {
             if (
@@ -605,36 +619,24 @@ Form.Item = function (inputProps: FormItemProps) {
             ) {
                 return;
             }
-            setValue(eventMessage?.data?.[name]);
-            eventEmitter.emit(
-                EventName.ITEMS_VALUE_CHANGE,
-                id,
-                new EventMessage(EventName.ITEMS_VALUE_CHANGE, { [name]: eventMessage?.data?.[name] }),
-            );
+            valueRef.current = eventMessage?.data?.[name];
+            update();
         };
 
         const handleResetItemValue = (currentId: string, eventMessage: EventMessage<EventName.RESET_ITEMS_VALUE>) => {
             if (id !== currentId || StringUtil.isFalsyString(name) || !(eventMessage.data ?? []).includes(name)) {
                 return;
             }
-            setValue(eventMessage?.data?.[name]);
-            eventEmitter.emit(
-                EventName.ITEMS_VALUE_CHANGE,
-                id,
-                new EventMessage(EventName.ITEMS_VALUE_CHANGE, { [name]: defaultValue }),
-            );
+            valueRef.current = eventMessage?.data?.[name];
+            update();
         };
 
         const handleClearItemValue = (currentId: string, eventMessage: EventMessage<EventName.CLEAR_ITEMS_VALUE>) => {
             if (id !== currentId || StringUtil.isFalsyString(name) || !(eventMessage.data ?? []).includes(name)) {
                 return;
             }
-            setValue(eventMessage?.data?.[name]);
-            eventEmitter.emit(
-                EventName.ITEMS_VALUE_CHANGE,
-                id,
-                new EventMessage(EventName.ITEMS_VALUE_CHANGE, { [name]: undefined }),
-            );
+            valueRef.current = eventMessage?.data?.[name];
+            update();
         };
 
         eventEmitter.addListener(EventName.SET_ITEMS_VALUE, handleSetItemValue);
@@ -663,7 +665,9 @@ Form.Item = function (inputProps: FormItemProps) {
             );
 
             Promise.all(
-                submitValidators.map((validator) => Promise.resolve(validator.validate(value, formValueRef.current))),
+                submitValidators.map((validator) =>
+                    Promise.resolve(validator.validate(valueRef.current, formValueRef.current)),
+                ),
             )
                 .then((resultList) => {
                     return resultList.filter((result) => !StringUtil.isFalsyString(result));
@@ -685,7 +689,7 @@ Form.Item = function (inputProps: FormItemProps) {
         return () => {
             eventEmitter.removeListener(EventName.VALIDATE_ITEMS, handleValidateItems);
         };
-    }, [id, name, required, normalizedValidators, errorMessages, value, formValueRef.current]);
+    }, [id, name, required, normalizedValidators, errorMessages, valueRef.current, formValueRef.current]);
 
     useEffect(() => {
         const handleGetItemsValue = (currentId: string, eventMessage: EventMessage<EventName.GET_ITEMS_VALUE>) => {
@@ -693,14 +697,14 @@ Form.Item = function (inputProps: FormItemProps) {
             eventEmitter.emit(
                 EventName.GET_ITEM_VALUE_RESPONSE,
                 id,
-                new EventMessage(EventName.GET_ITEM_VALUE_RESPONSE, [eventMessage.data, name, value]),
+                new EventMessage(EventName.GET_ITEM_VALUE_RESPONSE, [eventMessage.data, name, valueRef.current]),
             );
         };
         eventEmitter.addListener(EventName.GET_ITEMS_VALUE, handleGetItemsValue);
         return () => {
             eventEmitter.removeListener(EventName.GET_ITEMS_VALUE, handleGetItemsValue);
         };
-    }, [value, id, name]);
+    }, [valueRef.current, id, name]);
 
     useEffect(() => {
         if (StringUtil.isFalsyString(name)) return;
@@ -718,21 +722,10 @@ Form.Item = function (inputProps: FormItemProps) {
             updated = true;
             registeredRef.current = registered;
             if (registered) {
-                eventEmitter.emit(
-                    EventName.REGISTER_ITEM,
-                    id,
-                    new EventMessage(EventName.REGISTER_ITEM, [name, defaultValue]),
-                );
-                if (typeof value === 'undefined') {
-                    setValue(defaultValue);
+                formItemsMap.get(id).registeredFields.add(name);
+                if (typeof valueRef.current === 'undefined') {
+                    valueRef.current = defaultValue;
                 }
-                eventEmitter.emit(
-                    EventName.ITEMS_VALUE_CHANGE,
-                    id,
-                    new EventMessage(EventName.ITEMS_VALUE_CHANGE, {
-                        [name]: typeof value === 'undefined' ? defaultValue : value,
-                    }),
-                );
             } else {
                 eventEmitter.emit(EventName.UNREGISTER_ITEM, id, new EventMessage(EventName.UNREGISTER_ITEM, name));
             }
@@ -741,7 +734,34 @@ Form.Item = function (inputProps: FormItemProps) {
         if (updated) {
             update();
         }
-    }, [hiddenRef.current, registeredRef.current, value, context, registerCondition, hideCondition, name, id]);
+    }, [
+        hiddenRef.current,
+        registeredRef.current,
+        valueRef.current,
+        context,
+        registerCondition,
+        hideCondition,
+        name,
+        id,
+    ]);
+
+    useEffect(() => {
+        const changeValidators = normalizedValidators.filter((validator) => validator?.validateOnChange !== false);
+
+        Promise.all(
+            changeValidators.map((validator) =>
+                Promise.resolve(validator.validate(valueRef.current, formValueRef.current)),
+            ),
+        )
+            .then((resultList) => {
+                return resultList.filter((result) => !StringUtil.isFalsyString(result));
+            })
+            .then((result) => {
+                if (!_.isEqual(errorMessages, result)) {
+                    setErrorMessages(result);
+                }
+            });
+    }, [valueRef.current]);
 
     if (!registeredRef.current || !children) return <></>;
 
@@ -779,7 +799,7 @@ Form.Item = function (inputProps: FormItemProps) {
             <div className={cx(classNames?.elementWrapper)}>
                 {children &&
                     React.cloneElement(children, {
-                        value,
+                        value: valueRef.current,
                         name,
                         onChange: (value: any, ...others: any[]) => {
                             const outgoingValue = (() => {
@@ -794,30 +814,9 @@ Form.Item = function (inputProps: FormItemProps) {
                                 }
                                 return result;
                             })();
-                            setValue(outgoingValue);
+                            valueRef.current = outgoingValue;
+                            update();
                             children?.props?.onChange?.(value, ...others);
-                            eventEmitter.emit(
-                                EventName.ITEMS_VALUE_CHANGE,
-                                id,
-                                new EventMessage(EventName.ITEMS_VALUE_CHANGE, { [name]: outgoingValue }),
-                            );
-                            const changeValidators = normalizedValidators.filter(
-                                (validator) => validator?.validateOnChange !== false,
-                            );
-
-                            Promise.all(
-                                changeValidators.map((validator) =>
-                                    Promise.resolve(validator.validate(value, formValueRef.current)),
-                                ),
-                            )
-                                .then((resultList) => {
-                                    return resultList.filter((result) => !StringUtil.isFalsyString(result));
-                                })
-                                .then((result) => {
-                                    if (!_.isEqual(errorMessages, result)) {
-                                        setErrorMessages(result);
-                                    }
-                                });
                         },
                     })}
             </div>
