@@ -265,8 +265,8 @@ interface FormItemBaseProps {
 export interface FormProps
     extends FormItemBaseProps,
         Omit<React.HTMLAttributes<HTMLFormElement>, 'value' | 'onChange' | 'children' | 'defaultValue'> {
-    form: FormInstance;
     action?: string;
+    form?: FormInstance;
     method?: 'get' | 'post';
     children?: JSX.Element | JSX.Element[];
     disabled?: boolean;
@@ -274,6 +274,7 @@ export interface FormProps
     sx?: {
         wrapper?: CSSObject;
     };
+    value?: FormValue;
     onChange?: (value: FormValue, changedFields: string[]) => void;
 }
 
@@ -314,9 +315,9 @@ const IDContext = createContext<string>(null);
 const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTMLFormElement>> & {
     Item: React.FC<FormItemProps>;
 } = React.forwardRef<HTMLFormElement, FormProps>(function (inputProps, outerRef) {
-    const { sx, form, children, action, method, onChange, ...props } = useFormComponentConfig(inputProps);
+    const { sx, form, children, action, method, value, onChange, ...props } = useFormComponentConfig(inputProps);
     const classNames = useFormClassNames(sx);
-    const idRef = useRef<string>(getDefinedPropertyValue(form, 'id'));
+    const idRef = useRef<string>(getDefinedPropertyValue(form, 'id') ?? UUIDUtil.generateV4());
     const innerRef = useRef<HTMLFormElement>(null);
     const update = useUpdate();
     const handleChange = React.useCallback(async () => {
@@ -380,6 +381,23 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
             eventEmitter.removeListener(EventName.ITEMS_VALUE_CHANGE, handleItemsValueChange);
         };
     }, [idRef.current, handleChange]);
+
+    useEffect(() => {
+        if (StringUtil.isFalsyString(idRef.current) || typeof value === 'undefined') return;
+        if (value === null) {
+            eventEmitter.emit(
+                EventName.CLEAR_ITEMS_VALUE,
+                idRef.current,
+                new EventMessage(EventName.CLEAR_ITEMS_VALUE, getRegisteredFieldNames(idRef.current)),
+            );
+        } else {
+            eventEmitter.emit(
+                EventName.SET_ITEMS_VALUE,
+                idRef.current,
+                new EventMessage(EventName.SET_ITEMS_VALUE, value),
+            );
+        }
+    }, [value, idRef.current]);
 
     if (StringUtil.isFalsyString(idRef.current) || !children) return <></>;
 
