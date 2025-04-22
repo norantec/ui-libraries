@@ -740,6 +740,12 @@ Form.Item = function (inputProps: FormItemProps) {
             updated = true;
             registeredRef.current = registered;
             if (registered) {
+                if (!formItemsMap.has(id)) {
+                    formItemsMap.set(id, {
+                        registeredFields: new Set(),
+                        previousValue: {},
+                    });
+                }
                 formItemsMap.get(id).registeredFields.add(name);
                 if (typeof valueRef.current === 'undefined') {
                     valueRef.current = defaultValue;
