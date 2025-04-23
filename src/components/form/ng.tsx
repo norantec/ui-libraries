@@ -384,19 +384,21 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
 
     useEffect(() => {
         if (StringUtil.isFalsyString(idRef.current) || typeof value === 'undefined') return;
-        if (value === null) {
-            eventEmitter.emit(
-                EventName.CLEAR_ITEMS_VALUE,
-                idRef.current,
-                new EventMessage(EventName.CLEAR_ITEMS_VALUE, getRegisteredFieldNames(idRef.current)),
-            );
-        } else {
-            eventEmitter.emit(
-                EventName.SET_ITEMS_VALUE,
-                idRef.current,
-                new EventMessage(EventName.SET_ITEMS_VALUE, value),
-            );
-        }
+        setTimeout(() => {
+            if (value === null) {
+                eventEmitter.emit(
+                    EventName.CLEAR_ITEMS_VALUE,
+                    idRef.current,
+                    new EventMessage(EventName.CLEAR_ITEMS_VALUE, getRegisteredFieldNames(idRef.current)),
+                );
+            } else {
+                eventEmitter.emit(
+                    EventName.SET_ITEMS_VALUE,
+                    idRef.current,
+                    new EventMessage(EventName.SET_ITEMS_VALUE, value),
+                );
+            }
+        }, 0);
     }, [value, idRef.current]);
 
     if (StringUtil.isFalsyString(idRef.current) || !children) return <></>;
