@@ -531,7 +531,7 @@ export interface FormItemProps
     extra?: React.ReactNode | ((context: FormItemContext) => React.ReactNode);
     label?: React.ReactNode | ((context: FormItemContext) => React.ReactNode);
     readOnly?: boolean;
-    required?: boolean | string;
+    required?: boolean | string | ((value: any, formValue: FormValue) => string);
     sx?: {
         wrapper?: CSSObject;
         headerWrapper?: CSSObject;
@@ -585,15 +585,16 @@ Form.Item = function (inputProps: FormItemProps) {
         ? validators.filter((validator) => typeof validator?.validate === 'function')
         : [];
 
-    if (required === true || !StringUtil.isFalsyString(required)) {
+    if (required === true || !StringUtil.isFalsyString(required) || typeof required === 'function') {
         normalizedValidators.unshift({
             validateOnChange: true,
             validateOnValidation: true,
-            validate: (value) => {
-                if (typeof value === 'undefined' || (typeof value === 'string' && value.length === 0)) {
+            validate: (value, formValue) => {
+                if (typeof required === 'function') {
+                    return required(value, formValue);
+                } else if (typeof value === 'undefined' || (typeof value === 'string' && value.length === 0)) {
                     return !StringUtil.isFalsyString(required) ? (required as string) : 'It is a required field';
                 }
-                return;
             },
         });
     }
