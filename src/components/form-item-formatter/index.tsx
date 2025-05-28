@@ -23,7 +23,7 @@ export const FormItemFormatter = <I extends any = any, O extends any = any>({
     onChange,
 }: FormItemFormatterProps<I, O>) => {
     if (!React.isValidElement(children)) return <></>;
-    React.cloneElement(children as any, {
+    return React.cloneElement(children as any, {
         value: typeof incoming === 'function' ? incoming(value) : value,
         onChange: (value: O) => {
             if (typeof outgoing === 'function') {
