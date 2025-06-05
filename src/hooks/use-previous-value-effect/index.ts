@@ -1,17 +1,17 @@
-import type { DependencyList, EffectCallback } from 'react';
+import type { DependencyList } from 'react';
 import { useEffect, useRef } from 'react';
 
 export type UpdateValueFn<T> = (value: T) => void;
 
 export const usePreviousValueEffect = <T>(
-    effect: EffectCallback,
+    effect: (previousValue?: T) => void | (() => void),
     dependencies: DependencyList,
     comparator?: (previousValue: T) => T | undefined,
 ) => {
     const previousValue = useRef<T>(undefined!);
     useEffect(() => {
         if (typeof comparator !== 'function') {
-            return effect();
+            return effect(previousValue.current);
         } else {
             const comparatorResult = comparator(previousValue.current);
 
@@ -21,7 +21,7 @@ export const usePreviousValueEffect = <T>(
 
             previousValue.current = comparatorResult;
 
-            return effect();
+            return effect(previousValue.current);
         }
     }, dependencies ?? []);
 };
