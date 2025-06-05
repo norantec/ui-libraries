@@ -13,15 +13,11 @@ export const usePreviousValueEffect = <T>(
         if (typeof comparator !== 'function') {
             return effect(previousValue.current);
         } else {
-            const comparatorResult = comparator(previousValue.current);
-
-            if (comparatorResult === undefined) {
-                return;
-            }
-
+            const previousValueSnapshot = previousValue.current;
+            const comparatorResult = comparator(previousValueSnapshot);
+            if (comparatorResult === undefined) return;
             previousValue.current = comparatorResult;
-
-            return effect(previousValue.current);
+            return effect(previousValueSnapshot);
         }
     }, dependencies ?? []);
 };
