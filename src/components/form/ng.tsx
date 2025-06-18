@@ -794,6 +794,7 @@ Form.Item = function (inputProps: FormItemProps) {
 
     return (
         <div
+            data-form-item-name={name}
             {..._.omit(props, ['required', 'dangerColor', 'minWidth', 'maxWidth'])}
             className={cx(classNames?.wrapper, props?.className)}
             style={{
