@@ -547,6 +547,7 @@ export interface FormItemProps
     };
     validators?: Validator[];
     hideCondition?: (context: FormItemContext) => boolean;
+    onChange?: (oldValue: any, newValue: any) => void;
     registerCondition?: (context: FormItemContext) => boolean;
 }
 
@@ -565,6 +566,7 @@ Form.Item = function (inputProps: FormItemProps) {
         required,
         registerCondition,
         hideCondition,
+        onChange,
         ...props
     } = useFormItemComponentConfig(inputProps);
     const id = React.useContext(IDContext);
@@ -640,6 +642,7 @@ Form.Item = function (inputProps: FormItemProps) {
             ) {
                 return;
             }
+            onChange?.(valueRef.current, eventMessage?.data?.[name]);
             valueRef.current = eventMessage?.data?.[name];
             update();
         };
@@ -648,6 +651,7 @@ Form.Item = function (inputProps: FormItemProps) {
             if (id !== currentId || StringUtil.isFalsyString(name) || !(eventMessage.data ?? []).includes(name)) {
                 return;
             }
+            onChange?.(valueRef.current, defaultValue);
             valueRef.current = defaultValue;
             update();
         };
@@ -656,7 +660,8 @@ Form.Item = function (inputProps: FormItemProps) {
             if (id !== currentId || StringUtil.isFalsyString(name) || !(eventMessage.data ?? []).includes(name)) {
                 return;
             }
-            valueRef.current = eventMessage?.data?.[name];
+            onChange?.(valueRef.current, undefined);
+            valueRef.current = undefined;
             update();
         };
 
@@ -669,7 +674,7 @@ Form.Item = function (inputProps: FormItemProps) {
             eventEmitter.removeListener(EventName.RESET_ITEMS_VALUE, handleResetItemValue);
             eventEmitter.removeListener(EventName.CLEAR_ITEMS_VALUE, handleClearItemValue);
         };
-    }, [id, defaultValue, name]);
+    }, [id, defaultValue, name, onChange]);
 
     useEffect(() => {
         const handleValidateItems = (currentId: string, eventMessage: EventMessage<EventName.VALIDATE_ITEMS>) => {
@@ -842,6 +847,7 @@ Form.Item = function (inputProps: FormItemProps) {
                                 }
                                 return result;
                             })();
+                            onChange?.(valueRef.current, outgoingValue);
                             valueRef.current = outgoingValue;
                             update();
                             children?.props?.onChange?.(value, ...others);
