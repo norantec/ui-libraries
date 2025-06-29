@@ -20,7 +20,7 @@ function getLeafPaths<T extends object>(inputObject: T, parentPath: Paths<T>[] =
 type GenericFunction = (...params: unknown[]) => Promise<unknown>;
 
 export interface UsePromiseReturn<T extends GenericFunction> {
-    pendingParams: Paths<Parameters<T>>[];
+    pendingParams: Paths<Parameters<T>>[] | null;
     error?: Error;
     result?: Awaited<ReturnType<T>>;
     run: (...params: Parameters<T>) => ReturnType<T>;
@@ -28,7 +28,7 @@ export interface UsePromiseReturn<T extends GenericFunction> {
 
 export const usePromise = <T extends GenericFunction>(promiseFn: T) => {
     const lastRequestObjectRef = useRef<PartialDeep<Parameters<T>>>(null);
-    const pendingParamsRef = useRef<UsePromiseReturn<T>['pendingParams']>([]);
+    const pendingParamsRef = useRef<UsePromiseReturn<T>['pendingParams']>(null);
     const errorRef = useRef<Error>(undefined);
     const resultRef = useRef<UsePromiseReturn<T>['result']>(undefined);
     const update = useUpdate();
@@ -45,7 +45,7 @@ export const usePromise = <T extends GenericFunction>(promiseFn: T) => {
                 resultRef.current = undefined;
                 errorRef.current = error as unknown as Error;
             } finally {
-                pendingParamsRef.current = [];
+                pendingParamsRef.current = null;
                 lastRequestObjectRef.current = finalParams as PartialDeep<Parameters<T>>;
             }
 
