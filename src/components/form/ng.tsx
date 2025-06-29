@@ -547,7 +547,7 @@ export interface FormItemProps
     };
     validators?: Validator[];
     hideCondition?: (context: FormItemContext) => boolean;
-    onChange?: (oldValue: any, newValue: any) => void;
+    onChange?: (oldValue: any, newValue: any, source: 'clear' | 'item' | 'reset' | 'set') => void;
     registerCondition?: (context: FormItemContext) => boolean;
 }
 
@@ -642,7 +642,7 @@ Form.Item = function (inputProps: FormItemProps) {
             ) {
                 return;
             }
-            onChange?.(valueRef.current, eventMessage?.data?.[name]);
+            onChange?.(valueRef.current, eventMessage?.data?.[name], 'set');
             valueRef.current = eventMessage?.data?.[name];
             update();
         };
@@ -651,7 +651,7 @@ Form.Item = function (inputProps: FormItemProps) {
             if (id !== currentId || StringUtil.isFalsyString(name) || !(eventMessage.data ?? []).includes(name)) {
                 return;
             }
-            onChange?.(valueRef.current, defaultValue);
+            onChange?.(valueRef.current, defaultValue, 'reset');
             valueRef.current = defaultValue;
             update();
         };
@@ -660,7 +660,7 @@ Form.Item = function (inputProps: FormItemProps) {
             if (id !== currentId || StringUtil.isFalsyString(name) || !(eventMessage.data ?? []).includes(name)) {
                 return;
             }
-            onChange?.(valueRef.current, undefined);
+            onChange?.(valueRef.current, undefined, 'clear');
             valueRef.current = undefined;
             update();
         };
@@ -847,7 +847,7 @@ Form.Item = function (inputProps: FormItemProps) {
                                 }
                                 return result;
                             })();
-                            onChange?.(valueRef.current, outgoingValue);
+                            onChange?.(valueRef.current, outgoingValue, 'item');
                             valueRef.current = outgoingValue;
                             update();
                             children?.props?.onChange?.(value, ...others);

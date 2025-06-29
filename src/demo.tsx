@@ -69,6 +69,34 @@ const App: React.FC = () => {
                         const result = !StringUtil.isFalsyString(context?.values?.test1);
                         return result;
                     }}
+                    onChange={() => {
+                        console.log('LENCONDA:FUCK');
+                        form.resetValues(['test3']);
+                    }}
+                >
+                    <Input placeholder="Input something..." />
+                </Form.Item>
+                <Form.Item
+                    label="Test3"
+                    name="test3"
+                    defaultValue="DEFAULT3"
+                    registerCondition={(context) => {
+                        const result = !StringUtil.isFalsyString(context?.values?.test1);
+                        return result;
+                    }}
+                    onChange={() => {
+                        form.clearValues(['test4']);
+                    }}
+                >
+                    <Input placeholder="Input something..." />
+                </Form.Item>
+                <Form.Item
+                    label="Test4"
+                    name="test4"
+                    registerCondition={(context) => {
+                        const result = !StringUtil.isFalsyString(context?.values?.test1);
+                        return result;
+                    }}
                 >
                     <Input placeholder="Input something..." />
                 </Form.Item>
