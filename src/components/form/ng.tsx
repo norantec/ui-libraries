@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
 import { UUIDUtil } from '@open-norantec/utilities/dist/uuid-util.class';
-import { useUpdate } from 'ahooks';
+import { usePrevious, useUpdate } from 'ahooks';
 import { EventEmitter } from 'eventemitter3';
 import { createContext, JSX, useEffect, useRef } from 'react';
 import { ComponentProviderUtil } from '../../utilities/component-provider-util.class';
@@ -582,6 +582,7 @@ Form.Item = function (inputProps: FormItemProps) {
             errorMessages,
         };
     }, [defaultValue, valueRef.current, errorMessages, formValueRef.current]);
+    const previousContext = usePrevious(context);
     const registeredRef = useRef(false);
     const hiddenRef = useRef(false);
     const update = useUpdate();
@@ -744,22 +745,27 @@ Form.Item = function (inputProps: FormItemProps) {
             hiddenRef.current = hidden;
         }
 
-        if (typeof registered === 'boolean' && registeredRef.current !== registered) {
-            updated = true;
-            registeredRef.current = registered;
-            if (registered) {
-                if (!formItemsMap.has(id)) {
-                    formItemsMap.set(id, {
-                        registeredFields: new Set(),
-                        previousValue: {},
-                    });
+        if (typeof registered === 'boolean') {
+            if (registeredRef.current !== registered) {
+                updated = true;
+                registeredRef.current = registered;
+                if (registered) {
+                    if (!formItemsMap.has(id)) {
+                        formItemsMap.set(id, {
+                            registeredFields: new Set(),
+                            previousValue: {},
+                        });
+                    }
+                    formItemsMap.get(id).registeredFields.add(name);
+                    if (typeof valueRef.current === 'undefined') {
+                        valueRef.current = defaultValue;
+                    }
+                } else {
+                    eventEmitter.emit(EventName.UNREGISTER_ITEM, id, new EventMessage(EventName.UNREGISTER_ITEM, name));
                 }
-                formItemsMap.get(id).registeredFields.add(name);
-                if (typeof valueRef.current === 'undefined') {
-                    valueRef.current = defaultValue;
-                }
-            } else {
-                eventEmitter.emit(EventName.UNREGISTER_ITEM, id, new EventMessage(EventName.UNREGISTER_ITEM, name));
+            } else if (!_.isEqual(previousContext?.defaultValue, context?.defaultValue)) {
+                updated = true;
+                valueRef.current = context?.defaultValue;
             }
         }
 
@@ -775,6 +781,7 @@ Form.Item = function (inputProps: FormItemProps) {
         hideCondition,
         name,
         id,
+        previousContext,
     ]);
 
     useEffect(() => {
