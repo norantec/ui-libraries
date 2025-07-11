@@ -640,10 +640,22 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
                             value: valueRef.current,
                             onChange: (...args: any[]) => {
                                 const oldValue = valueRef.current;
-                                valueRef.current = args?.[0];
+                                const outgoingValue = (() => {
+                                    let result: any;
+                                    if (
+                                        (args?.[0] as any)?._reactName === 'onChange' ||
+                                        (args?.[0] as React.BaseSyntheticEvent)?.target
+                                    ) {
+                                        result = (args?.[0] as React.BaseSyntheticEvent)?.target?.value;
+                                    } else {
+                                        result = args?.[0];
+                                    }
+                                    return result;
+                                })();
+                                valueRef.current = outgoingValue;
                                 shouldValidateRef.current = true;
                                 update();
-                                onChange?.(oldValue, args?.[0], 'item');
+                                onChange?.(oldValue, outgoingValue, 'item');
                                 children?.[1]?.onChange?.(...args);
                             },
                         });
