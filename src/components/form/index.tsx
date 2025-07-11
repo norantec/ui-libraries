@@ -9,6 +9,7 @@ import { cx } from '@emotion/css';
 import { Set } from 'immutable';
 import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
 import { PiXCircleFill } from 'react-icons/pi';
+import { UUIDUtil } from '@open-norantec/utilities/dist/uuid-util.class';
 
 export interface FormValues {
     [name: string]: any;
@@ -94,7 +95,7 @@ export interface FormItemProps<T = any>
     };
     validators?: Validator[];
     hideCondition?: (context: FormItemContext) => boolean;
-    onChange?: (oldValue: any, newValue: any, source: 'clear' | 'item' | 'reset' | 'set') => void;
+    onChange?: (oldValue: any, newValue: any, source: 'clear' | 'item' | 'register' | 'reset' | 'set') => void;
     registerCondition?: (context: FormItemContext) => boolean;
 }
 
@@ -239,11 +240,13 @@ const FORM_EVENT_NAMES = {
     REQUEST_CLEAR_ITEMS_VALUE: Symbol(''),
     REQUEST_RESET_ITEMS_VALUE: Symbol(''),
     REQUEST_SET_ITEMS_VALUE: Symbol(''),
+    REQUEST_VALIDATION_ERRORS: Symbol(''),
 };
 
 const FORM_ITEM_EVENT_NAMES = {
     VALUE_CHANGE: Symbol(''),
     REGISTRATION_STATUS_CHANGE: Symbol(''),
+    REPLY_VALIDATION_ERRORS: Symbol(''),
 };
 
 const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTMLFormElement>> = React.forwardRef<
@@ -284,11 +287,57 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
                 emitter.current?.emit?.(FORM_EVENT_NAMES.REQUEST_RESET_ITEMS_VALUE, names);
             },
             validate: async (names?: string[]) => {
-                // TODO:
-                return {
-                    value: {},
-                    errors: null,
-                };
+                const finalNames =
+                    Array.isArray(names) && names.length > 0
+                        ? names.filter((name) => registeredFieldsRef.current?.has?.(name))
+                        : Array.from(registeredFieldsRef.current);
+                return await new Promise<FormValidateResult>((resolve) => {
+                    const requestId = UUIDUtil.generateV4();
+                    const finalValues = finalNames.reduce((result, name) => {
+                        result[name] = formValuesRef.current?.[name];
+                        return result;
+                    }, {} as FormValues);
+                    const errorsMap: FormValidateResult['errors'] = {};
+                    const handleResponse = (responseId: string, name: string, errors: string[]) => {
+                        if (responseId !== requestId) return;
+
+                        errorsMap[name] = errors;
+
+                        if (
+                            finalNames.every((finalName) => Object.prototype.hasOwnProperty.call(errorsMap, finalName))
+                        ) {
+                            emitter.current?.removeListener?.(
+                                FORM_ITEM_EVENT_NAMES.REPLY_VALIDATION_ERRORS,
+                                handleResponse,
+                            );
+
+                            const finalErrors = Object.entries(errorsMap).reduce(
+                                (result, [name, errors]) => {
+                                    if (Array.isArray(errors) && errors.length > 0) {
+                                        result[name] = errors;
+                                    }
+                                    return result;
+                                },
+                                {} as FormValidateResult['errors'],
+                            );
+
+                            if (Object.keys(finalErrors).length === 0) {
+                                resolve({
+                                    errors: null,
+                                    value: finalValues,
+                                });
+                            } else {
+                                resolve({
+                                    value: null,
+                                    errors: finalErrors,
+                                });
+                            }
+                        }
+                    };
+
+                    emitter.current?.addListener?.(FORM_ITEM_EVENT_NAMES.REPLY_VALIDATION_ERRORS, handleResponse);
+                    emitter.current?.emit?.(FORM_EVENT_NAMES.REQUEST_VALIDATION_ERRORS, requestId, finalNames);
+                });
             },
         } as FormInstance;
     }, [formValuesRef.current, registeredFieldsRef.current, emitter.current]);
@@ -372,39 +421,51 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
     const emitter = useContext(EmitterContext);
     const errorsRef = useRef<string[]>([]);
     const shouldValidateRef = useRef(false);
-    const getValidatorResult = useCallback(async () => {
-        if (!shouldValidateRef.current) return [];
-        const normalizedValidators = Array.isArray(inputValidators)
-            ? inputValidators.filter((validator) => typeof validator?.validate === 'function')
-            : [];
-        if (required === true || !StringUtil.isFalsyString(required) || typeof required === 'function') {
-            normalizedValidators.unshift({
-                validateOnChange: true,
-                validateOnValidation: true,
-                validate: (value, formValues) => {
-                    if (typeof required === 'function') {
-                        return required(value, formValues);
-                    } else if (typeof value === 'undefined' || (typeof value === 'string' && value.length === 0)) {
-                        return !StringUtil.isFalsyString(required) ? (required as string) : 'It is a required field';
-                    }
-                },
-            } as Validator);
-        }
-        return await Promise.all(
-            normalizedValidators
-                .filter((validator) => !validator?.validateOnChange)
-                .map((item) => {
-                    return item?.validate?.(valueRef.current, formValues);
-                }),
-        ).then((result) => result?.filter?.((message) => !StringUtil.isFalsyString(message)));
-    }, [valueRef.current, inputValidators, required, formValues, shouldValidateRef.current]);
+    const getValidatorResult = useCallback(
+        async (reason: 'change' | 'validation') => {
+            if (!shouldValidateRef.current) return [];
+            const normalizedValidators = Array.isArray(inputValidators)
+                ? inputValidators.filter((validator) => typeof validator?.validate === 'function')
+                : [];
+            if (required === true || !StringUtil.isFalsyString(required) || typeof required === 'function') {
+                normalizedValidators.unshift({
+                    validateOnChange: true,
+                    validateOnValidation: true,
+                    validate: (value, formValues) => {
+                        if (typeof required === 'function') {
+                            return required(value, formValues);
+                        } else if (typeof value === 'undefined' || (typeof value === 'string' && value.length === 0)) {
+                            return !StringUtil.isFalsyString(required)
+                                ? (required as string)
+                                : 'It is a required field';
+                        }
+                    },
+                } as Validator);
+            }
+            return await Promise.all(
+                normalizedValidators
+                    .filter((validator) => {
+                        switch (reason) {
+                            case 'change':
+                                return validator?.validateOnChange !== false;
+                            case 'validation':
+                                return validator?.validateOnValidation !== false;
+                        }
+                    })
+                    .map((item) => {
+                        return item?.validate?.(valueRef.current, formValues);
+                    }),
+            ).then((result) => result?.filter?.((message) => !StringUtil.isFalsyString(message)));
+        },
+        [valueRef.current, inputValidators, required, formValues, shouldValidateRef.current],
+    );
 
     useEffect(() => {
-        getValidatorResult().then((result) => {
+        getValidatorResult('change').then((result) => {
             errorsRef.current = result;
             update();
-        })
-    }, [getValidatorResult])
+        });
+    }, [getValidatorResult]);
 
     useEffect(() => {
         if (StringUtil.isFalsyString(name)) return;
@@ -452,6 +513,11 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
             const registered = registeredFields?.has?.(name);
             if (registeredRef.current === registered) return;
             registeredRef.current = registered;
+            if (registered) {
+                const oldValue = valueRef.current;
+                valueRef.current = defaultValue;
+                onChange?.(oldValue, defaultValue, 'register');
+            }
             update();
         };
 
@@ -485,22 +551,45 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
             onChange?.(oldValue, values?.[name], 'set');
         };
 
+        const handleRequestValidationErrors = (requestId: string, names: string[]) => {
+            if (!names?.includes?.(name)) return;
+            shouldValidateRef.current = true;
+            update();
+            getValidatorResult('validation').then((result) => {
+                errorsRef.current = result;
+                update();
+                emitter.emit(FORM_ITEM_EVENT_NAMES.REPLY_VALIDATION_ERRORS, requestId, name, result);
+            });
+        };
+
         emitter.addListener(FORM_EVENT_NAMES.REGISTRATION_STATUSES_CHANGE, handleRegistrationStatusesChange);
         emitter.addListener(FORM_EVENT_NAMES.REQUEST_CLEAR_ITEMS_VALUE, handleRequestClearItemsValue);
         emitter.addListener(FORM_EVENT_NAMES.REQUEST_RESET_ITEMS_VALUE, handleRequestResetItemsValue);
         emitter.addListener(FORM_EVENT_NAMES.REQUEST_SET_ITEMS_VALUE, handleRequestSetItemsValue);
+        emitter.addListener(FORM_EVENT_NAMES.REQUEST_VALIDATION_ERRORS, handleRequestValidationErrors);
 
         return () => {
             emitter.removeListener(FORM_EVENT_NAMES.REGISTRATION_STATUSES_CHANGE, handleRegistrationStatusesChange);
             emitter.removeListener(FORM_EVENT_NAMES.REQUEST_CLEAR_ITEMS_VALUE, handleRequestClearItemsValue);
             emitter.removeListener(FORM_EVENT_NAMES.REQUEST_RESET_ITEMS_VALUE, handleRequestResetItemsValue);
             emitter.removeListener(FORM_EVENT_NAMES.REQUEST_SET_ITEMS_VALUE, handleRequestSetItemsValue);
+            emitter.removeListener(FORM_EVENT_NAMES.REQUEST_VALIDATION_ERRORS, handleRequestValidationErrors);
         };
-    }, [emitter, registeredRef.current, name, defaultValue, onChange]);
+    }, [
+        emitter,
+        registeredRef.current,
+        name,
+        defaultValue,
+        valueRef.current,
+        inputValidators,
+        required,
+        formValues,
+        shouldValidateRef.current,
+        onChange,
+        getValidatorResult,
+    ]);
 
     if (!registeredRef.current) return <></>;
-
-    console.log('LENCONDA:FUCK:1', name, valueRef.current);
 
     return (
         <div

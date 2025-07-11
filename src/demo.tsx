@@ -55,7 +55,6 @@ const App: React.FC = () => {
                     label="Test1"
                     name="test1"
                     required="必填项"
-                    defaultValue="120398"
                     validators={[
                         {
                             validate: (value) => (StringUtil.isFalsyString(value) ? '请输入合法字符串' : undefined),
