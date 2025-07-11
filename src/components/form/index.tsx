@@ -1,5 +1,5 @@
 import { useUpdate } from 'ahooks';
-import { JSX, useCallback, useContext, useEffect, useImperativeHandle, useRef } from 'react';
+import { JSX, useCallback, useContext, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 import * as React from 'react';
 import { EventEmitter } from 'eventemitter3';
 import { ComponentProviderUtil } from '../../utilities/component-provider-util.class';
@@ -459,6 +459,36 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
         },
         [valueRef.current, inputValidators, required, formValues, shouldValidateRef.current],
     );
+    const handleChange = useCallback(
+        (...args: any[]) => {
+            const oldValue = valueRef.current;
+            const outgoingValue = (() => {
+                let result: any;
+                if ((args?.[0] as any)?._reactName === 'onChange' || (args?.[0] as React.BaseSyntheticEvent)?.target) {
+                    result = (args?.[0] as React.BaseSyntheticEvent)?.target?.value;
+                } else {
+                    result = args?.[0];
+                }
+                return result;
+            })();
+            valueRef.current = outgoingValue;
+            shouldValidateRef.current = true;
+            update();
+            onChange?.(oldValue, outgoingValue, 'item');
+            children?.[1]?.onChange?.(...args);
+        },
+        [valueRef.current, onChange],
+    );
+    const childElement = useMemo(() => {
+        if (Array.isArray(children)) {
+            return React.createElement(children[0], {
+                ...children[1],
+                value: valueRef.current,
+                onChange: handleChange,
+            });
+        }
+        return null;
+    }, [children?.[0], children?.[1], valueRef.current, handleChange]);
 
     useEffect(() => {
         getValidatorResult('change').then((result) => {
@@ -632,37 +662,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
                     }}
                 ></div>
             </div>
-            <div className={cx(classNames?.elementWrapper)}>
-                {(() => {
-                    if (Array.isArray(children)) {
-                        return React.createElement(children?.[0], {
-                            ...children?.[1],
-                            value: valueRef.current,
-                            onChange: (...args: any[]) => {
-                                const oldValue = valueRef.current;
-                                const outgoingValue = (() => {
-                                    let result: any;
-                                    if (
-                                        (args?.[0] as any)?._reactName === 'onChange' ||
-                                        (args?.[0] as React.BaseSyntheticEvent)?.target
-                                    ) {
-                                        result = (args?.[0] as React.BaseSyntheticEvent)?.target?.value;
-                                    } else {
-                                        result = args?.[0];
-                                    }
-                                    return result;
-                                })();
-                                valueRef.current = outgoingValue;
-                                shouldValidateRef.current = true;
-                                update();
-                                onChange?.(oldValue, outgoingValue, 'item');
-                                children?.[1]?.onChange?.(...args);
-                            },
-                        });
-                    }
-                    return <></>;
-                })()}
-            </div>
+            <div className={cx(classNames?.elementWrapper)}>{childElement}</div>
             {(() => {
                 if (typeof extra === 'function') {
                     return extra({
