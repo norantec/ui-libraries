@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { Form, FormItemProvider, FormProvider, useForm, Validator } from './components/form/ng';
+// import { Form, FormItemProvider, FormProvider, useForm, Validator } from './components/form/ng';
+import { Form, FormInstance, FormItem, FormItemProvider, FormProvider, Validator } from './components/form';
 import { ProviderFactory } from './components/provider-factory';
 import { useEffect, useState } from 'react';
 import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
@@ -33,25 +34,28 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(({ value, onChange,
 });
 
 const App: React.FC = () => {
-    const form = useForm();
+    // const form = useForm();
+    const [form, setForm] = useState<FormInstance>();
     const [validators, setValidators] = useState<Validator[]>([]);
 
     useEffect(() => {
-        console.log('LENCONDA:4', form.getValues());
+        console.log('LENCONDA:4', form?.getValues?.());
     }, [form]);
 
     return (
         <div>
             <Form
-                form={form}
-                onChange={(values, changedFields) => {
-                    console.log('LENCONDA:4.1', values, changedFields);
-                }}
+                // form={form}
+                // onChange={(values, changedFields) => {
+                //     console.log('LENCONDA:4.1', values, changedFields);
+                // }}
+                onInstanceChange={setForm}
             >
-                <Form.Item
+                <FormItem
                     label="Test1"
                     name="test1"
                     required="必填项"
+                    defaultValue="120398"
                     validators={[
                         {
                             validate: (value) => (StringUtil.isFalsyString(value) ? '请输入合法字符串' : undefined),
@@ -59,9 +63,9 @@ const App: React.FC = () => {
                         ...validators,
                     ]}
                 >
-                    <Input placeholder="Input something..." />
-                </Form.Item>
-                <Form.Item
+                    {[Input, { placeholder: 'Input something...' }]}
+                </FormItem>
+                <FormItem
                     label="Test2"
                     name="test2"
                     defaultValue="DEFAULT"
@@ -69,14 +73,16 @@ const App: React.FC = () => {
                         const result = !StringUtil.isFalsyString(context?.values?.test1);
                         return result;
                     }}
-                    onChange={() => {
-                        console.log('LENCONDA:FUCK');
-                        form.resetValues(['test3']);
+                    onChange={(o, n, source) => {
+                        if (source === 'item') {
+                            console.log('LENCONDA:FUCK');
+                            form.resetValues(['test3']);
+                        }
                     }}
                 >
-                    <Input placeholder="Input something..." />
-                </Form.Item>
-                <Form.Item
+                    {[Input, { placeholder: 'Input something...' }]}
+                </FormItem>
+                <FormItem
                     label="Test3"
                     name="test3"
                     defaultValue="DEFAULT3"
@@ -88,9 +94,9 @@ const App: React.FC = () => {
                         form.clearValues(['test4']);
                     }}
                 >
-                    <Input placeholder="Input something..." />
-                </Form.Item>
-                <Form.Item
+                    {[Input, { placeholder: 'Input something...' }]}
+                </FormItem>
+                <FormItem
                     label="Test4"
                     name="test4"
                     registerCondition={(context) => {
@@ -98,8 +104,8 @@ const App: React.FC = () => {
                         return result;
                     }}
                 >
-                    <Input placeholder="Input something..." />
-                </Form.Item>
+                    {[Input, { placeholder: 'Input something...' }]}
+                </FormItem>
             </Form>
             <button
                 onClick={() => {
