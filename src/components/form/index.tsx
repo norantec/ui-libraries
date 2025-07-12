@@ -423,7 +423,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
     const shouldValidateRef = useRef(false);
     const getValidatorResult = useCallback(
         async (reason: 'change' | 'validation') => {
-            if (!shouldValidateRef.current) return [];
+            if (!shouldValidateRef.current && reason !== 'validation') return [];
             const normalizedValidators = Array.isArray(inputValidators)
                 ? inputValidators.filter((validator) => typeof validator?.validate === 'function')
                 : [];
