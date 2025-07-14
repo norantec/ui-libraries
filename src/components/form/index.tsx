@@ -173,6 +173,7 @@ const {
                     })(),
                     flexGrow: 1,
                     flexShrink: 1,
+                    lineHeight: 1.2,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
