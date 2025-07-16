@@ -40,7 +40,6 @@ interface FormItemBaseProps {
 
 export interface FormItemContext {
     defaultValue: any;
-    // errorMessages: string[];
     value: any;
     values: FormValues;
 }
@@ -62,8 +61,6 @@ export interface FormProps
     sx?: {
         wrapper?: CSSObject;
     };
-    // value?: FormValues;
-    // onChange?: (value: FormValues, changedFields: string[]) => void;
     onInstanceChange?: (instance: any) => void;
 }
 
@@ -425,9 +422,15 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
     const getValidatorResult = useCallback(
         async (reason: 'change' | 'validation') => {
             if (!shouldValidateRef.current && reason !== 'validation') return [];
-            const normalizedValidators = Array.isArray(inputValidators)
+
+            let normalizedValidators = Array.isArray(inputValidators)
                 ? inputValidators.filter((validator) => typeof validator?.validate === 'function')
                 : [];
+
+            if (!required && typeof valueRef.current === 'undefined') {
+                normalizedValidators = [];
+            }
+
             if (required === true || !StringUtil.isFalsyString(required) || typeof required === 'function') {
                 normalizedValidators.unshift({
                     validateOnChange: true,
@@ -443,6 +446,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
                     },
                 } as Validator);
             }
+
             return await Promise.all(
                 normalizedValidators
                     .filter((validator) => {
