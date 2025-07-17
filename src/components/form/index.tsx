@@ -581,9 +581,11 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
         const handleRequestSetItemsValue = (values?: FormValues) => {
             if (!Object.keys(values || {}).includes(name) || valueRef.current === values?.[name]) return;
             const oldValue = valueRef.current;
-            valueRef.current = values?.[name];
+            let newValue = values?.[name];
+            if (typeof newValue === 'undefined') newValue = defaultValue;
+            valueRef.current = newValue;
             update();
-            onChange?.(oldValue, values?.[name], 'set');
+            onChange?.(oldValue, newValue, 'set');
         };
 
         const handleRequestValidationErrors = (requestId: string, names: string[]) => {
