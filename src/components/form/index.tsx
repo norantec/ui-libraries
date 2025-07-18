@@ -33,6 +33,7 @@ export interface FormInstance {
 interface FormItemBaseProps {
     dangerColor?: string;
     dense?: number;
+    emptyValues?: any[];
     labelProps?: React.HTMLAttributes<HTMLDivElement>;
     maxWidth?: number | string;
     minWidth?: number | string;
@@ -405,6 +406,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
         extra,
         validators: inputValidators,
         required,
+        emptyValues = ['', null, undefined],
         registerCondition,
         hideCondition,
         onChange,
@@ -419,6 +421,10 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
     const emitter = useContext(EmitterContext);
     const errorsRef = useRef<string[]>([]);
     const shouldValidateRef = useRef(false);
+    const isEmptyValue = useCallback(
+        (value: any) => (Array.isArray(emptyValues) ? emptyValues : ['', null, undefined]).includes(value),
+        [emptyValues],
+    );
     const getValidatorResult = useCallback(
         async (reason: 'change' | 'validation') => {
             if (!shouldValidateRef.current && reason !== 'validation') return [];
@@ -427,7 +433,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
                 ? inputValidators.filter((validator) => typeof validator?.validate === 'function')
                 : [];
 
-            if (!required && typeof valueRef.current === 'undefined') {
+            if (!required && isEmptyValue(valueRef.current)) {
                 normalizedValidators = [];
             }
 
@@ -462,7 +468,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
                     }),
             ).then((result) => result?.filter?.((message) => !StringUtil.isFalsyString(message)));
         },
-        [valueRef.current, inputValidators, required, formValues, shouldValidateRef.current],
+        [valueRef.current, inputValidators, required, formValues, shouldValidateRef.current, emptyValues, isEmptyValue],
     );
     const handleChange = useCallback(
         (...args: any[]) => {
@@ -548,7 +554,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
             const registered = registeredFields?.has?.(name);
             if (registeredRef.current === registered) return;
             registeredRef.current = registered;
-            if (registered && typeof valueRef.current === 'undefined' && typeof defaultValue !== 'undefined') {
+            if (registered && isEmptyValue(valueRef.current) && typeof defaultValue !== 'undefined') {
                 const oldValue = valueRef.current;
                 valueRef.current = defaultValue;
                 onChange?.(oldValue, defaultValue, 'register');
@@ -559,7 +565,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
         const handleRequestClearItemsValue = (names?: string[]) => {
             const finalNames = Array.isArray(names) ? names.filter((name) => !StringUtil.isFalsyString(name)) : null;
             if (!Array.isArray(finalNames) || finalNames.includes(name)) {
-                if (typeof valueRef.current === 'undefined') return;
+                if (isEmptyValue(valueRef.current)) return;
                 const oldValue = valueRef.current;
                 valueRef.current = undefined;
                 update();
@@ -582,7 +588,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
             if (!Object.keys(values || {}).includes(name) || valueRef.current === values?.[name]) return;
             const oldValue = valueRef.current;
             let newValue = values?.[name];
-            if (typeof newValue === 'undefined') newValue = defaultValue;
+            if (isEmptyValue(newValue)) newValue = defaultValue;
             valueRef.current = newValue;
             update();
             onChange?.(oldValue, newValue, 'set');
@@ -624,6 +630,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
         shouldValidateRef.current,
         onChange,
         getValidatorResult,
+        isEmptyValue,
     ]);
 
     if (!registeredRef.current) return <></>;
