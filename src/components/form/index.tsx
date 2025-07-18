@@ -554,7 +554,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
             const registered = registeredFields?.has?.(name);
             if (registeredRef.current === registered) return;
             registeredRef.current = registered;
-            if (registered && isEmptyValue(valueRef.current) && typeof defaultValue !== 'undefined') {
+            if (registered && isEmptyValue(valueRef.current) && !isEmptyValue(defaultValue)) {
                 const oldValue = valueRef.current;
                 valueRef.current = defaultValue;
                 onChange?.(oldValue, defaultValue, 'register');
