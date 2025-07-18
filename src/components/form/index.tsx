@@ -468,7 +468,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
                     }),
             ).then((result) => result?.filter?.((message) => !StringUtil.isFalsyString(message)));
         },
-        [valueRef.current, inputValidators, required, formValues, shouldValidateRef.current, emptyValues, isEmptyValue],
+        [valueRef.current, inputValidators, required, formValues, shouldValidateRef.current, isEmptyValue],
     );
     const handleChange = useCallback(
         (...args: any[]) => {
