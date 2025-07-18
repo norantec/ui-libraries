@@ -1,5 +1,5 @@
 import { useUpdate } from 'ahooks';
-import { JSX, useCallback, useContext, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
+import { JSX, useCallback, useContext, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import * as React from 'react';
 import { EventEmitter } from 'eventemitter3';
 import { ComponentProviderUtil } from '../../utilities/component-provider-util.class';
@@ -406,7 +406,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
         extra,
         validators: inputValidators,
         required,
-        emptyValues = ['', null, undefined],
+        emptyValues: inputEmptyValues = ['', null, undefined],
         registerCondition,
         hideCondition,
         onChange,
@@ -421,8 +421,12 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
     const emitter = useContext(EmitterContext);
     const errorsRef = useRef<string[]>([]);
     const shouldValidateRef = useRef(false);
+    const [emptyValues, setEmptyValues] = useState<any[]>(['', null, undefined]);
     const isEmptyValue = useCallback(
-        (value: any) => (Array.isArray(emptyValues) ? emptyValues : ['', null, undefined]).includes(value),
+        (value: any) => {
+            const result = (Array.isArray(emptyValues) ? emptyValues : ['', null, undefined]).includes(value);
+            return result;
+        },
         [emptyValues],
     );
     const getValidatorResult = useCallback(
@@ -500,6 +504,11 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
         }
         return null;
     }, [children?.[0], children?.[1], valueRef.current, handleChange]);
+
+    useEffect(() => {
+        if (_.isEqual(inputEmptyValues, emptyValues)) return;
+        setEmptyValues(inputEmptyValues);
+    }, [inputEmptyValues, emptyValues]);
 
     useEffect(() => {
         getValidatorResult('change').then((result) => {
@@ -630,7 +639,6 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
         shouldValidateRef.current,
         onChange,
         getValidatorResult,
-        isEmptyValue,
     ]);
 
     if (!registeredRef.current) return <></>;
