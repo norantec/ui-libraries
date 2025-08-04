@@ -613,7 +613,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
             let newValue = values?.[name];
             if (isEmptyValue(newValue)) newValue = defaultValue;
             valueRef.current = newValue;
-            getValidatorResult('change', defaultValue).then((result) => {
+            getValidatorResult('change', newValue).then((result) => {
                 errorsRef.current = result;
                 update();
             });
