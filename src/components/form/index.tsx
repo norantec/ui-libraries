@@ -274,16 +274,24 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
                     }, {} as FormValues);
             },
             setValue: (name, value) => {
-                emitter.current?.emit?.(FORM_EVENT_NAMES.REQUEST_SET_ITEMS_VALUE, { [name]: value });
+                setTimeout(() => {
+                    emitter.current?.emit?.(FORM_EVENT_NAMES.REQUEST_SET_ITEMS_VALUE, { [name]: value });
+                }, 0);
             },
             setValues: (values) => {
-                emitter.current?.emit?.(FORM_EVENT_NAMES.REQUEST_SET_ITEMS_VALUE, values);
+                setTimeout(() => {
+                    emitter.current?.emit?.(FORM_EVENT_NAMES.REQUEST_SET_ITEMS_VALUE, values);
+                }, 0);
             },
             clearValues: (names?: string[], clearValidationErrors = true) => {
-                emitter.current?.emit?.(FORM_EVENT_NAMES.REQUEST_CLEAR_ITEMS_VALUE, names, clearValidationErrors);
+                setTimeout(() => {
+                    emitter.current?.emit?.(FORM_EVENT_NAMES.REQUEST_CLEAR_ITEMS_VALUE, names, clearValidationErrors);
+                }, 0);
             },
             resetValues: (names?: string[], clearValidationErrors = true) => {
-                emitter.current?.emit?.(FORM_EVENT_NAMES.REQUEST_RESET_ITEMS_VALUE, names, clearValidationErrors);
+                setTimeout(() => {
+                    emitter.current?.emit?.(FORM_EVENT_NAMES.REQUEST_RESET_ITEMS_VALUE, names, clearValidationErrors);
+                }, 0);
             },
             validate: async (names?: string[]) => {
                 const finalNames =
@@ -558,6 +566,9 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
 
         const handleRegistrationStatusesChange = (registeredFields: Set<string>) => {
             const registered = registeredFields?.has?.(name);
+            if (name === 'showChannels') {
+                console.log('LENCONDA:FUCK:form', registeredRef.current, registered, valueRef.current, defaultValue);
+            }
             if (registeredRef.current === registered) return;
             registeredRef.current = registered;
             if (registered && isEmptyValue(valueRef.current) && !isEmptyValue(defaultValue)) {
