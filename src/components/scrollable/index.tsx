@@ -153,8 +153,8 @@ class ScrollableObserver {
             horizontalDragCurrentLeft = null;
         };
 
-        verticalThumbElement.addEventListener('mousedown', handleVerticalThumbMouseDown);
-        horizontalThumbElement.addEventListener('mousedown', handleHorizontalThumbMouseDown);
+        verticalThumbElement.addEventListener('mousedown', handleVerticalThumbMouseDown, true);
+        horizontalThumbElement.addEventListener('mousedown', handleHorizontalThumbMouseDown, true);
         document.documentElement.addEventListener('mouseup', handleDocumentMouseUp, true);
         document.documentElement.addEventListener('mousemove', handleDocumentMouseMove, true);
 
@@ -292,8 +292,10 @@ class ScrollableObserver {
 
         return () => {
             _.attempt(() => cancelAnimationFrame(animateId));
-            _.attempt(() => verticalThumbElement.removeEventListener('mousedown', handleVerticalThumbMouseDown));
-            _.attempt(() => horizontalThumbElement.removeEventListener('mousedown', handleHorizontalThumbMouseDown));
+            _.attempt(() => verticalThumbElement.removeEventListener('mousedown', handleVerticalThumbMouseDown, true));
+            _.attempt(() =>
+                horizontalThumbElement.removeEventListener('mousedown', handleHorizontalThumbMouseDown, true),
+            );
             _.attempt(() => verticalThumbElement.remove());
             _.attempt(() => verticalTrackElement.remove());
             _.attempt(() => horizontalThumbElement.remove());
