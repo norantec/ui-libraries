@@ -155,8 +155,8 @@ class ScrollableObserver {
 
         verticalThumbElement.addEventListener('mousedown', handleVerticalThumbMouseDown);
         horizontalThumbElement.addEventListener('mousedown', handleHorizontalThumbMouseDown);
-        document.documentElement.addEventListener('mouseup', handleDocumentMouseUp);
-        document.documentElement.addEventListener('mousemove', handleDocumentMouseMove);
+        document.documentElement.addEventListener('mouseup', handleDocumentMouseUp, true);
+        document.documentElement.addEventListener('mousemove', handleDocumentMouseMove, true);
 
         const start = () => {
             if (!document.contains(this.element)) {
@@ -298,8 +298,8 @@ class ScrollableObserver {
             _.attempt(() => verticalTrackElement.remove());
             _.attempt(() => horizontalThumbElement.remove());
             _.attempt(() => horizontalThumbElement.remove());
-            _.attempt(() => document.documentElement.removeEventListener('mouseup', handleDocumentMouseUp));
-            _.attempt(() => document.documentElement.removeEventListener('mousemove', handleDocumentMouseMove));
+            _.attempt(() => document.documentElement.removeEventListener('mouseup', handleDocumentMouseUp, true));
+            _.attempt(() => document.documentElement.removeEventListener('mousemove', handleDocumentMouseMove, true));
         };
     }
 }
