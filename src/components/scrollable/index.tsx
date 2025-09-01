@@ -11,6 +11,8 @@ const EVENT_SCROLL_DRAG_START = Symbol();
 const EVENT_SCROLL_DRAG_END = Symbol();
 const EVENT_SHAPE_CHANGE = Symbol();
 
+const SCROLLABLE_OVERFLOW_VALUES = ['auto', 'scroll', 'overlay'];
+
 const autoHideVerticalTrackerClassName = css({
     '& > [role="vertical-scrollbar-tracker"]': {
         display: 'none',
@@ -75,12 +77,14 @@ class ScrollableObserver {
 
         let animateId: number | null = null;
         let currentRect: {
-            height?: number;
-            scrollHeight?: number;
-            scrollWidth?: number;
-            width?: number;
-            x?: number;
-            y?: number;
+            height: number;
+            overflowX: string;
+            overflowY: string;
+            scrollHeight: number;
+            scrollWidth: number;
+            width: number;
+            x: number;
+            y: number;
         } | null = null;
 
         const verticalTrackElement = document.createElement('div');
@@ -205,13 +209,17 @@ class ScrollableObserver {
                     currentRect?.width !== boundingClientRect.width ||
                     currentRect?.height !== boundingClientRect.height ||
                     currentRect?.scrollWidth !== this.element.scrollWidth ||
-                    currentRect?.scrollHeight !== this.element.scrollHeight
+                    currentRect?.scrollHeight !== this.element.scrollHeight ||
+                    currentRect?.overflowX !== this.element.style.overflowX ||
+                    currentRect?.overflowY !== this.element.style.overflowY
                 ) {
                     if (
                         currentRect?.width !== boundingClientRect.width ||
                         currentRect?.height !== boundingClientRect.height ||
                         currentRect?.scrollWidth !== this.element.scrollWidth ||
-                        currentRect?.scrollHeight !== this.element.scrollHeight
+                        currentRect?.scrollHeight !== this.element.scrollHeight ||
+                        currentRect?.overflowX !== this.element.style.overflowX ||
+                        currentRect?.overflowY !== this.element.style.overflowY
                     ) {
                         this.onShapeChange?.();
                     }
@@ -222,6 +230,8 @@ class ScrollableObserver {
                         y: boundingClientRect.y,
                         scrollWidth: this.element.scrollWidth,
                         scrollHeight: this.element.scrollHeight,
+                        overflowX: this.element.style.overflowX,
+                        overflowY: this.element.style.overflowY,
                     };
                 }
 
@@ -259,7 +269,7 @@ class ScrollableObserver {
                     verticalTrackElement.style.left = `${boundingClientRect.left}px`;
                 } else {
                     verticalTrackElement.style.removeProperty('left');
-                    verticalTrackElement.style.right = `${documentBoundingClientRect.width - boundingClientRect.right}px`;
+                    verticalTrackElement.style.right = `${Math.max(document.documentElement.clientWidth, documentBoundingClientRect.width) - boundingClientRect.right}px`;
                 }
 
                 verticalThumbElement.style.width = `${thumbSize}px`;
@@ -272,7 +282,7 @@ class ScrollableObserver {
                         ? `${boundingClientRect.left + trackerSize}px`
                         : `${boundingClientRect.left}px`;
                 horizontalTrackElement.style.width = `${boundingClientRect.width - trackerSize}px`;
-                horizontalTrackElement.style.bottom = `${documentBoundingClientRect.height - boundingClientRect.bottom}px`;
+                horizontalTrackElement.style.bottom = `${Math.max(document.documentElement.clientHeight, documentBoundingClientRect.height) - boundingClientRect.bottom}px`;
 
                 horizontalThumbElement.style.height = `${thumbSize}px`;
                 horizontalThumbElement.style.width = `${(boundingClientRect.width / this.element.scrollWidth) * (boundingClientRect.width - trackerSize)}px`;
@@ -375,6 +385,8 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
     const [additionalClassName, setAdditionalClassName] = React.useState('');
     const [size, setSize] = React.useState<{
         height: number;
+        overflowX: string;
+        overflowY: string;
         scrollHeight: number;
         scrollWidth: number;
         width: number;
@@ -401,6 +413,8 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
             setSize({
                 width: boundingClientRect?.width,
                 height: boundingClientRect?.height,
+                overflowX: innerRef.current?.style?.overflowX,
+                overflowY: innerRef.current?.style?.overflowY,
                 scrollWidth: innerRef.current?.scrollWidth,
                 scrollHeight: innerRef.current?.scrollHeight,
             });
@@ -430,10 +444,20 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
     React.useEffect(() => {
         setAdditionalClassName(
             cx({
-                [verticalTrackerHideClassName]: size?.scrollHeight <= size?.height,
-                [horizontalTrackerHideClassName]: size?.scrollWidth <= size?.width,
-                [autoHideVerticalTrackerClassName]: autoHide && !isScrollDragging && size?.scrollHeight > size?.height,
-                [autoHideHorizontalTrackerClassName]: autoHide && !isScrollDragging && size?.scrollWidth > size?.width,
+                [verticalTrackerHideClassName]:
+                    size?.scrollHeight <= size?.height || !SCROLLABLE_OVERFLOW_VALUES.includes(size?.overflowY),
+                [horizontalTrackerHideClassName]:
+                    size?.scrollWidth <= size?.width || !SCROLLABLE_OVERFLOW_VALUES.includes(size?.overflowX),
+                [autoHideVerticalTrackerClassName]:
+                    autoHide &&
+                    !isScrollDragging &&
+                    size?.scrollHeight > size?.height &&
+                    SCROLLABLE_OVERFLOW_VALUES.includes(size?.overflowY),
+                [autoHideHorizontalTrackerClassName]:
+                    autoHide &&
+                    !isScrollDragging &&
+                    size?.scrollWidth > size?.width &&
+                    SCROLLABLE_OVERFLOW_VALUES.includes(size?.overflowX),
             }),
         );
     }, [size, isScrollDragging, autoHide]);
