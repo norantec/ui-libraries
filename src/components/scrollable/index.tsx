@@ -36,7 +36,7 @@ export interface ScrollableObserverOptions {
     thumbClassName?: string;
     thumbSizeRatio?: number;
     trackerClassName?: string;
-    trackerOffset?: [number | null, number | null];
+    trackerOffset?: [number | null, number | null, number | null, number | null];
     trackerSize?: number;
 }
 
@@ -179,10 +179,22 @@ class ScrollableObserver {
             } = this.options;
             const thumbSize = trackerSize * (thumbSizeRatio > 1 || thumbSizeRatio <= 0 ? 1 : thumbSizeRatio);
             const trackerClassName = cx(css({ position: 'fixed', zIndex: 9999 }), customTrackerClassName);
-            const verticalOffset =
-                typeof trackerOffset?.[0] === 'number' && trackerOffset[0] > 0 ? trackerOffset[0] : 0;
-            const horizontalOffset =
-                typeof trackerOffset?.[1] === 'number' && trackerOffset[1] > 0 ? trackerOffset[1] : 0;
+            const topOffset = typeof trackerOffset?.[0] === 'number' && trackerOffset[0] > 0 ? trackerOffset[0] : 0;
+            let rightOffset = Math.max(
+                trackerSize,
+                typeof trackerOffset?.[1] === 'number' && trackerOffset[1] > 0 ? trackerOffset[1] : 0,
+            );
+            const bottomOffset = typeof trackerOffset?.[2] === 'number' && trackerOffset[2] > 0 ? trackerOffset[2] : 0;
+            let leftOffset = Math.max(
+                trackerSize,
+                typeof trackerOffset?.[3] === 'number' && trackerOffset[3] > 0 ? trackerOffset[3] : 0,
+            );
+
+            if (this.element.dir === 'rtl') {
+                const temp = rightOffset;
+                rightOffset = leftOffset;
+                leftOffset = temp;
+            }
 
             verticalTrackElement.className = trackerClassName;
             verticalThumbElement.className = cx(
@@ -209,8 +221,8 @@ class ScrollableObserver {
                     return;
                 }
 
-                const verticalTrackSize = boundingClientRect.height - trackerSize - verticalOffset;
-                const horizontalTrackSize = boundingClientRect.width - trackerSize - horizontalOffset;
+                const verticalTrackSize = boundingClientRect.height - trackerSize - topOffset - bottomOffset;
+                const horizontalTrackSize = boundingClientRect.width - trackerSize - leftOffset - rightOffset;
 
                 if (
                     currentRect?.x !== boundingClientRect.x ||
@@ -269,7 +281,7 @@ class ScrollableObserver {
                 }
 
                 verticalTrackElement.style.width = `${trackerSize}px`;
-                verticalTrackElement.style.top = `${boundingClientRect.top + verticalOffset}px`;
+                verticalTrackElement.style.top = `${boundingClientRect.top + topOffset}px`;
                 verticalTrackElement.style.height = `${verticalTrackSize}px`;
                 if (this.element.dir === 'rtl') {
                     verticalTrackElement.style.removeProperty('right');
@@ -286,8 +298,8 @@ class ScrollableObserver {
                 horizontalTrackElement.style.height = `${trackerSize}px`;
                 horizontalTrackElement.style.left =
                     this.element.dir === 'rtl'
-                        ? `${boundingClientRect.left + trackerSize}px`
-                        : `${boundingClientRect.left + horizontalOffset}px`;
+                        ? `${boundingClientRect.left + trackerSize + leftOffset}px`
+                        : `${boundingClientRect.left + leftOffset}px`;
                 horizontalTrackElement.style.width = `${horizontalTrackSize}px`;
                 horizontalTrackElement.style.bottom = `${Math.max(document.documentElement.clientHeight, documentBoundingClientRect.height) - boundingClientRect.bottom}px`;
 
