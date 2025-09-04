@@ -159,6 +159,7 @@ const App: React.FC = () => {
                     border: '1px solid black',
                     whiteSpace: 'nowrap',
                 })}
+                trackerOffset={[48, 48]}
                 onMouseMove={(event) => {
                     event.stopPropagation();
                 }}

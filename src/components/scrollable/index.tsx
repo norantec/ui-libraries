@@ -36,6 +36,7 @@ export interface ScrollableObserverOptions {
     thumbClassName?: string;
     thumbSizeRatio?: number;
     trackerClassName?: string;
+    trackerOffset?: [number | null, number | null];
     trackerSize?: number;
 }
 
@@ -174,9 +175,14 @@ class ScrollableObserver {
                 thumbSizeRatio = 0.5,
                 trackerClassName: customTrackerClassName,
                 thumbClassName: customThumbClassName,
+                trackerOffset,
             } = this.options;
             const thumbSize = trackerSize * (thumbSizeRatio > 1 || thumbSizeRatio <= 0 ? 1 : thumbSizeRatio);
             const trackerClassName = cx(css({ position: 'fixed', zIndex: 9999 }), customTrackerClassName);
+            const verticalOffset =
+                typeof trackerOffset?.[0] === 'number' && trackerOffset[0] > 0 ? trackerOffset[0] : 0;
+            const horizontalOffset =
+                typeof trackerOffset?.[1] === 'number' && trackerOffset[1] > 0 ? trackerOffset[1] : 0;
 
             verticalTrackElement.className = trackerClassName;
             verticalThumbElement.className = cx(
@@ -202,6 +208,9 @@ class ScrollableObserver {
                     start();
                     return;
                 }
+
+                const verticalTrackSize = boundingClientRect.height - trackerSize - verticalOffset;
+                const horizontalTrackSize = boundingClientRect.width - trackerSize - horizontalOffset;
 
                 if (
                     currentRect?.x !== boundingClientRect.x ||
@@ -243,8 +252,7 @@ class ScrollableObserver {
                 ) {
                     this.element.scrollTop =
                         verticalInitialScrollTop +
-                        ((verticalDragCurrentTop - verticalDragOriginalTop) /
-                            (boundingClientRect.height - trackerSize)) *
+                        ((verticalDragCurrentTop - verticalDragOriginalTop) / verticalTrackSize) *
                             this.element.scrollHeight;
                 }
 
@@ -256,14 +264,13 @@ class ScrollableObserver {
                 ) {
                     this.element.scrollLeft =
                         horizontalInitialScrollLeft +
-                        ((horizontalDragCurrentLeft - horizontalDragOriginalLeft) /
-                            (boundingClientRect.width - trackerSize)) *
+                        ((horizontalDragCurrentLeft - horizontalDragOriginalLeft) / horizontalTrackSize) *
                             this.element.scrollWidth;
                 }
 
                 verticalTrackElement.style.width = `${trackerSize}px`;
-                verticalTrackElement.style.top = `${boundingClientRect.top}px`;
-                verticalTrackElement.style.height = `${boundingClientRect.height - trackerSize}px`;
+                verticalTrackElement.style.top = `${boundingClientRect.top + verticalOffset}px`;
+                verticalTrackElement.style.height = `${verticalTrackSize}px`;
                 if (this.element.dir === 'rtl') {
                     verticalTrackElement.style.removeProperty('right');
                     verticalTrackElement.style.left = `${boundingClientRect.left}px`;
@@ -273,25 +280,25 @@ class ScrollableObserver {
                 }
 
                 verticalThumbElement.style.width = `${thumbSize}px`;
-                verticalThumbElement.style.height = `${(boundingClientRect.height / this.element.scrollHeight) * (boundingClientRect.height - trackerSize)}px`;
-                verticalThumbElement.style.top = `${(this.element.scrollTop / this.element.scrollHeight) * (boundingClientRect.height - trackerSize)}px`;
+                verticalThumbElement.style.height = `${(boundingClientRect.height / this.element.scrollHeight) * verticalTrackSize}px`;
+                verticalThumbElement.style.top = `${(this.element.scrollTop / this.element.scrollHeight) * verticalTrackSize}px`;
 
                 horizontalTrackElement.style.height = `${trackerSize}px`;
                 horizontalTrackElement.style.left =
                     this.element.dir === 'rtl'
                         ? `${boundingClientRect.left + trackerSize}px`
-                        : `${boundingClientRect.left}px`;
-                horizontalTrackElement.style.width = `${boundingClientRect.width - trackerSize}px`;
+                        : `${boundingClientRect.left + horizontalOffset}px`;
+                horizontalTrackElement.style.width = `${horizontalTrackSize}px`;
                 horizontalTrackElement.style.bottom = `${Math.max(document.documentElement.clientHeight, documentBoundingClientRect.height) - boundingClientRect.bottom}px`;
 
                 horizontalThumbElement.style.height = `${thumbSize}px`;
-                horizontalThumbElement.style.width = `${(boundingClientRect.width / this.element.scrollWidth) * (boundingClientRect.width - trackerSize)}px`;
+                horizontalThumbElement.style.width = `${(boundingClientRect.width / this.element.scrollWidth) * horizontalTrackSize}px`;
                 if (this.element.dir === 'rtl') {
                     horizontalThumbElement.style.removeProperty('left');
-                    horizontalThumbElement.style.right = `${0 - (this.element.scrollLeft / this.element.scrollWidth) * (boundingClientRect.width - trackerSize)}px`;
+                    horizontalThumbElement.style.right = `${0 - (this.element.scrollLeft / this.element.scrollWidth) * horizontalTrackSize}px`;
                 } else {
                     horizontalThumbElement.style.removeProperty('right');
-                    horizontalThumbElement.style.left = `${(this.element.scrollLeft / this.element.scrollWidth) * (boundingClientRect.width - trackerSize)}px`;
+                    horizontalThumbElement.style.left = `${(this.element.scrollLeft / this.element.scrollWidth) * horizontalTrackSize}px`;
                 }
 
                 start();
@@ -375,6 +382,7 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
         thumbSizeRatio,
         trackerClassName,
         trackerSize,
+        trackerOffset,
         ...props
     } = useScrollableBaseComponentConfig(inputProps);
     const idRef = React.useRef(UUIDUtil.generateV4());
@@ -438,8 +446,18 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
             thumbSizeRatio,
             trackerClassName,
             trackerSize,
+            trackerOffset,
         });
-    }, [emitter, innerRef.current, thumbClassName, thumbSizeRatio, trackerClassName, trackerSize, idRef.current]);
+    }, [
+        emitter,
+        innerRef.current,
+        thumbClassName,
+        trackerOffset,
+        thumbSizeRatio,
+        trackerClassName,
+        trackerSize,
+        idRef.current,
+    ]);
 
     React.useEffect(() => {
         setAdditionalClassName(
