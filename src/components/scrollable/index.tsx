@@ -184,11 +184,11 @@ class ScrollableObserver {
                 trackerSize,
                 typeof trackerOffset?.[1] === 'number' && trackerOffset[1] > 0 ? trackerOffset[1] : 0,
             );
-            const bottomOffset = typeof trackerOffset?.[2] === 'number' && trackerOffset[2] > 0 ? trackerOffset[2] : 0;
-            let leftOffset = Math.max(
+            const bottomOffset = Math.max(
                 trackerSize,
-                typeof trackerOffset?.[3] === 'number' && trackerOffset[3] > 0 ? trackerOffset[3] : 0,
+                typeof trackerOffset?.[2] === 'number' && trackerOffset[2] > 0 ? trackerOffset[2] : 0,
             );
+            let leftOffset = typeof trackerOffset?.[3] === 'number' && trackerOffset[3] > 0 ? trackerOffset[3] : 0;
 
             if (this.element.dir === 'rtl') {
                 const temp = rightOffset;
@@ -221,8 +221,8 @@ class ScrollableObserver {
                     return;
                 }
 
-                const verticalTrackSize = boundingClientRect.height - trackerSize - topOffset - bottomOffset;
-                const horizontalTrackSize = boundingClientRect.width - trackerSize - leftOffset - rightOffset;
+                const verticalTrackSize = boundingClientRect.height - topOffset - bottomOffset;
+                const horizontalTrackSize = boundingClientRect.width - leftOffset - rightOffset;
 
                 if (
                     currentRect?.x !== boundingClientRect.x ||
@@ -296,10 +296,7 @@ class ScrollableObserver {
                 verticalThumbElement.style.top = `${(this.element.scrollTop / this.element.scrollHeight) * verticalTrackSize}px`;
 
                 horizontalTrackElement.style.height = `${trackerSize}px`;
-                horizontalTrackElement.style.left =
-                    this.element.dir === 'rtl'
-                        ? `${boundingClientRect.left + trackerSize + leftOffset}px`
-                        : `${boundingClientRect.left + leftOffset}px`;
+                horizontalTrackElement.style.left = `${boundingClientRect.left + leftOffset}px`;
                 horizontalTrackElement.style.width = `${horizontalTrackSize}px`;
                 horizontalTrackElement.style.bottom = `${Math.max(document.documentElement.clientHeight, documentBoundingClientRect.height) - boundingClientRect.bottom}px`;
 
