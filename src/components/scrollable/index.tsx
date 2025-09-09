@@ -5,25 +5,6 @@ import { useDirection } from '../../hooks/use-direction';
 import { ComponentProviderUtil } from '../../utilities/component-provider-util.class';
 
 const SCROLLABLE_OVERFLOW_VALUES = ['auto', 'scroll', 'overlay'];
-
-const autoHideVerticalTrackerClassName = css({
-    '& > [role="vertical-scrollbar-tracker"]': {
-        display: 'none',
-    },
-    '&:hover > [role="vertical-scrollbar-tracker"]': {
-        display: 'block',
-    },
-});
-const autoHideHorizontalTrackerClassName = css({
-    '& > [role="horizontal-scrollbar-tracker"]': {
-        display: 'none',
-    },
-    '&:hover > [role="horizontal-scrollbar-tracker"]': {
-        display: 'block',
-    },
-});
-const verticalTrackerHideClassName = css({ '& > [role="vertical-scrollbar-tracker"]': { display: 'none' } });
-const horizontalTrackerHideClassName = css({ '& > [role="horizontal-scrollbar-tracker"]': { display: 'none' } });
 const baseThumbClassName = css({
     backgroundColor: '#CFCFCF',
     opacity: 0.75,
@@ -81,10 +62,8 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
     const horizontalTrackElementRef = React.useRef<HTMLDivElement | null>(null);
     const verticalThumbElementRef = React.useRef<HTMLDivElement | null>(null);
     const horizontalThumbElementRef = React.useRef<HTMLDivElement | null>(null);
-    // const emitter = React.useContext(ScrollableContext);
     const direction = useDirection();
     const [isScrollDragging, setIsScrollDragging] = React.useState(false);
-    const [additionalClassName, setAdditionalClassName] = React.useState('');
     const [size, setSize] = React.useState<Size | null>(null);
     const verticalDragOriginalTopRef = React.useRef<number | null>(null);
     const verticalDragCurrentTopRef = React.useRef<number | null>(null);
@@ -92,6 +71,7 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
     const horizontalDragOriginalLeftRef = React.useRef<number | null>(null);
     const horizontalDragCurrentLeftRef = React.useRef<number | null>(null);
     const horizontalInitialScrollLeftRef = React.useRef<number | null>(null);
+    const [hovering, setHovering] = React.useState(false);
 
     React.useImperativeHandle(ref, () => innerRef.current);
 
@@ -223,8 +203,18 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
         const handleDocumentMouseMove = (event: MouseEvent) => {
             event.stopPropagation();
             event.preventDefault();
-            verticalDragCurrentTopRef.current = event.clientY;
-            horizontalDragCurrentLeftRef.current = event.clientX;
+
+            setHovering(
+                size?.x <= event.clientX &&
+                    size?.x + size?.width >= event.clientX &&
+                    size?.y <= event.clientY &&
+                    size?.y + size?.height >= event.clientY,
+            );
+
+            if (isScrollDragging) {
+                verticalDragCurrentTopRef.current = event.clientY;
+                horizontalDragCurrentLeftRef.current = event.clientX;
+            }
         };
 
         const handleDocumentMouseUp = () => {
@@ -246,28 +236,7 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
             document.documentElement.removeEventListener('mouseup', handleDocumentMouseUp, true);
             document.documentElement.removeEventListener('mousemove', handleDocumentMouseMove, true);
         };
-    }, []);
-
-    React.useEffect(() => {
-        setAdditionalClassName(
-            cx({
-                [verticalTrackerHideClassName]:
-                    size?.scrollHeight <= size?.height || !SCROLLABLE_OVERFLOW_VALUES.includes(size?.overflowY),
-                [horizontalTrackerHideClassName]:
-                    size?.scrollWidth <= size?.width || !SCROLLABLE_OVERFLOW_VALUES.includes(size?.overflowX),
-                [autoHideVerticalTrackerClassName]:
-                    autoHide &&
-                    !isScrollDragging &&
-                    size?.scrollHeight > size?.height &&
-                    SCROLLABLE_OVERFLOW_VALUES.includes(size?.overflowY),
-                [autoHideHorizontalTrackerClassName]:
-                    autoHide &&
-                    !isScrollDragging &&
-                    size?.scrollWidth > size?.width &&
-                    SCROLLABLE_OVERFLOW_VALUES.includes(size?.overflowX),
-            }),
-        );
-    }, [size, isScrollDragging, autoHide]);
+    }, [isScrollDragging, size]);
 
     return (
         <div
@@ -282,7 +251,6 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
             className={cx(
                 css({ zIndex: 0, overflow: 'auto' }),
                 props?.className,
-                additionalClassName,
                 css({ '&::-webkit-scrollbar': { display: 'none' } }),
             )}
             ref={innerRef}
@@ -291,6 +259,18 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
                 role="vertical-scrollbar-tracker"
                 ref={verticalTrackElementRef}
                 className={cx(css({ position: 'fixed', zIndex: 9999 }), trackerClassName)}
+                style={(() => {
+                    if (
+                        !SCROLLABLE_OVERFLOW_VALUES.includes(size?.overflowY) ||
+                        size?.scrollHeight <= size?.height ||
+                        (autoHide && !isScrollDragging && !hovering)
+                    ) {
+                        return {
+                            display: 'none',
+                        };
+                    }
+                    return {};
+                })()}
             >
                 <div
                     ref={verticalThumbElementRef}
@@ -312,6 +292,18 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
                 role="horizontal-scrollbar-tracker"
                 ref={horizontalTrackElementRef}
                 className={cx(css({ position: 'fixed', zIndex: 9999 }), trackerClassName)}
+                style={(() => {
+                    if (
+                        !SCROLLABLE_OVERFLOW_VALUES.includes(size?.overflowX) ||
+                        size?.scrollWidth <= size?.width ||
+                        (autoHide && !isScrollDragging && !hovering)
+                    ) {
+                        return {
+                            display: 'none',
+                        };
+                    }
+                    return {};
+                })()}
             >
                 <div
                     ref={horizontalThumbElementRef}
