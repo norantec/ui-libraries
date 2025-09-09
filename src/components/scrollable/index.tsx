@@ -203,14 +203,7 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
         const handleDocumentMouseMove = (event: MouseEvent) => {
             event.stopPropagation();
             event.preventDefault();
-
-            setHovering(
-                size?.x <= event.clientX &&
-                    size?.x + size?.width >= event.clientX &&
-                    size?.y <= event.clientY &&
-                    size?.y + size?.height >= event.clientY,
-            );
-
+            setHovering(event?.composedPath?.()?.includes?.(innerRef.current));
             if (isScrollDragging) {
                 verticalDragCurrentTopRef.current = event.clientY;
                 horizontalDragCurrentLeftRef.current = event.clientX;
@@ -229,10 +222,23 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
             horizontalDragCurrentLeftRef.current = null;
         };
 
+        const handleRemoveHoveringState = (event: MouseEvent) => {
+            if (
+                event.clientY < 0 ||
+                event.clientX < 0 ||
+                event.clientX > window.innerWidth ||
+                event.clientY > window.innerHeight
+            ) {
+                setHovering(false);
+            }
+        };
+
+        document.addEventListener('mouseleave', handleRemoveHoveringState, true);
         document.documentElement.addEventListener('mouseup', handleDocumentMouseUp, true);
         document.documentElement.addEventListener('mousemove', handleDocumentMouseMove, true);
 
         return () => {
+            document.removeEventListener('mouseleave', handleRemoveHoveringState, true);
             document.documentElement.removeEventListener('mouseup', handleDocumentMouseUp, true);
             document.documentElement.removeEventListener('mousemove', handleDocumentMouseMove, true);
         };
@@ -256,7 +262,6 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
             ref={innerRef}
         >
             <div
-                role="vertical-scrollbar-tracker"
                 ref={verticalTrackElementRef}
                 className={cx(css({ position: 'fixed', zIndex: 9999 }), trackerClassName)}
                 style={(() => {
@@ -289,7 +294,6 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
                 />
             </div>
             <div
-                role="horizontal-scrollbar-tracker"
                 ref={horizontalTrackElementRef}
                 className={cx(css({ position: 'fixed', zIndex: 9999 }), trackerClassName)}
                 style={(() => {
