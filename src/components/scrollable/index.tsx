@@ -249,14 +249,6 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
     }, []);
 
     React.useEffect(() => {
-        console.log(
-            'LENCONDA:1',
-            autoHide,
-            !isScrollDragging,
-            size?.scrollHeight > size?.height,
-            size?.overflowY,
-            SCROLLABLE_OVERFLOW_VALUES.includes(size?.overflowY),
-        );
         setAdditionalClassName(
             cx({
                 [verticalTrackerHideClassName]:
