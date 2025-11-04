@@ -1,4 +1,4 @@
 export enum Direction {
-    LTR = 'ltr',
-    RTL = 'rtl',
+  LTR = 'ltr',
+  RTL = 'rtl',
 }

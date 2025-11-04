@@ -1,23 +1,23 @@
 import { useEffect, useState } from 'react';
 
 export const useMatchMedia = (query: string) => {
-    const [matches, setMatches] = useState(() => window.matchMedia(query).matches);
+  const [matches, setMatches] = useState(() => window.matchMedia(query).matches);
 
-    useEffect(() => {
-        const mediaQueryList = window.matchMedia(query);
+  useEffect(() => {
+    const mediaQueryList = window.matchMedia(query);
 
-        const handleChange = (event: MediaQueryListEvent) => {
-            setMatches(event.matches);
-        };
+    const handleChange = (event: MediaQueryListEvent) => {
+      setMatches(event.matches);
+    };
 
-        mediaQueryList.addEventListener('change', handleChange);
+    mediaQueryList.addEventListener('change', handleChange);
 
-        setMatches(mediaQueryList.matches);
+    setMatches(mediaQueryList.matches);
 
-        return () => {
-            mediaQueryList.removeEventListener('change', handleChange);
-        };
-    }, [query]);
+    return () => {
+      mediaQueryList.removeEventListener('change', handleChange);
+    };
+  }, [query]);
 
-    return matches;
+  return matches;
 };
