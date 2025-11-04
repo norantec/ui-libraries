@@ -233,6 +233,7 @@ export { FormProvider, FormItemProvider };
 
 const EmitterContext = React.createContext<EventEmitter>(null);
 const FormValuesContext = React.createContext<FormValues>({});
+const RegisteredFieldsContext = React.createContext<Set<string>>(Set());
 
 const FORM_EVENT_NAMES = {
     REGISTRATION_STATUSES_CHANGE: Symbol(''),
@@ -395,7 +396,11 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
             className={cx(classNames?.wrapper, props?.className)}
         >
             <EmitterContext.Provider value={emitter.current}>
-                <FormValuesContext.Provider value={formValuesRef.current}>{children}</FormValuesContext.Provider>
+                <FormValuesContext.Provider value={formValuesRef.current}>
+                    <RegisteredFieldsContext.Provider value={registeredFieldsRef.current}>
+                        {children}
+                    </RegisteredFieldsContext.Provider>
+                </FormValuesContext.Provider>
             </EmitterContext.Provider>
         </form>
     );
@@ -425,11 +430,18 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
     const valueRef = useRef<any>(defaultValue);
     const registeredRef = useRef(false);
     const hiddenRef = useRef(false);
-    const formValues = useContext(FormValuesContext);
+    const rawFormValues = useContext(FormValuesContext);
+    const registeredFields = useContext(RegisteredFieldsContext);
     const emitter = useContext(EmitterContext);
     const errorsRef = useRef<string[]>([]);
     const shouldValidateRef = useRef(false);
     const [emptyValues, setEmptyValues] = useState<any[]>(['', null, undefined]);
+    const formValues = useMemo(() => {
+        return Object.entries(rawFormValues).reduce((result, [name, value]) => {
+            if (registeredFields?.has?.(name)) result[name] = value;
+            return result;
+        }, {} as FormValues);
+    }, [rawFormValues, registeredFields]);
     const isEmptyValue = useCallback(
         (value: any) => {
             const result = (Array.isArray(emptyValues) ? emptyValues : ['', null, undefined]).includes(value);
