@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
 import { Scrollable, ScrollableProvider } from './components/scrollable';
 import { css } from '@emotion/css';
+import { AutoHide, AutoHideProvider } from './components/auto-hide';
 
 interface InputProps extends Omit<React.HTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
   value?: string;
@@ -305,6 +306,37 @@ const App: React.FC = () => {
           ut nulla!
         </p>
       </Scrollable>
+      <AutoHide
+        className={css({
+          boxSizing: 'border-box',
+          padding: 16,
+          top: 20,
+        })}
+        previewSize={32}
+        stickTo="left"
+      >
+        <div
+          className={css({
+            width: 360,
+            height: 200,
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            border: '1px solid #ccc',
+            borderRadius: 16,
+            backdropFilter: 'blur(18px)',
+            boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.1)',
+            overflow: 'hidden',
+          })}
+        >
+          <div
+            className={css({
+              width: '100%',
+              height: 36,
+              backgroundColor: 'rgba(from #ccc r g b / 0.65)',
+              borderBottom: '1px solid #ccc',
+            })}
+          ></div>
+        </div>
+      </AutoHide>
     </div>
   );
 };
@@ -312,6 +344,7 @@ const App: React.FC = () => {
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <ProviderFactory
     providers={(creator) => [
+      creator(AutoHideProvider),
       creator(ScrollableProvider),
       creator(FormProvider),
       creator(FormItemProvider, {

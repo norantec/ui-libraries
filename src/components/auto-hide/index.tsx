@@ -1,10 +1,260 @@
-import { ComponentProps } from 'react';
+import * as React from 'react';
+import { ComponentProviderUtil } from '../../utilities/component-provider-util.class';
+import { CSSObject } from '@emotion/react';
+import { cx } from '@emotion/css';
+import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
+import { useDebounce } from 'ahooks';
 
-type Edge = 'top' | 'bottom' | 'left' | 'right';
+const edgeToAxisMap: Record<'top' | 'right' | 'bottom' | 'left', 'x' | 'y'> = {
+  top: 'y',
+  bottom: 'y',
+  left: 'x',
+  right: 'x',
+};
 
-export interface AutoHideProps extends ComponentProps<'div'> {
-  autoPreviewParallelThreshold?: number | string;
-  autoPreviewPerpendicularThreshold?: number | string | 'infinite';
-  enabledEdges?: Edge[];
-  previewMode?: 'always' | 'auto';
+const edgeReverseMap: Partial<Record<Edge, 'top' | 'right' | 'bottom' | 'left'>> = {
+  top: 'bottom',
+  bottom: 'top',
+  left: 'right',
+  right: 'left',
+};
+
+type Edge = 'top' | 'right' | 'bottom' | 'left' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+type State = 'hidden' | 'previewing' | 'actived';
+
+export interface AutoHideProps extends React.ComponentProps<'div'> {
+  defaultState?: Exclude<State, 'actived'>;
+  delay?: number;
+  previewSize?: number;
+  stickTo?: Edge | null;
+  sx?: {
+    wrapper?: CSSObject;
+  };
 }
+
+const {
+  Provider: AutoHideProvider,
+  useComponentConfig: useAutoHideComponentConfig,
+  useClassNames: useAutoHideClassNames,
+} = ComponentProviderUtil.create<AutoHideProps>({
+  defaultProps: () => ({
+    defaultState: 'hidden',
+    delay: 1,
+    previewSize: 32,
+    stickTo: 'right',
+  }),
+  preInputMerger: () => ({
+    sx: {
+      wrapper: {},
+    },
+  }),
+});
+
+export { AutoHideProvider };
+
+export const AutoHide = React.forwardRef<HTMLDivElement, AutoHideProps>((inputProps, inputRef) => {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const {
+    previewSize: inputPreviewSize,
+    defaultState: inputDefaultState,
+    stickTo,
+    sx,
+    delay,
+    ...props
+  } = useAutoHideComponentConfig(inputProps);
+  const classNames = useAutoHideClassNames(sx);
+  const [rect, setRect] = React.useState<DOMRect | null>(null);
+  const [windowSize, setWindowSize] = React.useState<{ width: number; height: number }>({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+  const defaultState = React.useMemo(() => {
+    switch (inputDefaultState) {
+      case 'hidden':
+      case 'previewing':
+        return inputDefaultState;
+      default:
+        return 'hidden';
+    }
+  }, [inputDefaultState]);
+  const [state, setState] = React.useState<State>(defaultState);
+  const previewSize = React.useMemo(() => Math.max(0, inputPreviewSize), [inputPreviewSize]);
+  const debouncedState = useDebounce(state, { wait: delay });
+  const boundaryRect = React.useMemo(() => {
+    if (state === 'actived' || StringUtil.isFalsyString(stickTo) || !(rect instanceof DOMRect)) return rect;
+
+    const result = new DOMRect(rect.x, rect.y, rect.width, rect.height);
+
+    stickTo.split('-').forEach((direction) => {
+      switch (direction as 'top' | 'right' | 'bottom' | 'left') {
+        case 'top':
+          result.y += previewSize;
+          break;
+        case 'bottom':
+          result.y -= previewSize;
+          break;
+        case 'left':
+          result.x += previewSize;
+          break;
+        case 'right':
+          result.x -= previewSize;
+          break;
+        default:
+          break;
+      }
+    });
+
+    return result;
+  }, [state, previewSize, rect, stickTo]);
+  const styleMap = React.useMemo<Partial<Record<State, React.CSSProperties>>>(() => {
+    if (StringUtil.isFalsyString(stickTo) || !(rect instanceof DOMRect)) return {};
+
+    const hiddenOffsetMap: { x: number; y: number } = {
+      x: windowSize.width,
+      y: windowSize.height,
+    };
+    const previewingOffsetMap: { x: number; y: number } = {
+      x: windowSize.width - previewSize,
+      y: windowSize.height - previewSize,
+    };
+    const activedOffsetMap: { x: number; y: number } = {
+      x: windowSize.width - rect.width,
+      y: windowSize.height - rect.height,
+    };
+
+    return stickTo.split('-').reduce(
+      (result, rawKey) => {
+        const styleKey = edgeReverseMap[rawKey];
+
+        result.actived[styleKey] = activedOffsetMap[edgeToAxisMap[styleKey]];
+        result.hidden[styleKey] = hiddenOffsetMap[edgeToAxisMap[styleKey]];
+        result.previewing[styleKey] = previewingOffsetMap[edgeToAxisMap[styleKey]];
+
+        return result;
+      },
+      { actived: {}, hidden: {}, previewing: {} } as Record<State, React.CSSProperties>,
+    );
+  }, [windowSize, rect, previewSize, stickTo]);
+  const gracefullySetState = React.useCallback(
+    (newState: State) => {
+      if (state === newState) return;
+      setState(newState);
+    },
+    [state],
+  );
+
+  React.useImperativeHandle(inputRef, () => ref.current);
+
+  React.useEffect(() => {
+    let requestAnimationFrameId: number;
+    const start = () => {
+      requestAnimationFrameId = requestAnimationFrame(() => {
+        const currentRect = ref.current?.getBoundingClientRect?.();
+
+        if (
+          currentRect instanceof DOMRect &&
+          (currentRect.width !== rect?.width ||
+            currentRect.height !== rect?.height ||
+            currentRect.top !== rect?.top ||
+            currentRect.left !== rect?.left)
+        ) {
+          setRect(currentRect);
+        }
+
+        start();
+      });
+    };
+    const stop = () => {
+      cancelAnimationFrame(requestAnimationFrameId);
+    };
+    const handleWindowSizeChange = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    start();
+    window.addEventListener('resize', handleWindowSizeChange, { capture: true });
+
+    return () => {
+      stop();
+      window.removeEventListener('resize', handleWindowSizeChange);
+    };
+  }, [rect]);
+
+  React.useEffect(() => {
+    if (debouncedState === 'previewing') setState('actived');
+  }, [debouncedState]);
+
+  React.useEffect(() => {
+    const handleBlur = () => {
+      setState('hidden');
+    };
+    const handleClick = (event: MouseEvent) => {
+      if (event.composedPath?.()?.includes?.(ref.current)) return;
+      setState('hidden');
+    };
+
+    window.addEventListener('blur', handleBlur, { capture: true });
+    window.addEventListener('click', handleClick, { capture: true });
+
+    return () => {
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('click', handleClick);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (!(boundaryRect instanceof DOMRect)) return;
+
+    const handleMouseMove = (event: MouseEvent) => {
+      if (
+        event.clientX >= boundaryRect.left &&
+        event.clientX <= boundaryRect.right &&
+        event.clientY >= boundaryRect.top &&
+        event.clientY <= boundaryRect.bottom
+      ) {
+        switch (debouncedState) {
+          case 'hidden':
+            gracefullySetState('previewing');
+            break;
+          case 'previewing': {
+            gracefullySetState('actived');
+            break;
+          }
+          default:
+            break;
+        }
+      } else {
+        switch (debouncedState) {
+          case 'previewing': {
+            if (defaultState !== 'previewing') gracefullySetState(defaultState);
+            break;
+          }
+          case 'actived': {
+            gracefullySetState(defaultState);
+            break;
+          }
+          default:
+            break;
+        }
+      }
+    };
+
+    document.addEventListener('mousemove', handleMouseMove, { capture: true });
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove, { capture: true });
+    };
+  }, [boundaryRect, debouncedState, defaultState, gracefullySetState]);
+
+  return (
+    <div
+      ref={ref}
+      {...props}
+      className={cx(classNames.wrapper, props.className)}
+      style={{ transition: 'all 0.3s ease-in-out', ...props?.style, position: 'fixed', ...styleMap[debouncedState] }}
+    />
+  );
+});
