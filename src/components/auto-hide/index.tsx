@@ -21,6 +21,7 @@ interface MutableProps {
     mouseleave?: boolean;
     windowBlur?: boolean;
   };
+  disabled?: boolean;
   hideDelay?: number;
   previewDelay?: number;
 }
@@ -67,6 +68,7 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
   const {
     previewSize: inputPreviewSize,
     defaultState: inputDefaultState,
+    disabled,
     previewDelay,
     hideDelay,
     activeDelay,
@@ -145,13 +147,14 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
   }, [rect, previewSize, stickTo]);
   const mutableProps = React.useMemo(() => {
     return {
-      closeEvents,
-      previewDelay,
-      hideDelay,
       activeDelay,
+      closeEvents,
+      disabled,
+      hideDelay,
+      previewDelay,
       ...tempMutableProps,
     };
-  }, [closeEvents, tempMutableProps, previewDelay, hideDelay, activeDelay]);
+  }, [closeEvents, tempMutableProps, previewDelay, hideDelay, activeDelay, disabled]);
   const gracefullySetState = React.useCallback(
     (newState: State) => {
       if (state === newState) return;
@@ -170,7 +173,7 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
       deactive: (options) => {
         setDebouncedState('hidden');
         setState('hidden');
-        if (options?.resetTempMutableProps !== true) setTempMutableProps({});
+        if (options?.resetTempMutableProps !== false) setTempMutableProps({});
       },
     };
   });
@@ -259,8 +262,6 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
     if (!(boundaryRect instanceof DOMRect)) return;
 
     const handleMouseMove = (event: MouseEvent) => {
-      if (mutableProps?.closeEvents?.mouseleave === false) return;
-
       if (
         (event.clientX >= boundaryRect.left &&
           event.clientX <= boundaryRect.right &&
@@ -268,6 +269,7 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
           event.clientY <= boundaryRect.bottom) ||
         event?.composedPath?.()?.includes?.(ref.current)
       ) {
+        if (mutableProps?.disabled) return;
         switch (debouncedState) {
           case 'hidden':
             gracefullySetState('previewing');
@@ -280,6 +282,7 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
             break;
         }
       } else {
+        if (mutableProps?.closeEvents?.mouseleave === false) return;
         switch (debouncedState) {
           case 'previewing': {
             if (defaultState !== 'previewing') gracefullySetState(defaultState);
