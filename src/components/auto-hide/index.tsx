@@ -11,13 +11,6 @@ const edgeToAxisMap: Record<'top' | 'right' | 'bottom' | 'left', 'x' | 'y'> = {
   right: 'x',
 };
 
-const edgeReverseMap: Partial<Record<Edge, 'top' | 'right' | 'bottom' | 'left'>> = {
-  top: 'bottom',
-  bottom: 'top',
-  left: 'right',
-  right: 'left',
-};
-
 type Edge = 'top' | 'right' | 'bottom' | 'left' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 type State = 'hidden' | 'previewing' | 'actived';
 
@@ -84,10 +77,6 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
   } = useAutoHideComponentConfig(inputProps);
   const classNames = useAutoHideClassNames(sx);
   const [rect, setRect] = React.useState<DOMRect | null>(null);
-  const [windowSize, setWindowSize] = React.useState<{ width: number; height: number }>({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
   const defaultState = React.useMemo(() => {
     switch (inputDefaultState) {
       case 'hidden':
@@ -132,31 +121,28 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
     if (StringUtil.isFalsyString(stickTo) || !(rect instanceof DOMRect)) return {};
 
     const hiddenOffsetMap: { x: number; y: number } = {
-      x: windowSize.width,
-      y: windowSize.height,
+      x: 0 - rect.width,
+      y: 0 - rect.height,
     };
     const previewingOffsetMap: { x: number; y: number } = {
-      x: windowSize.width - previewSize,
-      y: windowSize.height - previewSize,
+      x: 0 - (rect.width - previewSize),
+      y: 0 - (rect.height - previewSize),
     };
     const activedOffsetMap: { x: number; y: number } = {
-      x: windowSize.width - rect.width,
-      y: windowSize.height - rect.height,
+      x: 0,
+      y: 0,
     };
 
     return stickTo.split('-').reduce(
-      (result, rawKey) => {
-        const styleKey = edgeReverseMap[rawKey];
-
-        result.actived[styleKey] = activedOffsetMap[edgeToAxisMap[styleKey]];
-        result.hidden[styleKey] = hiddenOffsetMap[edgeToAxisMap[styleKey]];
-        result.previewing[styleKey] = previewingOffsetMap[edgeToAxisMap[styleKey]];
-
+      (result, key) => {
+        result.actived[key] = activedOffsetMap[edgeToAxisMap[key]];
+        result.hidden[key] = hiddenOffsetMap[edgeToAxisMap[key]];
+        result.previewing[key] = previewingOffsetMap[edgeToAxisMap[key]];
         return result;
       },
       { actived: {}, hidden: {}, previewing: {} } as Record<State, React.CSSProperties>,
     );
-  }, [windowSize, rect, previewSize, stickTo]);
+  }, [rect, previewSize, stickTo]);
   const mutableProps = React.useMemo(() => {
     return {
       closeEvents,
@@ -237,19 +223,11 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
     const stop = () => {
       cancelAnimationFrame(requestAnimationFrameId);
     };
-    const handleWindowSizeChange = () => {
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    };
 
     start();
-    window.addEventListener('resize', handleWindowSizeChange, { capture: true });
 
     return () => {
       stop();
-      window.removeEventListener('resize', handleWindowSizeChange);
     };
   }, [rect]);
 
