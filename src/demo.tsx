@@ -315,6 +315,8 @@ const App: React.FC = () => {
               windowBlur: false,
               mouseleave: false,
             },
+            activeDelay: 0,
+            hideDelay: 0,
           });
         }}
       >
@@ -322,8 +324,10 @@ const App: React.FC = () => {
       </button>
       <button
         onClick={() => {
-          autoHideRef.current?.deactive?.({
-            resetMutableProps: true,
+          autoHideRef.current?.deactive?.((resetMutableProps) => {
+            setTimeout(() => {
+              resetMutableProps();
+            }, 1);
           });
         }}
       >

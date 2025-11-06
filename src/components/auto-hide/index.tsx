@@ -22,22 +22,24 @@ type Edge = 'top' | 'right' | 'bottom' | 'left' | 'top-left' | 'top-right' | 'bo
 type State = 'hidden' | 'previewing' | 'actived';
 
 interface MutableProps {
+  activeDelay?: number;
   closeEvents?: {
     clickOutside?: boolean;
     mouseleave?: boolean;
     windowBlur?: boolean;
   };
+  hideDelay?: number;
+  previewDelay?: number;
 }
 
 export interface AutoHideRef {
   element: HTMLDivElement | null;
   active: (mutableProps?: MutableProps) => void;
-  deactive: (options?: { resetMutableProps?: boolean }) => void;
+  deactive: (callback: (resetMutableProps: () => void) => void) => void;
 }
 
 export interface AutoHideProps extends React.ComponentProps<'div'>, MutableProps {
   defaultState?: Exclude<State, 'actived'>;
-  delay?: number;
   previewSize?: number;
   stickTo?: Edge | null;
   sx?: {
@@ -52,7 +54,9 @@ const {
 } = ComponentProviderUtil.create<AutoHideProps>({
   defaultProps: () => ({
     defaultState: 'hidden',
-    delay: 750,
+    previewDelay: 100,
+    activeDelay: 1000,
+    hideDelay: 500,
     previewSize: 32,
     stickTo: 'right',
   }),
@@ -70,9 +74,11 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
   const {
     previewSize: inputPreviewSize,
     defaultState: inputDefaultState,
+    previewDelay,
+    hideDelay,
+    activeDelay,
     stickTo,
     sx,
-    delay: inputDelay,
     closeEvents,
     ...props
   } = useAutoHideComponentConfig(inputProps);
@@ -96,7 +102,6 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
   const [debouncedState, setDebouncedState] = React.useState<State>(defaultState);
   const previewSize = React.useMemo(() => Math.max(0, inputPreviewSize), [inputPreviewSize]);
   const delayTimeoutIdRef = React.useRef<number | null>(null);
-  const delay = React.useMemo(() => inputDelay, [inputDelay]);
   const boundaryRect = React.useMemo(() => {
     if (state === 'actived' || StringUtil.isFalsyString(stickTo) || !(rect instanceof DOMRect)) return rect;
 
@@ -155,9 +160,12 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
   const mutableProps = React.useMemo(() => {
     return {
       closeEvents,
+      previewDelay,
+      hideDelay,
+      activeDelay,
       ...tempMutableProps,
     };
-  }, [closeEvents, tempMutableProps]);
+  }, [closeEvents, tempMutableProps, previewDelay, hideDelay, activeDelay]);
   const gracefullySetState = React.useCallback(
     (newState: State) => {
       if (state === newState) return;
@@ -173,8 +181,12 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
         setTempMutableProps(mutableProps || {});
         setState('actived');
       },
-      deactive: (options) => {
-        if (options?.resetMutableProps !== false) setTempMutableProps({});
+      deactive: (callback) => {
+        if (typeof callback === 'function') {
+          callback(() => {
+            setTempMutableProps({});
+          });
+        }
         setState('hidden');
       },
     };
@@ -183,14 +195,28 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
   React.useEffect(() => {
     clearTimeout(delayTimeoutIdRef.current);
 
-    delayTimeoutIdRef.current = setTimeout(() => {
-      if (debouncedState !== state) setDebouncedState(state);
-    }, delay) as unknown as number;
+    delayTimeoutIdRef.current = setTimeout(
+      () => {
+        if (debouncedState !== state) setDebouncedState(state);
+      },
+      (() => {
+        switch (state) {
+          case 'actived':
+            return mutableProps?.activeDelay;
+          case 'hidden':
+            return mutableProps?.hideDelay;
+          case 'previewing':
+            return mutableProps?.previewDelay;
+          default:
+            return 0;
+        }
+      })(),
+    ) as unknown as number;
 
     return () => {
       clearTimeout(delayTimeoutIdRef.current);
     };
-  }, [state, debouncedState, delay]);
+  }, [state, debouncedState, mutableProps?.previewDelay, mutableProps?.activeDelay, mutableProps?.hideDelay]);
 
   React.useEffect(() => {
     let requestAnimationFrameId: number;
