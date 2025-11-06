@@ -182,12 +182,13 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
         setState('actived');
       },
       deactive: (callback) => {
+        setDebouncedState('hidden');
+        setState('hidden');
         if (typeof callback === 'function') {
           callback(() => {
             setTempMutableProps({});
           });
         }
-        setState('hidden');
       },
     };
   });

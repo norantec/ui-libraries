@@ -324,11 +324,7 @@ const App: React.FC = () => {
       </button>
       <button
         onClick={() => {
-          autoHideRef.current?.deactive?.((resetMutableProps) => {
-            setTimeout(() => {
-              resetMutableProps();
-            }, 1);
-          });
+          autoHideRef.current?.deactive?.();
         }}
       >
         Deactive AutoHide
