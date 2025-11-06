@@ -35,7 +35,7 @@ interface MutableProps {
 export interface AutoHideRef {
   element: HTMLDivElement | null;
   active: (mutableProps?: MutableProps) => void;
-  deactive: (callback: (resetMutableProps: () => void) => void) => void;
+  deactive: (options?: { resetTempMutableProps?: boolean }) => void;
 }
 
 export interface AutoHideProps extends React.ComponentProps<'div'>, MutableProps {
@@ -181,14 +181,10 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
         setTempMutableProps(mutableProps || {});
         setState('actived');
       },
-      deactive: (callback) => {
+      deactive: (options) => {
         setDebouncedState('hidden');
         setState('hidden');
-        if (typeof callback === 'function') {
-          callback(() => {
-            setTempMutableProps({});
-          });
-        }
+        if (options?.resetTempMutableProps !== true) setTempMutableProps({});
       },
     };
   });
