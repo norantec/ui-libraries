@@ -3,11 +3,11 @@ import * as ReactDOM from 'react-dom/client';
 // import { Form, FormItemProvider, FormProvider, useForm, Validator } from './components/form/ng';
 import { Form, FormInstance, FormItem, FormItemProvider, FormProvider, Validator } from './components/form';
 import { ProviderFactory } from './components/provider-factory';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
 import { Scrollable, ScrollableProvider } from './components/scrollable';
 import { css } from '@emotion/css';
-import { AutoHide, AutoHideProvider } from './components/auto-hide';
+import { AutoHide, AutoHideProvider, AutoHideRef } from './components/auto-hide';
 
 interface InputProps extends Omit<React.HTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
   value?: string;
@@ -40,6 +40,7 @@ const App: React.FC = () => {
   // const form = useForm();
   const [form, setForm] = useState<FormInstance>();
   const [validators, setValidators] = useState<Validator[]>([]);
+  const autoHideRef = useRef<AutoHideRef | null>(null);
 
   useEffect(() => {
     console.log('LENCONDA:4', form?.getValues?.());
@@ -306,7 +307,30 @@ const App: React.FC = () => {
           ut nulla!
         </p>
       </Scrollable>
+      <button
+        onClick={() => {
+          autoHideRef.current?.active?.({
+            closeEvents: {
+              clickOutside: false,
+              windowBlur: false,
+              mouseleave: false,
+            },
+          });
+        }}
+      >
+        Active AutoHide
+      </button>
+      <button
+        onClick={() => {
+          autoHideRef.current?.deactive?.({
+            resetMutableProps: true,
+          });
+        }}
+      >
+        Deactive AutoHide
+      </button>
       <AutoHide
+        ref={autoHideRef}
         className={css({
           boxSizing: 'border-box',
           padding: 16,

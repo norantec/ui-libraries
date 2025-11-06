@@ -3,7 +3,6 @@ import { ComponentProviderUtil } from '../../utilities/component-provider-util.c
 import { CSSObject } from '@emotion/react';
 import { cx } from '@emotion/css';
 import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
-import { useDebounce } from 'ahooks';
 
 const edgeToAxisMap: Record<'top' | 'right' | 'bottom' | 'left', 'x' | 'y'> = {
   top: 'y',
@@ -22,7 +21,21 @@ const edgeReverseMap: Partial<Record<Edge, 'top' | 'right' | 'bottom' | 'left'>>
 type Edge = 'top' | 'right' | 'bottom' | 'left' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 type State = 'hidden' | 'previewing' | 'actived';
 
-export interface AutoHideProps extends React.ComponentProps<'div'> {
+interface MutableProps {
+  closeEvents?: {
+    clickOutside?: boolean;
+    mouseleave?: boolean;
+    windowBlur?: boolean;
+  };
+}
+
+export interface AutoHideRef {
+  element: HTMLDivElement | null;
+  active: (mutableProps?: MutableProps) => void;
+  deactive: (options?: { resetMutableProps?: boolean }) => void;
+}
+
+export interface AutoHideProps extends React.ComponentProps<'div'>, MutableProps {
   defaultState?: Exclude<State, 'actived'>;
   delay?: number;
   previewSize?: number;
@@ -39,7 +52,7 @@ const {
 } = ComponentProviderUtil.create<AutoHideProps>({
   defaultProps: () => ({
     defaultState: 'hidden',
-    delay: 1,
+    delay: 750,
     previewSize: 32,
     stickTo: 'right',
   }),
@@ -52,14 +65,15 @@ const {
 
 export { AutoHideProvider };
 
-export const AutoHide = React.forwardRef<HTMLDivElement, AutoHideProps>((inputProps, inputRef) => {
-  const ref = React.useRef<HTMLDivElement>(null);
+export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps, inputRef) => {
+  const ref = React.useRef<HTMLDivElement | null>(null);
   const {
     previewSize: inputPreviewSize,
     defaultState: inputDefaultState,
     stickTo,
     sx,
-    delay,
+    delay: inputDelay,
+    closeEvents,
     ...props
   } = useAutoHideComponentConfig(inputProps);
   const classNames = useAutoHideClassNames(sx);
@@ -78,8 +92,11 @@ export const AutoHide = React.forwardRef<HTMLDivElement, AutoHideProps>((inputPr
     }
   }, [inputDefaultState]);
   const [state, setState] = React.useState<State>(defaultState);
+  const [tempMutableProps, setTempMutableProps] = React.useState<Partial<MutableProps>>({});
+  const [debouncedState, setDebouncedState] = React.useState<State>(defaultState);
   const previewSize = React.useMemo(() => Math.max(0, inputPreviewSize), [inputPreviewSize]);
-  const debouncedState = useDebounce(state, { wait: delay });
+  const delayTimeoutIdRef = React.useRef<number | null>(null);
+  const delay = React.useMemo(() => inputDelay, [inputDelay]);
   const boundaryRect = React.useMemo(() => {
     if (state === 'actived' || StringUtil.isFalsyString(stickTo) || !(rect instanceof DOMRect)) return rect;
 
@@ -135,6 +152,12 @@ export const AutoHide = React.forwardRef<HTMLDivElement, AutoHideProps>((inputPr
       { actived: {}, hidden: {}, previewing: {} } as Record<State, React.CSSProperties>,
     );
   }, [windowSize, rect, previewSize, stickTo]);
+  const mutableProps = React.useMemo(() => {
+    return {
+      closeEvents,
+      ...tempMutableProps,
+    };
+  }, [closeEvents, tempMutableProps]);
   const gracefullySetState = React.useCallback(
     (newState: State) => {
       if (state === newState) return;
@@ -143,7 +166,31 @@ export const AutoHide = React.forwardRef<HTMLDivElement, AutoHideProps>((inputPr
     [state],
   );
 
-  React.useImperativeHandle(inputRef, () => ref.current);
+  React.useImperativeHandle(inputRef, () => {
+    return {
+      element: ref.current,
+      active: (mutableProps) => {
+        setTempMutableProps(mutableProps || {});
+        setState('actived');
+      },
+      deactive: (options) => {
+        if (options?.resetMutableProps !== false) setTempMutableProps({});
+        setState('hidden');
+      },
+    };
+  });
+
+  React.useEffect(() => {
+    clearTimeout(delayTimeoutIdRef.current);
+
+    delayTimeoutIdRef.current = setTimeout(() => {
+      if (debouncedState !== state) setDebouncedState(state);
+    }, delay) as unknown as number;
+
+    return () => {
+      clearTimeout(delayTimeoutIdRef.current);
+    };
+  }, [state, debouncedState, delay]);
 
   React.useEffect(() => {
     let requestAnimationFrameId: number;
@@ -189,9 +236,11 @@ export const AutoHide = React.forwardRef<HTMLDivElement, AutoHideProps>((inputPr
 
   React.useEffect(() => {
     const handleBlur = () => {
+      if (mutableProps?.closeEvents?.windowBlur === false) return;
       setState('hidden');
     };
     const handleClick = (event: MouseEvent) => {
+      if (mutableProps?.closeEvents?.clickOutside === false) return;
       if (event.composedPath?.()?.includes?.(ref.current)) return;
       setState('hidden');
     };
@@ -200,20 +249,23 @@ export const AutoHide = React.forwardRef<HTMLDivElement, AutoHideProps>((inputPr
     window.addEventListener('click', handleClick, { capture: true });
 
     return () => {
-      window.removeEventListener('blur', handleBlur);
-      window.removeEventListener('click', handleClick);
+      window.removeEventListener('blur', handleBlur, { capture: true });
+      window.removeEventListener('click', handleClick, { capture: true });
     };
-  }, []);
+  }, [mutableProps]);
 
   React.useEffect(() => {
     if (!(boundaryRect instanceof DOMRect)) return;
 
     const handleMouseMove = (event: MouseEvent) => {
+      if (mutableProps?.closeEvents?.mouseleave === false) return;
+
       if (
-        event.clientX >= boundaryRect.left &&
-        event.clientX <= boundaryRect.right &&
-        event.clientY >= boundaryRect.top &&
-        event.clientY <= boundaryRect.bottom
+        (event.clientX >= boundaryRect.left &&
+          event.clientX <= boundaryRect.right &&
+          event.clientY >= boundaryRect.top &&
+          event.clientY <= boundaryRect.bottom) ||
+        event?.composedPath?.()?.includes?.(ref.current)
       ) {
         switch (debouncedState) {
           case 'hidden':
@@ -247,7 +299,7 @@ export const AutoHide = React.forwardRef<HTMLDivElement, AutoHideProps>((inputPr
     return () => {
       document.removeEventListener('mousemove', handleMouseMove, { capture: true });
     };
-  }, [boundaryRect, debouncedState, defaultState, gracefullySetState]);
+  }, [boundaryRect, debouncedState, defaultState, mutableProps, gracefullySetState]);
 
   return (
     <div
