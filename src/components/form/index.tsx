@@ -93,7 +93,12 @@ export interface FormItemProps<T = any>
   };
   validators?: Validator[];
   hideCondition?: (context: FormItemContext) => boolean;
-  onChange?: (oldValue: any, newValue: any, source: 'clear' | 'item' | 'register' | 'reset' | 'set') => void;
+  onChange?: (
+    oldValue: any,
+    newValue: any,
+    source: 'clear' | 'item' | 'register' | 'reset' | 'set',
+    oldFormValues: FormValues,
+  ) => void;
   registerCondition?: (context: FormItemContext) => boolean;
 }
 
@@ -244,6 +249,7 @@ const FORM_EVENT_NAMES = {
 };
 
 const FORM_ITEM_EVENT_NAMES = {
+  CACHE_UPDATE: Symbol(''),
   VALUE_CHANGE: Symbol(''),
   REGISTRATION_STATUS_CHANGE: Symbol(''),
   REPLY_VALIDATION_ERRORS: Symbol(''),
@@ -431,12 +437,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
   const errorsRef = useRef<string[]>([]);
   const shouldValidateRef = useRef(false);
   const [emptyValues, setEmptyValues] = useState<any[]>(['', null, undefined]);
-  const formValues = useMemo(() => {
-    return Object.entries(rawFormValues).reduce((result, [name, value]) => {
-      if (registeredFields?.has?.(name)) result[name] = value;
-      return result;
-    }, {} as FormValues);
-  }, [rawFormValues, registeredFields]);
+  const formValuesRef = useRef<FormValues>({});
   const isEmptyValue = useCallback(
     (value: any) => {
       const result = (Array.isArray(emptyValues) ? emptyValues : ['', null, undefined]).includes(value);
@@ -481,11 +482,11 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
             }
           })
           .map((item) => {
-            return item?.validate?.(value, formValues);
+            return item?.validate?.(value, formValuesRef.current);
           }),
       ).then((result) => result?.filter?.((message) => !StringUtil.isFalsyString(message)));
     },
-    [inputValidators, required, formValues, shouldValidateRef.current, isEmptyValue],
+    [inputValidators, required, shouldValidateRef.current, isEmptyValue],
   );
   const handleChange = useCallback(
     (...args: any[]) => {
@@ -506,10 +507,10 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
         update();
       });
       update();
-      onChange?.(oldValue, outgoingValue, 'item');
+      onChange?.(oldValue, outgoingValue, 'item', formValuesRef.current);
       children?.[1]?.onChange?.(...args);
     },
-    [valueRef.current, onChange],
+    [onChange],
   );
   const childElement = useMemo(() => {
     if (Array.isArray(children)) {
@@ -521,6 +522,14 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
     }
     return null;
   }, [children?.[0], children?.[1], valueRef.current, handleChange]);
+
+  useEffect(() => {
+    formValuesRef.current = Object.entries(rawFormValues).reduce((result, [name, value]) => {
+      if (registeredFields?.has?.(name)) result[name] = value;
+      return result;
+    }, {} as FormValues);
+    update();
+  }, [rawFormValues, registeredFields]);
 
   useEffect(() => {
     if (_.isEqual(inputEmptyValues, emptyValues)) return;
@@ -536,7 +545,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
         registerCondition({
           defaultValue,
           value: valueRef.current,
-          values: formValues,
+          values: formValuesRef.current,
         })
           ? true
           : false,
@@ -544,7 +553,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
     } else {
       emitter?.emit?.(FORM_ITEM_EVENT_NAMES.REGISTRATION_STATUS_CHANGE, name, true);
     }
-  }, [registerCondition, formValues, valueRef.current, defaultValue, emitter, name]);
+  }, [registerCondition, valueRef.current, defaultValue, emitter, name]);
 
   useEffect(() => {
     if (typeof hideCondition !== 'function') {
@@ -553,13 +562,13 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
       hiddenRef.current = Boolean(
         hideCondition({
           defaultValue,
-          values: formValues,
+          values: formValuesRef.current,
           value: valueRef.current,
         }),
       );
     }
     update();
-  }, [hideCondition, formValues, valueRef.current, defaultValue]);
+  }, [hideCondition, valueRef.current, defaultValue]);
 
   useEffect(() => {
     if (StringUtil.isFalsyString(name)) return;
@@ -571,15 +580,12 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
 
     const handleRegistrationStatusesChange = (registeredFields: Set<string>) => {
       const registered = registeredFields?.has?.(name);
-      if (name === 'showChannels') {
-        console.log('LENCONDA:FUCK:form', registeredRef.current, registered, valueRef.current, defaultValue);
-      }
       if (registeredRef.current === registered) return;
       registeredRef.current = registered;
       if (registered && isEmptyValue(valueRef.current) && !isEmptyValue(defaultValue)) {
         const oldValue = valueRef.current;
         valueRef.current = defaultValue;
-        onChange?.(oldValue, defaultValue, 'register');
+        onChange?.(oldValue, defaultValue, 'register', formValuesRef.current);
       }
       update();
     };
@@ -599,7 +605,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
           errorsRef.current = [];
           update();
         }
-        onChange?.(oldValue, undefined, 'clear');
+        onChange?.(oldValue, undefined, 'clear', formValuesRef.current);
       }
     };
 
@@ -619,7 +625,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
           update();
         }
         update();
-        onChange?.(oldValue, defaultValue, 'reset');
+        onChange?.(oldValue, defaultValue, 'reset', formValuesRef.current);
       }
     };
 
@@ -633,7 +639,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
         errorsRef.current = result;
         update();
       });
-      onChange?.(oldValue, newValue, 'set');
+      onChange?.(oldValue, newValue, 'set', formValuesRef.current);
     };
 
     const handleRequestValidationErrors = (requestId: string, names: string[]) => {
@@ -668,7 +674,6 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
     valueRef.current,
     inputValidators,
     required,
-    formValues,
     shouldValidateRef.current,
     onChange,
     getValidatorResult,
@@ -701,7 +706,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
                 return label({
                   defaultValue,
                   value: valueRef.current,
-                  values: formValues,
+                  values: formValuesRef.current,
                 });
               }
               return label;
@@ -723,7 +728,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
           return extra({
             defaultValue,
             value: valueRef.current,
-            values: formValues,
+            values: formValuesRef.current,
           });
         }
         return extra;
