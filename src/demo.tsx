@@ -343,11 +343,11 @@ const App: React.FC = () => {
           className={css({
             width: 360,
             height: 200,
-            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-            border: '1px solid #ccc',
+            backgroundColor: 'rgba(from #eee r g b / 0.6)',
+            border: '1px solid #bbb',
             borderRadius: 16,
-            backdropFilter: 'blur(18px)',
-            boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.1)',
+            backdropFilter: 'blur(8px)',
+            boxShadow: '0 8px 16px 0 rgba(0, 0, 0, 0.25)',
             overflow: 'hidden',
           })}
         >
@@ -355,10 +355,22 @@ const App: React.FC = () => {
             className={css({
               width: '100%',
               height: 36,
-              backgroundColor: 'rgba(from #ccc r g b / 0.65)',
-              borderBottom: '1px solid #ccc',
+              backgroundColor: 'rgba(from #ccc r g b / 0.75)',
+              borderBottom: '1px solid #bbb',
             })}
           ></div>
+          <div
+            className={css({
+              color: 'black',
+              padding: 16,
+              fontSize: 14,
+              textShadow: '0 2px 8px rgba(255, 255, 255, 0.75)',
+            })}
+          >
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolores quisquam nobis modi qui alias mollitia
+            fugiat hic deserunt reiciendis, praesentium odit quis culpa tempora? Fugit, blanditiis dolorem? Ratione,
+            recusandae totam.
+          </div>
         </div>
       </AutoHide>
     </div>
