@@ -52,7 +52,8 @@ export type Validator = {
 };
 
 export interface FormProps
-  extends FormItemBaseProps,
+  extends
+    FormItemBaseProps,
     Omit<React.HTMLAttributes<HTMLFormElement>, 'value' | 'onChange' | 'children' | 'defaultValue'> {
   action?: string;
   method?: 'get' | 'post';
@@ -68,7 +69,8 @@ export interface FormProps
 type Component<T = any> = [React.FC<T>, T];
 
 export interface FormItemProps<T = any>
-  extends FormItemBaseProps,
+  extends
+    FormItemBaseProps,
     Omit<React.HTMLAttributes<HTMLDivElement>, 'value' | 'onChange' | 'children' | 'defaultValue'> {
   name: string;
   children?: Component<T>;
@@ -446,7 +448,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
     [emptyValues],
   );
   const getValidatorResult = useCallback(
-    async (reason: 'change' | 'validation', value: any) => {
+    async (reason: 'change' | 'validation', name: string, required: FormItemProps<T>['required'], value: any) => {
       if (!shouldValidateRef.current && reason !== 'validation') return [];
 
       let normalizedValidators = Array.isArray(inputValidators)
@@ -486,10 +488,10 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
           }),
       ).then((result) => result?.filter?.((message) => !StringUtil.isFalsyString(message)));
     },
-    [inputValidators, required, shouldValidateRef.current, isEmptyValue],
+    [inputValidators, isEmptyValue],
   );
   const handleChange = useCallback(
-    (...args: any[]) => {
+    (name: string, required: FormItemProps<T>['required'], args: any[]) => {
       const oldValue = valueRef.current;
       const outgoingValue = (() => {
         let result: any;
@@ -502,7 +504,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
       })();
       valueRef.current = outgoingValue;
       shouldValidateRef.current = true;
-      getValidatorResult('change', outgoingValue).then((result) => {
+      getValidatorResult('change', name, required, outgoingValue).then((result) => {
         errorsRef.current = result;
         update();
       });
@@ -517,11 +519,13 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
       return React.createElement(children[0], {
         ...children[1],
         value: valueRef.current,
-        onChange: handleChange,
+        onChange: (...params: any[]) => {
+          handleChange?.(name, required, params);
+        },
       });
     }
     return null;
-  }, [children?.[0], children?.[1], valueRef.current, handleChange]);
+  }, [children?.[0], children?.[1], valueRef.current, inputValidators, required, name, isEmptyValue, handleChange]);
 
   useEffect(() => {
     formValuesRef.current = Object.entries(rawFormValues).reduce((result, [name, value]) => {
@@ -597,7 +601,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
         const oldValue = valueRef.current;
         valueRef.current = undefined;
         if (!clearValidationErrors) {
-          getValidatorResult('change', undefined).then((result) => {
+          getValidatorResult('change', name, required, undefined).then((result) => {
             errorsRef.current = result;
             update();
           });
@@ -616,7 +620,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
         const oldValue = valueRef.current;
         valueRef.current = defaultValue;
         if (!clearValidationErrors) {
-          getValidatorResult('change', defaultValue).then((result) => {
+          getValidatorResult('change', name, required, defaultValue).then((result) => {
             errorsRef.current = result;
             update();
           });
@@ -635,7 +639,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
       let newValue = values?.[name];
       if (isEmptyValue(newValue)) newValue = defaultValue;
       valueRef.current = newValue;
-      getValidatorResult('change', newValue).then((result) => {
+      getValidatorResult('change', name, required, newValue).then((result) => {
         errorsRef.current = result;
         update();
       });
@@ -646,7 +650,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
       if (!names?.includes?.(name)) return;
       shouldValidateRef.current = true;
       update();
-      getValidatorResult('validation', valueRef.current).then((result) => {
+      getValidatorResult('validation', name, required, valueRef.current).then((result) => {
         errorsRef.current = result;
         update();
         emitter.emit(FORM_ITEM_EVENT_NAMES.REPLY_VALIDATION_ERRORS, requestId, name, result);
