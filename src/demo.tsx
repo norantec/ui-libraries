@@ -78,7 +78,6 @@ const App: React.FC = () => {
           }}
           onChange={(o, n, source) => {
             if (source === 'item') {
-              console.log('LENCONDA:FUCK');
               form.resetValues(['test3']);
             }
           }}

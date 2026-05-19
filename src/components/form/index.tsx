@@ -56,6 +56,10 @@ export interface FormProps
     FormItemBaseProps,
     Omit<React.HTMLAttributes<HTMLFormElement>, 'value' | 'onChange' | 'children' | 'defaultValue'> {
   action?: string;
+  filter?: {
+    mode: 'blacklist' | 'whitelist';
+    fields: string[];
+  };
   method?: 'get' | 'post';
   children?: JSX.Element | JSX.Element[];
   disabled?: boolean;
@@ -241,6 +245,7 @@ export { FormProvider, FormItemProvider };
 const EmitterContext = React.createContext<EventEmitter>(null);
 const FormValuesContext = React.createContext<FormValues>({});
 const RegisteredFieldsContext = React.createContext<Set<string>>(Set());
+const FilterContext = React.createContext<FormProps['filter']>(null);
 
 const FORM_EVENT_NAMES = {
   REGISTRATION_STATUSES_CHANGE: Symbol(''),
@@ -261,7 +266,7 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
   HTMLFormElement,
   FormProps
 >(function (inputProps, outerRef) {
-  const { sx, children, action, method, onInstanceChange, ...props } = useFormComponentConfig(inputProps);
+  const { sx, children, action, method, filter, onInstanceChange, ...props } = useFormComponentConfig(inputProps);
   const update = useUpdate();
   const classNames = useFormClassNames(sx);
   const innerRef = useRef<HTMLFormElement>(null);
@@ -306,7 +311,7 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
         const finalNames =
           Array.isArray(names) && names.length > 0
             ? names.filter((name) => registeredFieldsRef.current?.has?.(name))
-            : Array.from(registeredFieldsRef.current);
+            : Array.from(registeredFieldsRef.current.toArray());
         return await new Promise<FormValidateResult>((resolve) => {
           const requestId = UUIDUtil.generateV4();
           const finalValues = finalNames.reduce((result, name) => {
@@ -401,7 +406,7 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
       <EmitterContext.Provider value={emitter.current}>
         <FormValuesContext.Provider value={formValuesRef.current}>
           <RegisteredFieldsContext.Provider value={registeredFieldsRef.current}>
-            {children}
+            <FilterContext.Provider value={filter}>{children}</FilterContext.Provider>
           </RegisteredFieldsContext.Provider>
         </FormValuesContext.Provider>
       </EmitterContext.Provider>
@@ -437,6 +442,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
   const hiddenRef = useRef(false);
   const rawFormValues = useContext(FormValuesContext);
   const registeredFields = useContext(RegisteredFieldsContext);
+  const filter = useContext(FilterContext);
   const emitter = useContext(EmitterContext);
   const errorsRef = useRef<string[]>([]);
   const shouldValidateRef = useRef(false);
@@ -562,22 +568,28 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
 
   useEffect(() => {
     if (StringUtil.isFalsyString(name)) return;
-    if (typeof registerCondition === 'function') {
-      emitter?.emit?.(
-        FORM_ITEM_EVENT_NAMES.REGISTRATION_STATUS_CHANGE,
-        name,
-        registerCondition({
-          defaultValue,
-          value: valueRef.current,
-          values: formValuesRef.current,
-        })
-          ? true
-          : false,
-      );
-    } else {
-      emitter?.emit?.(FORM_ITEM_EVENT_NAMES.REGISTRATION_STATUS_CHANGE, name, true);
-    }
-  }, [registerCondition, valueRef.current, defaultValue, emitter, name]);
+
+    const shouldRegisterByFilter = (() => {
+      switch (filter?.mode) {
+        case 'blacklist':
+          return !filter.fields.includes(name);
+        case 'whitelist':
+          return filter.fields.includes(name);
+        default:
+          return true;
+      }
+    })();
+    const shouldRegisterByConditionFn =
+      typeof registerCondition === 'function'
+        ? registerCondition({ defaultValue, value: valueRef.current, values: formValuesRef.current })
+        : true;
+
+    emitter?.emit?.(
+      FORM_ITEM_EVENT_NAMES.REGISTRATION_STATUS_CHANGE,
+      name,
+      shouldRegisterByFilter && shouldRegisterByConditionFn,
+    );
+  }, [registerCondition, filter, valueRef.current, defaultValue, emitter, name]);
 
   useEffect(() => {
     if (typeof hideCondition !== 'function') {
