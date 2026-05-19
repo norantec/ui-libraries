@@ -53,6 +53,10 @@ const App: React.FC = () => {
         // onChange={(values, changedFields) => {
         //     console.log('LENCONDA:4.1', values, changedFields);
         // }}
+        filter={{
+          mode: 'whitelist',
+          fields: ['test1'],
+        }}
         onInstanceChange={setForm}
       >
         <FormItem

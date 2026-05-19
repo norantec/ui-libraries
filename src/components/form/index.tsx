@@ -443,6 +443,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
   const rawFormValues = useContext(FormValuesContext);
   const registeredFields = useContext(RegisteredFieldsContext);
   const filter = useContext(FilterContext);
+  console.log('LENCONDA:FUCK', filter);
   const emitter = useContext(EmitterContext);
   const errorsRef = useRef<string[]>([]);
   const shouldValidateRef = useRef(false);
@@ -572,9 +573,9 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
     const shouldRegisterByFilter = (() => {
       switch (filter?.mode) {
         case 'blacklist':
-          return !filter.fields.includes(name);
+          return !filter?.fields?.includes?.(name);
         case 'whitelist':
-          return filter.fields.includes(name);
+          return filter?.fields?.includes?.(name);
         default:
           return true;
       }
@@ -587,9 +588,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
     emitter?.emit?.(
       FORM_ITEM_EVENT_NAMES.REGISTRATION_STATUS_CHANGE,
       name,
-      filter?.mode === 'whitelist'
-        ? shouldRegisterByFilter || shouldRegisterByConditionFn
-        : shouldRegisterByFilter && shouldRegisterByConditionFn,
+      shouldRegisterByFilter && shouldRegisterByConditionFn,
     );
   }, [registerCondition, filter, valueRef.current, defaultValue, emitter, name]);
 
