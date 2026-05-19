@@ -60,6 +60,7 @@ export interface FormProps
     mode: 'blacklist' | 'whitelist';
     fields: string[];
   };
+  forceHideFields?: string[];
   method?: 'get' | 'post';
   children?: JSX.Element | JSX.Element[];
   disabled?: boolean;
@@ -246,6 +247,7 @@ const EmitterContext = React.createContext<EventEmitter>(null);
 const FormValuesContext = React.createContext<FormValues>({});
 const RegisteredFieldsContext = React.createContext<Set<string>>(Set());
 const FilterContext = React.createContext<FormProps['filter']>(null);
+const ForceHideFieldsContext = React.createContext<FormProps['forceHideFields']>(null);
 
 const FORM_EVENT_NAMES = {
   REGISTRATION_STATUSES_CHANGE: Symbol(''),
@@ -266,7 +268,8 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
   HTMLFormElement,
   FormProps
 >(function (inputProps, outerRef) {
-  const { sx, children, action, method, filter, onInstanceChange, ...props } = useFormComponentConfig(inputProps);
+  const { sx, children, action, method, filter, forceHideFields, onInstanceChange, ...props } =
+    useFormComponentConfig(inputProps);
   const update = useUpdate();
   const classNames = useFormClassNames(sx);
   const innerRef = useRef<HTMLFormElement>(null);
@@ -406,7 +409,9 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
       <EmitterContext.Provider value={emitter.current}>
         <FormValuesContext.Provider value={formValuesRef.current}>
           <RegisteredFieldsContext.Provider value={registeredFieldsRef.current}>
-            <FilterContext.Provider value={filter}>{children}</FilterContext.Provider>
+            <FilterContext.Provider value={filter}>
+              <ForceHideFieldsContext.Provider value={forceHideFields}>{children}</ForceHideFieldsContext.Provider>
+            </FilterContext.Provider>
           </RegisteredFieldsContext.Provider>
         </FormValuesContext.Provider>
       </EmitterContext.Provider>
@@ -443,7 +448,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
   const rawFormValues = useContext(FormValuesContext);
   const registeredFields = useContext(RegisteredFieldsContext);
   const filter = useContext(FilterContext);
-  console.log('LENCONDA:FUCK', filter);
+  const forceHideFields = useContext(ForceHideFieldsContext);
   const emitter = useContext(EmitterContext);
   const errorsRef = useRef<string[]>([]);
   const shouldValidateRef = useRef(false);
@@ -593,7 +598,11 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
   }, [registerCondition, filter, valueRef.current, defaultValue, emitter, name]);
 
   useEffect(() => {
-    if (typeof hideCondition !== 'function') {
+    const forceHidden = Array.isArray(forceHideFields) && forceHideFields?.includes?.(name);
+
+    if (forceHidden) {
+      hiddenRef.current = true;
+    } else if (typeof hideCondition !== 'function') {
       hiddenRef.current = false;
     } else {
       hiddenRef.current = Boolean(
@@ -604,8 +613,9 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
         }),
       );
     }
+
     update();
-  }, [hideCondition, valueRef.current, defaultValue]);
+  }, [hideCondition, forceHideFields, valueRef.current, defaultValue]);
 
   useEffect(() => {
     if (StringUtil.isFalsyString(name)) return;
