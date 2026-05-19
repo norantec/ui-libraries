@@ -587,7 +587,9 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
     emitter?.emit?.(
       FORM_ITEM_EVENT_NAMES.REGISTRATION_STATUS_CHANGE,
       name,
-      shouldRegisterByFilter && shouldRegisterByConditionFn,
+      filter?.mode === 'whitelist'
+        ? shouldRegisterByFilter || shouldRegisterByConditionFn
+        : shouldRegisterByFilter && shouldRegisterByConditionFn,
     );
   }, [registerCondition, filter, valueRef.current, defaultValue, emitter, name]);
 
