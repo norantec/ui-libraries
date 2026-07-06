@@ -406,7 +406,7 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
     const items = childrenArray.map((child, index) => ({
       child,
       index,
-      order: typeof child?.props?.order === 'number' && child?.props?.order >= 0 ? child.props.order : undefined,
+      order: typeof child?.props?.order === 'number' ? child.props.order : undefined,
     }));
 
     const ordered = items.filter((item) => typeof item.order === 'number');
