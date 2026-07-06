@@ -54,14 +54,18 @@ const App: React.FC = () => {
         //     console.log('LENCONDA:4.1', values, changedFields);
         // }}
         filter={{
-          mode: 'whitelist',
-          fields: ['test1'],
+          mode: 'blacklist',
+          fields: [],
         }}
         onInstanceChange={setForm}
       >
+        <FormItem label="Test0 (no order)" name="test0" defaultValue="no order, before first ordered">
+          {[Input, { placeholder: 'no order, before first ordered' }]}
+        </FormItem>
         <FormItem
-          label="Test1"
+          label="Test1 (order=10)"
           name="test1"
+          order={10}
           required="必填项"
           validators={[
             {
@@ -72,45 +76,17 @@ const App: React.FC = () => {
         >
           {[Input, { placeholder: 'Input something...' }]}
         </FormItem>
-        <FormItem
-          label="Test2"
-          name="test2"
-          defaultValue="DEFAULT"
-          registerCondition={(context) => {
-            const result = !StringUtil.isFalsyString(context?.values?.test1);
-            return result;
-          }}
-          onChange={(o, n, source) => {
-            if (source === 'item') {
-              form.resetValues(['test3']);
-            }
-          }}
-        >
+        <FormItem label="Test2 (order=5)" name="test2" order={5} defaultValue="DEFAULT">
           {[Input, { placeholder: 'Input something...' }]}
         </FormItem>
-        <FormItem
-          label="Test3"
-          name="test3"
-          defaultValue="DEFAULT3"
-          registerCondition={(context) => {
-            const result = !StringUtil.isFalsyString(context?.values?.test1);
-            return result;
-          }}
-          onChange={() => {
-            form.clearValues(['test4']);
-          }}
-        >
+        <FormItem label="Test3 (order=1, smallest → anchor)" name="test3" order={1} defaultValue="DEFAULT3">
           {[Input, { placeholder: 'Input something...' }]}
         </FormItem>
-        <FormItem
-          label="Test4"
-          name="test4"
-          registerCondition={(context) => {
-            const result = !StringUtil.isFalsyString(context?.values?.test1);
-            return result;
-          }}
-        >
+        <FormItem label="Test4 (order=1, same order → def order after test3)" name="test4" order={1}>
           {[Input, { placeholder: 'Input something...' }]}
+        </FormItem>
+        <FormItem label="Test5 (no order, after ordered)" name="test5">
+          {[Input, { placeholder: 'no order, after ordered group' }]}
         </FormItem>
       </Form>
       <button

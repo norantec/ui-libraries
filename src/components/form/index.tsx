@@ -100,6 +100,7 @@ export interface FormItemProps<T = any>
   };
   validators?: Validator[];
   hideCondition?: (context: FormItemContext) => boolean;
+  order?: number;
   onChange?: (
     oldValue: any,
     newValue: any,
@@ -398,6 +399,32 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
     onInstanceChange?.(createFormInstance());
   }, [emitter.current, formValuesRef.current, registeredFieldsRef.current, onInstanceChange]);
 
+  const sortedChildren = useMemo(() => {
+    const childrenArray = React.Children.toArray(children) as React.ReactElement[];
+    if (childrenArray.length === 0) return children;
+
+    const items = childrenArray.map((child, index) => ({
+      child,
+      index,
+      order: typeof child?.props?.order === 'number' && child?.props?.order >= 0 ? child.props.order : undefined,
+    }));
+
+    const ordered = items.filter((item) => typeof item.order === 'number');
+    if (ordered.length === 0) return children;
+
+    const anchor = ordered.reduce((min, item) => (item.order! < min.order! ? item : min));
+
+    const sorted = [...ordered].sort((a, b) => {
+      if (a.order !== b.order) return a.order! - b.order!;
+      return a.index - b.index;
+    });
+
+    const before = items.filter((item) => typeof item.order !== 'number' && item.index < anchor.index);
+    const after = items.filter((item) => typeof item.order !== 'number' && item.index >= anchor.index);
+
+    return [...before, ...sorted, ...after].map((item) => item.child);
+  }, [children]);
+
   return (
     <form
       {..._.omit(props, ['dangerColor'])}
@@ -410,7 +437,9 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
         <FormValuesContext.Provider value={formValuesRef.current}>
           <RegisteredFieldsContext.Provider value={registeredFieldsRef.current}>
             <FilterContext.Provider value={filter}>
-              <ForceHideFieldsContext.Provider value={forceHideFields}>{children}</ForceHideFieldsContext.Provider>
+              <ForceHideFieldsContext.Provider value={forceHideFields}>
+                {sortedChildren}
+              </ForceHideFieldsContext.Provider>
             </FilterContext.Provider>
           </RegisteredFieldsContext.Provider>
         </FormValuesContext.Provider>
@@ -731,7 +760,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
   return (
     <div
       data-form-item-name={name}
-      {..._.omit(props, ['required', 'dangerColor', 'minWidth', 'maxWidth'])}
+      {..._.omit(props, ['required', 'dangerColor', 'minWidth', 'maxWidth', 'order'])}
       className={cx(classNames?.wrapper, props?.className)}
       style={{
         ...props?.style,
