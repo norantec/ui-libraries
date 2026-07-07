@@ -593,8 +593,11 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
       if (registeredFields?.has?.(name)) result[name] = value;
       return result;
     }, {} as FormValues);
-    update();
-  }, [rawFormValues, registeredFields]);
+    getValidatorResult('change', rawFormValues?.[name]).then((result) => {
+      errorsRef.current = result;
+      update();
+    });
+  }, [rawFormValues, registeredFields, name, getValidatorResult]);
 
   useEffect(() => {
     if (_.isEqual(inputEmptyValues, emptyValues)) return;
