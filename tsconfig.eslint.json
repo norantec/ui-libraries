@@ -3,5 +3,5 @@
   "compilerOptions": {
     "allowJs": true
   },
-  "include": [".eslintrc.js", "**/*.ts", "**/*.js", "**/*.tsx"]
+  "include": ["**/*.mjs", "**/*.cjs", "**/*.mts", "**/*.cts", "**/*.ts", "**/*.js", "**/*.tsx"]
 }
