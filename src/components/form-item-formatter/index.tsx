@@ -7,7 +7,7 @@ export interface FormItemFormatterProps<I = any, O = any> {
   value?: I;
   incoming?: (value: I) => O;
   onChange?: (value?: I) => void;
-  outgoing?: (value: O) => I | Promise<I>;
+  outgoing?: (value: O, previousValue: I) => I | Promise<I>;
 }
 
 const { Provider: FormItemFormatterProvider, useComponentConfig: useFormItemFormatterComponentConfig } =
@@ -25,11 +25,11 @@ export const FormItemFormatter = <I extends any = any, O extends any = any>({
   if (!React.isValidElement(children)) return <></>;
   return React.cloneElement(children as any, {
     value: typeof incoming === 'function' ? incoming(value) : value,
-    onChange: async (value: O) => {
+    onChange: async (currentValue: O) => {
       if (typeof outgoing === 'function') {
-        onChange?.(await outgoing(value));
+        onChange?.(await outgoing(currentValue, value));
       } else {
-        onChange?.(value as unknown as I);
+        onChange?.(currentValue as unknown as I);
       }
     },
   });
