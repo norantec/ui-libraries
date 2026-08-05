@@ -25,7 +25,7 @@ export const Provider: React.FC<ProviderProps> = ({ children, code, onCodeChange
         textMapRef.current = {};
         update();
       } else {
-        Promise.resolve(getLanguageTextMap(code)).then((result) => {
+        Promise.resolve(getLanguageTextMap(code!)).then((result) => {
           textMapRef.current = result;
           update();
         });

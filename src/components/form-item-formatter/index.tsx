@@ -24,10 +24,10 @@ export const FormItemFormatter = <I extends any = any, O extends any = any>({
 }: FormItemFormatterProps<I, O>) => {
   if (!React.isValidElement(children)) return <></>;
   return React.cloneElement(children as any, {
-    value: typeof incoming === 'function' ? incoming(value) : value,
+    value: typeof incoming === 'function' ? incoming(value!) : value,
     onChange: async (currentValue: O) => {
       if (typeof outgoing === 'function') {
-        onChange?.(await outgoing(currentValue, value));
+        onChange?.(await outgoing(currentValue, value!));
       } else {
         onChange?.(currentValue as unknown as I);
       }

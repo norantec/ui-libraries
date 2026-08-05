@@ -116,8 +116,7 @@ function transformKeys<T extends Record<string, any>>(inputObject: T, transformF
 }
 
 export interface ComponentProviderValue<T>
-  extends ComponentProviderCreateOptions<T>,
-    Omit<ComponentProviderProps<T>, 'children'> {}
+  extends ComponentProviderCreateOptions<T>, Omit<ComponentProviderProps<T>, 'children'> {}
 
 export interface ProviderPresetPropsGeneratorContext<T> extends PropsGeneratorContext {
   defaultProps: Partial<T>;
@@ -142,7 +141,7 @@ export interface ComponentProviderProps<T> {
 
 export class ComponentProviderUtil {
   public static create<T extends Record<string, any>>(createOptions?: ComponentProviderCreateOptions<T>) {
-    const Context = createContext<ComponentProviderValue<T>>(createOptions);
+    const Context = createContext<ComponentProviderValue<T>>(createOptions!);
     const Provider: React.FC<ComponentProviderProps<T>> = ({ children, presetProps }) => {
       return (
         <Context.Provider
@@ -167,13 +166,13 @@ export class ComponentProviderUtil {
         const defaultProps =
           context?.defaultProps?.({
             direction,
-            colorScheme,
+            colorScheme: colorScheme!,
           }) ?? {};
         const presetProps =
           context?.presetProps?.({
             defaultProps,
             direction,
-            colorScheme,
+            colorScheme: colorScheme!,
             inputProps,
           }) ?? {};
         let finalProps = mergeProps({
@@ -183,7 +182,7 @@ export class ComponentProviderUtil {
           sources: [
             context?.preInputMerger?.({
               direction,
-              colorScheme,
+              colorScheme: colorScheme!,
               defaultProps,
               presetProps,
               inputProps,
@@ -197,7 +196,7 @@ export class ComponentProviderUtil {
             finalProps,
             context?.postInputMerger?.({
               direction,
-              colorScheme,
+              colorScheme: colorScheme!,
               defaultProps,
               presetProps,
               inputProps,
@@ -230,7 +229,7 @@ export class ComponentProviderUtil {
         Object.entries(cssObjectMap).forEach(([key, value]) => {
           if (!Array.isArray(dependenciesMap.get(key))) dependenciesMap.set(key, []);
           traverseObject(value, (objectEntryKey) => {
-            dependenciesMap.set(key, dependenciesMap.get(key).concat(extractDependencies(objectEntryKey, whiteList)));
+            dependenciesMap.set(key, dependenciesMap.get(key)!.concat(extractDependencies(objectEntryKey, whiteList)));
           });
         });
 

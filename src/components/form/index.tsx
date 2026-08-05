@@ -17,7 +17,7 @@ export interface FormValues {
 
 export interface FormValidateResult {
   errors?: Record<string, string[]> | null;
-  value?: FormValues;
+  value?: FormValues | null;
 }
 
 export interface FormInstance {
@@ -48,7 +48,7 @@ export interface FormItemContext {
 export type Validator = {
   validateOnChange?: boolean;
   validateOnValidation?: boolean;
-  validate: (value: any, formValue: FormValues) => Promise<string> | string;
+  validate: (value: any, formValue: FormValues) => Promise<string> | string | undefined;
 };
 
 export interface FormProps
@@ -133,7 +133,7 @@ const {
     sx: {
       wrapper: {
         '& > *': {
-          marginBottom: 2 * context?.finalProps?.dense,
+          marginBottom: 2 * (context?.finalProps?.dense ?? 0),
         },
       },
     },
@@ -158,7 +158,7 @@ const {
           display: 'flex',
           flexDirection: 'column',
           flexWrap: 'nowrap',
-          marginBottom: finalProps?.dense * 2,
+          marginBottom: (finalProps?.dense ?? 0) * 2,
         },
         headerWrapper: {
           display: 'flex',
@@ -201,7 +201,7 @@ const {
           display: 'flex',
           flexDirection: 'column',
           flexWrap: 'nowrap',
-          marginBottom: finalProps?.dense / 2,
+          marginBottom: (finalProps?.dense ?? 0) / 2,
         },
         errorWrapper: {
           display: 'flex',
@@ -244,11 +244,11 @@ const {
 
 export { FormProvider, FormItemProvider };
 
-const EmitterContext = React.createContext<EventEmitter>(null);
+const EmitterContext = React.createContext<EventEmitter | null>(null);
 const FormValuesContext = React.createContext<FormValues>({});
 const RegisteredFieldsContext = React.createContext<Set<string>>(Set());
-const FilterContext = React.createContext<FormProps['filter']>(null);
-const ForceHideFieldsContext = React.createContext<FormProps['forceHideFields']>(null);
+const FilterContext = React.createContext<FormProps['filter'] | null>(null);
+const ForceHideFieldsContext = React.createContext<FormProps['forceHideFields'] | null>(null);
 
 const FORM_EVENT_NAMES = {
   REGISTRATION_STATUSES_CHANGE: Symbol(''),
@@ -272,7 +272,7 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
   const { sx, children, action, method, filter, forceHideFields, onInstanceChange, ...props } =
     useFormComponentConfig(inputProps);
   const update = useUpdate();
-  const classNames = useFormClassNames(sx);
+  const classNames = useFormClassNames(sx!);
   const innerRef = useRef<HTMLFormElement>(null);
   const emitter = useRef(new EventEmitter());
   const formValuesRef = useRef<FormValues>({});
@@ -334,14 +334,14 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
               const finalErrors = Object.entries(errorsMap).reduce(
                 (result, [name, errors]) => {
                   if (Array.isArray(errors) && errors.length > 0) {
-                    result[name] = errors;
+                    result![name] = errors;
                   }
                   return result;
                 },
                 {} as FormValidateResult['errors'],
               );
 
-              if (Object.keys(finalErrors).length === 0) {
+              if (Object.keys(finalErrors!).length === 0) {
                 resolve({
                   errors: null,
                   value: finalValues,
@@ -362,7 +362,7 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
     } as FormInstance;
   }, [formValuesRef.current, registeredFieldsRef.current, emitter.current]);
 
-  useImperativeHandle(outerRef, () => innerRef.current);
+  useImperativeHandle(outerRef, () => innerRef.current!);
 
   useEffect(() => {
     if (!(emitter.current instanceof EventEmitter)) return;
@@ -470,7 +470,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
   const innerEmitterRef = useRef(new EventEmitter());
   const changeEventNameRef = useRef(Symbol());
   const update = useUpdate();
-  const classNames = useFormItemClassNames(sx);
+  const classNames = useFormItemClassNames(sx!);
   const valueRef = useRef<any>(defaultValue);
   const registeredRef = useRef(false);
   const hiddenRef = useRef(false);
@@ -593,7 +593,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
       if (registeredFields?.has?.(name)) result[name] = value;
       return result;
     }, {} as FormValues);
-    getValidatorResult('change', rawFormValues?.[name]).then((result) => {
+    getValidatorResult('change', rawFormValues?.[name!]).then((result) => {
       errorsRef.current = result;
       update();
     });
@@ -610,9 +610,9 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
     const shouldRegisterByFilter = (() => {
       switch (filter?.mode) {
         case 'blacklist':
-          return !filter?.fields?.includes?.(name);
+          return !filter?.fields?.includes?.(name!);
         case 'whitelist':
-          return filter?.fields?.includes?.(name);
+          return filter?.fields?.includes?.(name!);
         default:
           return true;
       }
@@ -630,7 +630,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
   }, [registerCondition, filter, valueRef.current, defaultValue, emitter, name]);
 
   useEffect(() => {
-    const forceHidden = Array.isArray(forceHideFields) && forceHideFields?.includes?.(name);
+    const forceHidden = Array.isArray(forceHideFields) && forceHideFields?.includes?.(name!);
 
     if (forceHidden) {
       hiddenRef.current = true;
@@ -658,7 +658,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
     if (!(emitter instanceof EventEmitter)) return;
 
     const handleRegistrationStatusesChange = (registeredFields: Set<string>) => {
-      const registered = registeredFields?.has?.(name);
+      const registered = registeredFields?.has?.(name!);
       if (registeredRef.current === registered) return;
       registeredRef.current = registered;
       if (registered && isEmptyValue(valueRef.current) && !isEmptyValue(defaultValue)) {
@@ -671,7 +671,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
 
     const handleRequestClearItemsValue = (names?: string[], clearValidationErrors?: boolean) => {
       const finalNames = Array.isArray(names) ? names.filter((name) => !StringUtil.isFalsyString(name)) : null;
-      if (!Array.isArray(finalNames) || finalNames.includes(name)) {
+      if (!Array.isArray(finalNames) || finalNames.includes(name!)) {
         if (isEmptyValue(valueRef.current)) return;
         const oldValue = valueRef.current;
         valueRef.current = undefined;
@@ -690,7 +690,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
 
     const handleRequestResetItemsValue = (names?: string[], clearValidationErrors?: boolean) => {
       const finalNames = Array.isArray(names) ? names.filter((name) => !StringUtil.isFalsyString(name)) : null;
-      if (!Array.isArray(finalNames) || finalNames.includes(name)) {
+      if (!Array.isArray(finalNames) || finalNames.includes(name!)) {
         if (valueRef.current === defaultValue) return;
         const oldValue = valueRef.current;
         valueRef.current = defaultValue;
@@ -709,9 +709,9 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
     };
 
     const handleRequestSetItemsValue = (values?: FormValues) => {
-      if (!Object.keys(values || {}).includes(name) || valueRef.current === values?.[name]) return;
+      if (!Object.keys(values || {}).includes(name!) || valueRef.current === values?.[name!]) return;
       const oldValue = valueRef.current;
-      let newValue = values?.[name];
+      let newValue = values?.[name!];
       if (isEmptyValue(newValue)) newValue = defaultValue;
       valueRef.current = newValue;
       getValidatorResult('change', newValue).then((result) => {
@@ -722,7 +722,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
     };
 
     const handleRequestValidationErrors = (requestId: string, names: string[]) => {
-      if (!names?.includes?.(name)) return;
+      if (!names?.includes?.(name!)) return;
       shouldValidateRef.current = true;
       update();
       getValidatorResult('validation', valueRef.current).then((result) => {

@@ -12,23 +12,23 @@ import { AutoHide, AutoHideProvider, AutoHideRef } from './components/auto-hide'
 interface InputProps extends Omit<React.HTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
   value?: string;
   placeholder?: string;
-  onChange?: (value: string, event: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (value: string | undefined, event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(({ value, onChange, ...props }, ref) => {
   const innerRef = React.useRef<HTMLInputElement>(undefined);
 
-  React.useImperativeHandle(ref, () => innerRef.current);
+  React.useImperativeHandle(ref, () => innerRef.current!);
 
   useEffect(() => {
     if (!(innerRef.current instanceof HTMLInputElement)) return;
-    innerRef.current.value = StringUtil.isFalsyString(value) ? '' : value;
+    innerRef.current.value = StringUtil.isFalsyString(value) ? '' : value!;
   }, [value, innerRef.current]);
 
   return (
     <input
       {...props}
-      ref={innerRef}
+      ref={innerRef as React.LegacyRef<HTMLInputElement> | undefined}
       onChange={(event) => {
         onChange?.(StringUtil.isFalsyString(event?.target?.value) ? undefined : event.target.value, event);
       }}

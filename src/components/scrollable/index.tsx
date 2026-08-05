@@ -38,13 +38,13 @@ export { ScrollableProvider };
 
 interface Size {
   height: number;
-  overflowX: string;
-  overflowY: string;
   scrollHeight: number;
   scrollWidth: number;
   width: number;
   x: number;
   y: number;
+  overflowX?: string;
+  overflowY?: string;
 }
 
 export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inputProps, ref) => {
@@ -73,7 +73,7 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
   const horizontalInitialScrollLeftRef = React.useRef<number | null>(null);
   const [hovering, setHovering] = React.useState(false);
 
-  React.useImperativeHandle(ref, () => innerRef.current);
+  React.useImperativeHandle(ref, () => innerRef.current!);
 
   React.useEffect(() => {
     let stopped = false;
@@ -109,14 +109,14 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
           setSize(newSize);
         }
 
-        const thumbSize = trackerSize * (thumbSizeRatio > 1 || thumbSizeRatio <= 0 ? 1 : thumbSizeRatio);
+        const thumbSize = (trackerSize || 0) * (thumbSizeRatio! > 1 || thumbSizeRatio! <= 0 ? 1 : thumbSizeRatio!);
         const topOffset = typeof trackerOffset?.[0] === 'number' && trackerOffset[0] > 0 ? trackerOffset[0] : 0;
         let rightOffset = Math.max(
-          trackerSize,
+          trackerSize!,
           typeof trackerOffset?.[1] === 'number' && trackerOffset[1] > 0 ? trackerOffset[1] : 0,
         );
         const bottomOffset = Math.max(
-          trackerSize,
+          trackerSize!,
           typeof trackerOffset?.[2] === 'number' && trackerOffset[2] > 0 ? trackerOffset[2] : 0,
         );
         let leftOffset = typeof trackerOffset?.[3] === 'number' && trackerOffset[3] > 0 ? trackerOffset[3] : 0;
@@ -140,7 +140,7 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
           verticalDragCurrentTopRef.current > 0
         ) {
           innerRef.current.scrollTop =
-            verticalInitialScrollTopRef.current +
+            verticalInitialScrollTopRef.current! +
             ((verticalDragCurrentTopRef.current - verticalDragOriginalTopRef.current) / verticalTrackSize) *
               innerRef.current.scrollHeight;
         }
@@ -152,7 +152,7 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
           horizontalDragCurrentLeftRef.current > 0
         ) {
           innerRef.current.scrollLeft =
-            horizontalInitialScrollLeftRef.current +
+            horizontalInitialScrollLeftRef.current! +
             ((horizontalDragCurrentLeftRef.current - horizontalDragOriginalLeftRef.current) / horizontalTrackSize) *
               innerRef.current.scrollWidth;
         }
@@ -202,7 +202,7 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
     const handleDocumentMouseMove = (event: MouseEvent) => {
       event.stopPropagation();
       event.preventDefault();
-      setHovering(event?.composedPath?.()?.includes?.(innerRef.current));
+      setHovering(event?.composedPath?.()?.includes?.(innerRef.current!));
       if (isScrollDragging) {
         verticalDragCurrentTopRef.current = event.clientY;
         horizontalDragCurrentLeftRef.current = event.clientX;
@@ -246,7 +246,7 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
   return (
     <div
       {..._.omit(props, ['children', 'position'])}
-      dir={['rtl', 'ltr'].includes(props?.dir) ? props.dir : direction}
+      dir={['rtl', 'ltr'].includes(props?.dir || '') ? props.dir : direction}
       style={{
         ...props?.style,
         scrollbarWidth: 'none',
@@ -265,8 +265,8 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
         className={cx(css({ position: 'fixed', zIndex: 9999 }), trackerClassName)}
         style={(() => {
           if (
-            !SCROLLABLE_OVERFLOW_VALUES.includes(size?.overflowY) ||
-            size?.scrollHeight <= size?.height ||
+            !SCROLLABLE_OVERFLOW_VALUES.includes(size?.overflowY || '') ||
+            (size?.scrollHeight || 0) <= (size?.height || 0) ||
             (autoHide && !isScrollDragging && !hovering)
           ) {
             return {
@@ -283,7 +283,7 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
             event.stopPropagation();
             event.preventDefault();
             setIsScrollDragging(true);
-            verticalInitialScrollTopRef.current = innerRef.current?.scrollTop;
+            verticalInitialScrollTopRef.current = innerRef.current?.scrollTop || null;
             verticalDragOriginalTopRef.current = event.clientY;
           }}
         />
@@ -293,8 +293,8 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
         className={cx(css({ position: 'fixed', zIndex: 9999 }), trackerClassName)}
         style={(() => {
           if (
-            !SCROLLABLE_OVERFLOW_VALUES.includes(size?.overflowX) ||
-            size?.scrollWidth <= size?.width ||
+            !SCROLLABLE_OVERFLOW_VALUES.includes(size?.overflowX || '') ||
+            (size?.scrollWidth || 0) <= (size?.width || 0) ||
             (autoHide && !isScrollDragging && !hovering)
           ) {
             return {
@@ -311,7 +311,7 @@ export const Scrollable = React.forwardRef<HTMLDivElement, ScrollableProps>((inp
             event.stopPropagation();
             event.preventDefault();
             setIsScrollDragging(true);
-            horizontalInitialScrollLeftRef.current = innerRef.current?.scrollLeft;
+            horizontalInitialScrollLeftRef.current = innerRef.current?.scrollLeft || null;
             horizontalDragOriginalLeftRef.current = event.clientX;
           }}
         />

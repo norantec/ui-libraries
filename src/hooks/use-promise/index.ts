@@ -27,7 +27,7 @@ export interface UsePromiseReturn<T extends GenericFunction> {
 }
 
 export const usePromise = <T extends GenericFunction>(promiseFn: T) => {
-  const lastRequestObjectRef = useRef<PartialDeep<Parameters<T>>>(null);
+  const lastRequestObjectRef = useRef<PartialDeep<Parameters<T>> | null>(null);
   const pendingParamsRef = useRef<UsePromiseReturn<T>['pendingParams']>(null);
   const errorRef = useRef<Error>(undefined);
   const resultRef = useRef<UsePromiseReturn<T>['result']>(undefined);
@@ -35,13 +35,13 @@ export const usePromise = <T extends GenericFunction>(promiseFn: T) => {
   const run = useMemo<UsePromiseReturn<T>['run']>(() => {
     return (async (...params) => {
       const finalParams = Array.isArray(params) ? params : [];
-      pendingParamsRef.current = getLeafPaths(diff(lastRequestObjectRef.current, finalParams));
+      pendingParamsRef.current = getLeafPaths(diff(lastRequestObjectRef.current!, finalParams));
       update();
 
       try {
         resultRef.current = (await promiseFn(...finalParams)) as Awaited<ReturnType<T>>;
         errorRef.current = undefined;
-      } catch (error) {
+      } catch (error: any) {
         resultRef.current = undefined;
         errorRef.current = error as unknown as Error;
       } finally {

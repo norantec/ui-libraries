@@ -77,7 +77,7 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
     closeEvents,
     ...props
   } = useAutoHideComponentConfig(inputProps);
-  const classNames = useAutoHideClassNames(sx);
+  const classNames = useAutoHideClassNames(sx!);
   const [rect, setRect] = React.useState<DOMRect | null>(null);
   const defaultState = React.useMemo(() => {
     switch (inputDefaultState) {
@@ -91,14 +91,14 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
   const [state, setState] = React.useState<State>(defaultState);
   const [tempMutableProps, setTempMutableProps] = React.useState<Partial<MutableProps>>({});
   const [debouncedState, setDebouncedState] = React.useState<State>(defaultState);
-  const previewSize = React.useMemo(() => Math.max(0, inputPreviewSize), [inputPreviewSize]);
+  const previewSize = React.useMemo(() => Math.max(0, inputPreviewSize!), [inputPreviewSize]);
   const delayTimeoutIdRef = React.useRef<number | null>(null);
   const boundaryRect = React.useMemo(() => {
     if (state === 'actived' || StringUtil.isFalsyString(stickTo) || !(rect instanceof DOMRect)) return rect;
 
     const result = new DOMRect(rect.x, rect.y, rect.width, rect.height);
 
-    stickTo.split('-').forEach((direction) => {
+    stickTo!.split('-').forEach((direction) => {
       switch (direction as 'top' | 'right' | 'bottom' | 'left') {
         case 'top':
           result.y += previewSize;
@@ -135,7 +135,7 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
       y: 0,
     };
 
-    return stickTo.split('-').reduce(
+    return stickTo!.split('-').reduce(
       (result, key) => {
         result.actived[key] = activedOffsetMap[edgeToAxisMap[key]];
         result.hidden[key] = hiddenOffsetMap[edgeToAxisMap[key]];
@@ -179,7 +179,7 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
   });
 
   React.useEffect(() => {
-    clearTimeout(delayTimeoutIdRef.current);
+    clearTimeout(delayTimeoutIdRef.current!);
 
     delayTimeoutIdRef.current = setTimeout(
       () => {
@@ -200,7 +200,7 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
     ) as unknown as number;
 
     return () => {
-      clearTimeout(delayTimeoutIdRef.current);
+      clearTimeout(delayTimeoutIdRef.current!);
     };
   }, [state, debouncedState, mutableProps?.previewDelay, mutableProps?.activeDelay, mutableProps?.hideDelay]);
 
@@ -245,7 +245,7 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
     };
     const handleClick = (event: MouseEvent) => {
       if (mutableProps?.closeEvents?.clickOutside === false) return;
-      if (event.composedPath?.()?.includes?.(ref.current)) return;
+      if (event.composedPath?.()?.includes?.(ref.current!)) return;
       setState('hidden');
     };
 
@@ -267,7 +267,7 @@ export const AutoHide = React.forwardRef<AutoHideRef, AutoHideProps>((inputProps
           event.clientX <= boundaryRect.right &&
           event.clientY >= boundaryRect.top &&
           event.clientY <= boundaryRect.bottom) ||
-        event?.composedPath?.()?.includes?.(ref.current)
+        event?.composedPath?.()?.includes?.(ref.current!)
       ) {
         if (mutableProps?.disabled) return;
         switch (debouncedState) {

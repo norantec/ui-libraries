@@ -7,7 +7,7 @@ const getDirection = (): Direction => {
   const rawDirection = document.documentElement.getAttribute('dir');
   let newDirection: Direction;
 
-  if (!StringUtil.isFalsyString(rawDirection) && rawDirection.toLowerCase() === Direction.RTL) {
+  if (!StringUtil.isFalsyString(rawDirection) && rawDirection!.toLowerCase() === Direction.RTL) {
     newDirection = Direction.RTL;
   } else {
     newDirection = Direction.LTR;

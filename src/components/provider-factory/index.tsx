@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type */
 import * as React from 'react';
 import { useCallback } from 'react';
 
@@ -21,7 +20,7 @@ export const ProviderFactory: React.FC<React.PropsWithChildren<ProviderFactoryPr
     let finalElement: React.ReactElement = children as unknown as React.ReactElement;
 
     while (elements.length > 0) {
-      finalElement = React.cloneElement(elements.pop(), undefined, finalElement);
+      finalElement = React.cloneElement(elements.pop()!, undefined, finalElement);
     }
 
     return finalElement;

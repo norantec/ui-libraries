@@ -1,27 +1,32 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "commonjs",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "target": "ES5",
+    "allowSyntheticDefaultImports": true,
+    "target": "es2015",
     "sourceMap": false,
-    "incremental": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "incremental": false,
     "skipLibCheck": true,
-    "strictNullChecks": false,
-    "strict": true,
+    "strictNullChecks": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "jsx": "react",
     "types": ["node"],
+    "jsx": "react",
     "typeRoots": [
       "node_modules/@types",
       "typings"
     ],
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
+    "downlevelIteration": true,
+    "ignoreDeprecations": "6.0",
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "strictPropertyInitialization": false
   },
-  "exclude": ["node_modules", "test", "lib", "**/*spec.ts"]
+  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
 }
