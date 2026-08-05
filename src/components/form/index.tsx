@@ -563,7 +563,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
       valueRef.current = outgoingValue;
       shouldValidateRef.current = true;
       getValidatorResult('change', outgoingValue).then((result) => {
-        errorsRef.current = result;
+        errorsRef.current = result as string[];
         update();
       });
       update();
@@ -594,7 +594,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
       return result;
     }, {} as FormValues);
     getValidatorResult('change', rawFormValues?.[name!]).then((result) => {
-      errorsRef.current = result;
+      errorsRef.current = result as string[];
       update();
     });
   }, [rawFormValues, registeredFields, name, getValidatorResult]);
@@ -677,7 +677,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
         valueRef.current = undefined;
         if (!clearValidationErrors) {
           getValidatorResult('change', undefined).then((result) => {
-            errorsRef.current = result;
+            errorsRef.current = result! as string[];
             update();
           });
         } else {
@@ -696,7 +696,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
         valueRef.current = defaultValue;
         if (!clearValidationErrors) {
           getValidatorResult('change', defaultValue).then((result) => {
-            errorsRef.current = result;
+            errorsRef.current = result! as string[];
             update();
           });
         } else {
@@ -715,7 +715,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
       if (isEmptyValue(newValue)) newValue = defaultValue;
       valueRef.current = newValue;
       getValidatorResult('change', newValue).then((result) => {
-        errorsRef.current = result;
+        errorsRef.current = result as string[];
         update();
       });
       onChange?.(oldValue, newValue, 'set', formValuesRef.current);
@@ -726,7 +726,7 @@ const FormItem = function <T>(inputProps: FormItemProps<T>) {
       shouldValidateRef.current = true;
       update();
       getValidatorResult('validation', valueRef.current).then((result) => {
-        errorsRef.current = result;
+        errorsRef.current = result as string[];
         update();
         emitter.emit(FORM_ITEM_EVENT_NAMES.REPLY_VALIDATION_ERRORS, requestId, name, result);
       });
