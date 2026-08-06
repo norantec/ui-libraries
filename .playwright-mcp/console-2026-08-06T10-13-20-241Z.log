@@ -1,0 +1,132 @@
+[     317ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[     317ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[     320ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[     347ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[     348ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[     350ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[     435ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[     436ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[     437ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[     452ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[     453ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[     454ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[     475ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[     481ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[     484ms] [LOG] FORM:CONTROLLED_EFFECT {test1: 123} @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:407
+[     484ms] [LOG] ITEM:SET_VALUE undefined valueRef undefined incoming undefined @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:705
+[     491ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[     494ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[     499ms] [LOG] FORM:CONTROLLED_EFFECT {test1: 123} @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:407
+[     499ms] [LOG] ITEM:SET_VALUE undefined valueRef undefined incoming undefined @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:705
+[     503ms] [LOG] FORM:CONTROLLED_EFFECT {test1: 123} @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:407
+[     503ms] [LOG] ITEM:SET_VALUE undefined valueRef undefined incoming undefined @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:705
+[     514ms] [LOG] FORM:CONTROLLED_EFFECT {test1: 123} @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:407
+[     515ms] [LOG] ITEM:SET_VALUE undefined valueRef undefined incoming undefined @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:705
+[     525ms] [LOG] ITEM:SET_VALUE test1 valueRef undefined incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:705
+[     527ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[     529ms] [LOG] ITEM:SET_VALUE test1 valueRef undefined incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:705
+[     531ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[     533ms] [LOG] ITEM:SET_VALUE test1 valueRef undefined incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:705
+[     535ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[     537ms] [LOG] ITEM:SET_VALUE test1 valueRef undefined incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:705
+[     538ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[     540ms] [LOG] ITEM:SET_VALUE test1 valueRef 123 incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:705
+[     543ms] [LOG] ITEM:SET_VALUE test1 valueRef 123 incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:705
+[   92250ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   92250ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   92250ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   92250ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   92429ms] [INFO] [webpack-dev-server] App hot update... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   92430ms] [LOG] [HMR] Checking for updates on the server... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[   92431ms] [INFO] [webpack-dev-server] App hot update... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   92431ms] [LOG] [HMR] Checking for updates on the server... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[   92431ms] [INFO] [webpack-dev-server] App hot update... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   92431ms] [LOG] [HMR] Checking for updates on the server... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[   92431ms] [INFO] [webpack-dev-server] App hot update... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   92432ms] [LOG] [HMR] Checking for updates on the server... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[   92539ms] TypeError: Cannot set properties of undefined (setting './src/components/form/index.tsx')
+    at self.webpackHotUpdate_open_norantec_ui_libraries (http://localhost:9000/demo.js:1348:39)
+    at http://localhost:9000/demo.b2d5a149b0fa7989a8cc.hot-update.js:10:52
+[   92483ms] [WARNING] [HMR] Update failed: Loading hot update chunk demo failed.
+(missing: http://localhost:9000/demo.b2d5a149b0fa7989a8cc.hot-update.js)
+ChunkLoadError
+    at http://localhost:9000/demo.js:1328:26
+    at new Promise (<anonymous>)
+    at loadUpdateChunk (http://localhost:9000/demo.js:1323:20)
+    at http://localhost:9000/demo.js:1790:29
+    at Array.forEach (<anonymous>)
+    at __webpack_require__.hmrC.jsonp (http://localhost:9000/demo.js:1785:22)
+    at http://localhost:9000/demo.js:1158:47
+    at Array.reduce (<anonymous>)
+    at http://localhost:9000/demo.js:1154:55 @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[   92540ms] TypeError: Cannot set properties of undefined (setting './src/components/form/index.tsx')
+    at self.webpackHotUpdate_open_norantec_ui_libraries (http://localhost:9000/demo.js:1348:39)
+    at http://localhost:9000/demo.b2d5a149b0fa7989a8cc.hot-update.js:10:52
+[   92484ms] [WARNING] [HMR] Update failed: Loading hot update chunk demo failed.
+(missing: http://localhost:9000/demo.b2d5a149b0fa7989a8cc.hot-update.js)
+ChunkLoadError
+    at http://localhost:9000/demo.js:1328:26
+    at new Promise (<anonymous>)
+    at loadUpdateChunk (http://localhost:9000/demo.js:1323:20)
+    at http://localhost:9000/demo.js:1790:29
+    at Array.forEach (<anonymous>)
+    at __webpack_require__.hmrC.jsonp (http://localhost:9000/demo.js:1785:22)
+    at http://localhost:9000/demo.js:1158:47
+    at Array.reduce (<anonymous>)
+    at http://localhost:9000/demo.js:1154:55 @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[   92540ms] TypeError: Cannot set properties of undefined (setting './src/components/form/index.tsx')
+    at self.webpackHotUpdate_open_norantec_ui_libraries (http://localhost:9000/demo.js:1348:39)
+    at http://localhost:9000/demo.b2d5a149b0fa7989a8cc.hot-update.js:10:52
+[   92485ms] [WARNING] [HMR] Update failed: Loading hot update chunk demo failed.
+(missing: http://localhost:9000/demo.b2d5a149b0fa7989a8cc.hot-update.js)
+ChunkLoadError
+    at http://localhost:9000/demo.js:1328:26
+    at new Promise (<anonymous>)
+    at loadUpdateChunk (http://localhost:9000/demo.js:1323:20)
+    at http://localhost:9000/demo.js:1790:29
+    at Array.forEach (<anonymous>)
+    at __webpack_require__.hmrC.jsonp (http://localhost:9000/demo.js:1785:22)
+    at http://localhost:9000/demo.js:1158:47
+    at Array.reduce (<anonymous>)
+    at http://localhost:9000/demo.js:1154:55 @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[   92497ms] [WARNING] [HMR] Cannot apply update. Need to do a full reload! @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[   92497ms] [WARNING] [HMR] Error: Aborted because ./src/components/form/index.tsx is not accepted
+Update propagation: ./src/components/form/index.tsx -> ./src/demo.tsx
+    at applyHandler (http://localhost:9000/demo.js:1496:31)
+    at http://localhost:9000/demo.js:1202:21
+    at Array.map (<anonymous>)
+    at internalApply (http://localhost:9000/demo.js:1201:54)
+    at http://localhost:9000/demo.js:1172:26
+    at waitForBlockingPromises (http://localhost:9000/demo.js:1126:48)
+    at http://localhost:9000/demo.js:1170:24 @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[   93188ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   93189ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[   93236ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[   93361ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   93362ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[   93363ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[   93471ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   93472ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[   93474ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[   93494ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   93494ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[   93497ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[   93531ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[   93537ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[   93543ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[   93550ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[   93560ms] [LOG] ITEM:SET_VALUE undefined valueRef undefined incoming undefined @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   93565ms] [LOG] ITEM:SET_VALUE undefined valueRef undefined incoming undefined @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   93571ms] [LOG] ITEM:SET_VALUE undefined valueRef undefined incoming undefined @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   93579ms] [LOG] ITEM:SET_VALUE undefined valueRef undefined incoming undefined @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   93611ms] [LOG] ITEM:SET_VALUE test1 valueRef undefined incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   93616ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[   93619ms] [LOG] ITEM:SET_VALUE test1 valueRef undefined incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   93621ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[   93623ms] [LOG] ITEM:SET_VALUE test1 valueRef undefined incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   93625ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[   93631ms] [LOG] ITEM:SET_VALUE test1 valueRef undefined incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   93636ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[   93644ms] [LOG] ITEM:SET_VALUE test1 valueRef 123 incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   93648ms] [LOG] ITEM:SET_VALUE test1 valueRef 123 incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   93696ms] [LOG] ITEM:SET_VALUE test1 valueRef 123 incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707

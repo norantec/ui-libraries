@@ -68,6 +68,9 @@ export interface FormProps
   sx?: {
     wrapper?: CSSObject;
   };
+  controlled?: boolean;
+  value?: FormValues;
+  onChange?: (value: FormValues) => void;
   onInstanceChange?: (instance: any) => void;
 }
 
@@ -120,6 +123,7 @@ const {
     readOnly: false,
     dense: 4,
     dangerColor: '#FF0000',
+    controlled: false,
     sx: {
       wrapper: {
         display: 'flex',
@@ -269,14 +273,27 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
   HTMLFormElement,
   FormProps
 >(function (inputProps, outerRef) {
-  const { sx, children, action, method, filter, forceHideFields, onInstanceChange, ...props } =
-    useFormComponentConfig(inputProps);
+  const {
+    sx,
+    children,
+    action,
+    method,
+    filter,
+    forceHideFields,
+    controlled,
+    value,
+    onChange,
+    onInstanceChange,
+    ...props
+  } = useFormComponentConfig(inputProps);
   const update = useUpdate();
   const classNames = useFormClassNames(sx!);
   const innerRef = useRef<HTMLFormElement>(null);
   const emitter = useRef(new EventEmitter());
   const formValuesRef = useRef<FormValues>({});
   const registeredFieldsRef = useRef<Set<string>>(Set());
+  const valueRef = useRef(value);
+  valueRef.current = value;
   const createFormInstance = useCallback(() => {
     return {
       getValue: (name: string) => {
@@ -369,15 +386,24 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
 
     const handleValueChange = (name: string, value: any) => {
       if (StringUtil.isFalsyString(name)) return;
+
+      const shouldInvokeChange = formValuesRef.current?.[name] !== value;
       formValuesRef.current = {
         ...formValuesRef.current,
         [name]: value,
       };
+
+      if (controlled && shouldInvokeChange) onChange?.(formValuesRef.current);
+
       update();
     };
 
     emitter.current.addListener(FORM_ITEM_EVENT_NAMES.VALUE_CHANGE, handleValueChange);
-  }, [emitter.current, formValuesRef.current]);
+
+    return () => {
+      emitter.current?.removeListener?.(FORM_ITEM_EVENT_NAMES.VALUE_CHANGE, handleValueChange);
+    };
+  }, [emitter.current, formValuesRef.current, controlled, onChange]);
 
   useEffect(() => {
     if (!(emitter.current instanceof EventEmitter)) return;
@@ -387,17 +413,42 @@ const Form: React.ForwardRefExoticComponent<FormProps & React.RefAttributes<HTML
       registeredFieldsRef.current = registered
         ? registeredFieldsRef.current.add(name)
         : registeredFieldsRef.current.delete(name);
+      if (controlled) {
+        setTimeout(() => {
+          emitter.current?.emit?.(FORM_EVENT_NAMES.REQUEST_SET_ITEMS_VALUE, valueRef.current ?? {});
+        }, 0);
+      }
       update();
     };
 
     emitter.current.addListener(FORM_ITEM_EVENT_NAMES.REGISTRATION_STATUS_CHANGE, handleRegistrationStatusChange);
-  }, [emitter.current, registeredFieldsRef.current]);
+
+    return () => {
+      emitter.current?.removeListener?.(
+        FORM_ITEM_EVENT_NAMES.REGISTRATION_STATUS_CHANGE,
+        handleRegistrationStatusChange,
+      );
+    };
+  }, [emitter.current, registeredFieldsRef.current, controlled]);
 
   useEffect(() => {
     if (!(emitter.current instanceof EventEmitter)) return;
     emitter.current.emit(FORM_EVENT_NAMES.REGISTRATION_STATUSES_CHANGE, registeredFieldsRef.current);
     onInstanceChange?.(createFormInstance());
   }, [emitter.current, formValuesRef.current, registeredFieldsRef.current, onInstanceChange]);
+
+  const controlledValueRef = useRef<FormValues | undefined>(undefined);
+
+  useEffect(() => {
+    if (!controlled) return;
+    if (_.isEqual(controlledValueRef.current, value)) return;
+    controlledValueRef.current = value;
+    formValuesRef.current = {
+      ...formValuesRef.current,
+      ...(value ?? {}),
+    };
+    emitter.current?.emit?.(FORM_EVENT_NAMES.REQUEST_SET_ITEMS_VALUE, value ?? {});
+  }, [controlled, value]);
 
   const sortedChildren = useMemo(() => {
     const childrenArray = React.Children.toArray(children) as React.ReactElement[];

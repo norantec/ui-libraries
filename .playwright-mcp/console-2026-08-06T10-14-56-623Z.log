@@ -1,0 +1,252 @@
+[     368ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[     368ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[     370ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[     389ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[     390ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[     391ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[     462ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[     462ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[     464ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[     483ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[     484ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[     487ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[     506ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[     516ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[     522ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[     531ms] [LOG] ITEM:SET_VALUE undefined valueRef undefined incoming undefined @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[     533ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[     536ms] [LOG] ITEM:SET_VALUE undefined valueRef undefined incoming undefined @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[     542ms] [LOG] ITEM:SET_VALUE undefined valueRef undefined incoming undefined @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[     547ms] [LOG] ITEM:SET_VALUE undefined valueRef undefined incoming undefined @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[     557ms] [LOG] ITEM:SET_VALUE test1 valueRef undefined incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[     560ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[     564ms] [LOG] ITEM:SET_VALUE test1 valueRef undefined incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[     566ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[     570ms] [LOG] ITEM:SET_VALUE test1 valueRef undefined incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[     571ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[     575ms] [LOG] ITEM:SET_VALUE test1 valueRef undefined incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[     576ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[     578ms] [LOG] ITEM:SET_VALUE test1 valueRef 123 incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[     579ms] [LOG] ITEM:SET_VALUE test1 valueRef 123 incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[     580ms] [LOG] ITEM:SET_VALUE test1 valueRef 123 incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   28045ms] [LOG] ITEM:handleChange test1 x @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:570
+[   28047ms] [LOG] FORM:VALUE_CHANGE test1 x controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[   28047ms] [LOG] FORM:INVOKE_ONCHANGE {test1: x} @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:365
+[   28047ms] [LOG] LENCONDA:DEMO:onChange {test1: x} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   28051ms] [LOG] ITEM:SET_VALUE test1 valueRef x incoming x @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   28052ms] [LOG] ITEM:SET_VALUE test1 valueRef x incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   28053ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current x @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[   28053ms] [LOG] FORM:INVOKE_ONCHANGE {test1: 123} @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:365
+[   28053ms] [LOG] LENCONDA:DEMO:onChange {test1: 123} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   28057ms] [LOG] ITEM:SET_VALUE test1 valueRef 123 incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   28058ms] [LOG] ITEM:SET_VALUE test1 valueRef 123 incoming x @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   28060ms] [LOG] FORM:VALUE_CHANGE test1 x controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[   28060ms] [LOG] FORM:INVOKE_ONCHANGE {test1: x} @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:365
+[   28060ms] [LOG] LENCONDA:DEMO:onChange {test1: x} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   28063ms] [LOG] ITEM:SET_VALUE test1 valueRef x incoming x @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   28064ms] [LOG] ITEM:SET_VALUE test1 valueRef x incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   28065ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current x @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[   28066ms] [LOG] FORM:INVOKE_ONCHANGE {test1: 123} @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:365
+[   28066ms] [LOG] LENCONDA:DEMO:onChange {test1: 123} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   28069ms] [LOG] ITEM:SET_VALUE test1 valueRef 123 incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   28070ms] [LOG] ITEM:SET_VALUE test1 valueRef 123 incoming x @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   28073ms] [LOG] FORM:VALUE_CHANGE test1 x controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[   28073ms] [LOG] FORM:INVOKE_ONCHANGE {test1: x} @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:365
+[   28073ms] [LOG] LENCONDA:DEMO:onChange {test1: x} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   28077ms] [LOG] ITEM:SET_VALUE test1 valueRef x incoming x @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   28078ms] [LOG] ITEM:SET_VALUE test1 valueRef x incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   28079ms] [LOG] ITEM:SET_VALUE test1 valueRef 123 incoming x @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   28080ms] [LOG] FORM:VALUE_CHANGE test1 x controlled true current x @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[   28080ms] [LOG] ITEM:SET_VALUE test1 valueRef x incoming x @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:707
+[   70973ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   70973ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   70974ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   70974ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   71069ms] [ERROR] [webpack-dev-server] Errors while compiling. Reload prevented. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   71069ms] [ERROR] [webpack-dev-server] ERROR in ./src/components/form/index.tsx
+Module build failed (from ./node_modules/esbuild-loader/dist/index.cjs):
+Error: Transform failed with 1 error:
+/Users/lenconda/workspace/norantec/ui-libraries/src/components/form/index.tsx:445:8: ERROR: The symbol "controlledValueRef" has already been declared
+    at failureErrorWithLog (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1748:15)
+    at /Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1017:50
+    at responseCallbacks.<computed> (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:884:9)
+    at handleIncomingPacket (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:939:12)
+    at Socket.readFromStdout (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:862:7)
+    at Socket.emit (node:events:509:28)
+    at addChunk (node:internal/streams/readable:563:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
+    at Readable.push (node:internal/streams/readable:394:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   71078ms] [ERROR] [webpack-dev-server] Errors while compiling. Reload prevented. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   71078ms] [ERROR] [webpack-dev-server] ERROR in ./src/components/form/index.tsx
+Module build failed (from ./node_modules/esbuild-loader/dist/index.cjs):
+Error: Transform failed with 1 error:
+/Users/lenconda/workspace/norantec/ui-libraries/src/components/form/index.tsx:445:8: ERROR: The symbol "controlledValueRef" has already been declared
+    at failureErrorWithLog (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1748:15)
+    at /Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1017:50
+    at responseCallbacks.<computed> (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:884:9)
+    at handleIncomingPacket (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:939:12)
+    at Socket.readFromStdout (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:862:7)
+    at Socket.emit (node:events:509:28)
+    at addChunk (node:internal/streams/readable:563:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
+    at Readable.push (node:internal/streams/readable:394:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   71083ms] [ERROR] [webpack-dev-server] Errors while compiling. Reload prevented. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   71083ms] [ERROR] [webpack-dev-server] ERROR in ./src/components/form/index.tsx
+Module build failed (from ./node_modules/esbuild-loader/dist/index.cjs):
+Error: Transform failed with 1 error:
+/Users/lenconda/workspace/norantec/ui-libraries/src/components/form/index.tsx:445:8: ERROR: The symbol "controlledValueRef" has already been declared
+    at failureErrorWithLog (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1748:15)
+    at /Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1017:50
+    at responseCallbacks.<computed> (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:884:9)
+    at handleIncomingPacket (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:939:12)
+    at Socket.readFromStdout (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:862:7)
+    at Socket.emit (node:events:509:28)
+    at addChunk (node:internal/streams/readable:563:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
+    at Readable.push (node:internal/streams/readable:394:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   71088ms] [ERROR] [webpack-dev-server] Errors while compiling. Reload prevented. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   71088ms] [ERROR] [webpack-dev-server] ERROR in ./src/components/form/index.tsx
+Module build failed (from ./node_modules/esbuild-loader/dist/index.cjs):
+Error: Transform failed with 1 error:
+/Users/lenconda/workspace/norantec/ui-libraries/src/components/form/index.tsx:445:8: ERROR: The symbol "controlledValueRef" has already been declared
+    at failureErrorWithLog (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1748:15)
+    at /Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1017:50
+    at responseCallbacks.<computed> (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:884:9)
+    at handleIncomingPacket (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:939:12)
+    at Socket.readFromStdout (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:862:7)
+    at Socket.emit (node:events:509:28)
+    at addChunk (node:internal/streams/readable:563:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
+    at Readable.push (node:internal/streams/readable:394:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   76447ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   76449ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   76451ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   76454ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   76501ms] [ERROR] [webpack-dev-server] Errors while compiling. Reload prevented. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   76502ms] [ERROR] [webpack-dev-server] ERROR in ./src/components/form/index.tsx
+Module build failed (from ./node_modules/esbuild-loader/dist/index.cjs):
+Error: Transform failed with 1 error:
+/Users/lenconda/workspace/norantec/ui-libraries/src/components/form/index.tsx:445:8: ERROR: The symbol "controlledValueRef" has already been declared
+    at failureErrorWithLog (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1748:15)
+    at /Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1017:50
+    at responseCallbacks.<computed> (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:884:9)
+    at handleIncomingPacket (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:939:12)
+    at Socket.readFromStdout (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:862:7)
+    at Socket.emit (node:events:509:28)
+    at addChunk (node:internal/streams/readable:563:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
+    at Readable.push (node:internal/streams/readable:394:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   76507ms] [ERROR] [webpack-dev-server] Errors while compiling. Reload prevented. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   76507ms] [ERROR] [webpack-dev-server] ERROR in ./src/components/form/index.tsx
+Module build failed (from ./node_modules/esbuild-loader/dist/index.cjs):
+Error: Transform failed with 1 error:
+/Users/lenconda/workspace/norantec/ui-libraries/src/components/form/index.tsx:445:8: ERROR: The symbol "controlledValueRef" has already been declared
+    at failureErrorWithLog (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1748:15)
+    at /Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1017:50
+    at responseCallbacks.<computed> (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:884:9)
+    at handleIncomingPacket (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:939:12)
+    at Socket.readFromStdout (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:862:7)
+    at Socket.emit (node:events:509:28)
+    at addChunk (node:internal/streams/readable:563:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
+    at Readable.push (node:internal/streams/readable:394:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   76514ms] [ERROR] [webpack-dev-server] Errors while compiling. Reload prevented. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   76514ms] [ERROR] [webpack-dev-server] ERROR in ./src/components/form/index.tsx
+Module build failed (from ./node_modules/esbuild-loader/dist/index.cjs):
+Error: Transform failed with 1 error:
+/Users/lenconda/workspace/norantec/ui-libraries/src/components/form/index.tsx:445:8: ERROR: The symbol "controlledValueRef" has already been declared
+    at failureErrorWithLog (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1748:15)
+    at /Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1017:50
+    at responseCallbacks.<computed> (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:884:9)
+    at handleIncomingPacket (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:939:12)
+    at Socket.readFromStdout (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:862:7)
+    at Socket.emit (node:events:509:28)
+    at addChunk (node:internal/streams/readable:563:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
+    at Readable.push (node:internal/streams/readable:394:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   76520ms] [ERROR] [webpack-dev-server] Errors while compiling. Reload prevented. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   76520ms] [ERROR] [webpack-dev-server] ERROR in ./src/components/form/index.tsx
+Module build failed (from ./node_modules/esbuild-loader/dist/index.cjs):
+Error: Transform failed with 1 error:
+/Users/lenconda/workspace/norantec/ui-libraries/src/components/form/index.tsx:445:8: ERROR: The symbol "controlledValueRef" has already been declared
+    at failureErrorWithLog (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1748:15)
+    at /Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1017:50
+    at responseCallbacks.<computed> (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:884:9)
+    at handleIncomingPacket (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:939:12)
+    at Socket.readFromStdout (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:862:7)
+    at Socket.emit (node:events:509:28)
+    at addChunk (node:internal/streams/readable:563:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
+    at Readable.push (node:internal/streams/readable:394:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   80878ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   80879ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   80880ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   80882ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[   80928ms] [ERROR] [webpack-dev-server] Errors while compiling. Reload prevented. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   80928ms] [ERROR] [webpack-dev-server] ERROR in ./src/components/form/index.tsx
+Module build failed (from ./node_modules/esbuild-loader/dist/index.cjs):
+Error: Transform failed with 1 error:
+/Users/lenconda/workspace/norantec/ui-libraries/src/components/form/index.tsx:445:8: ERROR: The symbol "controlledValueRef" has already been declared
+    at failureErrorWithLog (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1748:15)
+    at /Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1017:50
+    at responseCallbacks.<computed> (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:884:9)
+    at handleIncomingPacket (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:939:12)
+    at Socket.readFromStdout (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:862:7)
+    at Socket.emit (node:events:509:28)
+    at addChunk (node:internal/streams/readable:563:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
+    at Readable.push (node:internal/streams/readable:394:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   80933ms] [ERROR] [webpack-dev-server] Errors while compiling. Reload prevented. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   80934ms] [ERROR] [webpack-dev-server] ERROR in ./src/components/form/index.tsx
+Module build failed (from ./node_modules/esbuild-loader/dist/index.cjs):
+Error: Transform failed with 1 error:
+/Users/lenconda/workspace/norantec/ui-libraries/src/components/form/index.tsx:445:8: ERROR: The symbol "controlledValueRef" has already been declared
+    at failureErrorWithLog (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1748:15)
+    at /Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1017:50
+    at responseCallbacks.<computed> (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:884:9)
+    at handleIncomingPacket (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:939:12)
+    at Socket.readFromStdout (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:862:7)
+    at Socket.emit (node:events:509:28)
+    at addChunk (node:internal/streams/readable:563:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
+    at Readable.push (node:internal/streams/readable:394:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   80939ms] [ERROR] [webpack-dev-server] Errors while compiling. Reload prevented. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   80940ms] [ERROR] [webpack-dev-server] ERROR in ./src/components/form/index.tsx
+Module build failed (from ./node_modules/esbuild-loader/dist/index.cjs):
+Error: Transform failed with 1 error:
+/Users/lenconda/workspace/norantec/ui-libraries/src/components/form/index.tsx:445:8: ERROR: The symbol "controlledValueRef" has already been declared
+    at failureErrorWithLog (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1748:15)
+    at /Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1017:50
+    at responseCallbacks.<computed> (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:884:9)
+    at handleIncomingPacket (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:939:12)
+    at Socket.readFromStdout (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:862:7)
+    at Socket.emit (node:events:509:28)
+    at addChunk (node:internal/streams/readable:563:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
+    at Readable.push (node:internal/streams/readable:394:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   80946ms] [ERROR] [webpack-dev-server] Errors while compiling. Reload prevented. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607
+[   80946ms] [ERROR] [webpack-dev-server] ERROR in ./src/components/form/index.tsx
+Module build failed (from ./node_modules/esbuild-loader/dist/index.cjs):
+Error: Transform failed with 1 error:
+/Users/lenconda/workspace/norantec/ui-libraries/src/components/form/index.tsx:445:8: ERROR: The symbol "controlledValueRef" has already been declared
+    at failureErrorWithLog (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1748:15)
+    at /Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:1017:50
+    at responseCallbacks.<computed> (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:884:9)
+    at handleIncomingPacket (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:939:12)
+    at Socket.readFromStdout (/Users/lenconda/workspace/norantec/ui-libraries/node_modules/esbuild-loader/node_modules/esbuild/lib/main.js:862:7)
+    at Socket.emit (node:events:509:28)
+    at addChunk (node:internal/streams/readable:563:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
+    at Readable.push (node:internal/streams/readable:394:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:607

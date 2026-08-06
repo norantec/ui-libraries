@@ -1,0 +1,484 @@
+[     331ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[     331ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[     333ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[     353ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[     353ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[     354ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[     424ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[     424ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[     425ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[     442ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[     442ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[     444ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[     467ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[     472ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[     479ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[     485ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[    8656ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[    8663ms] [LOG] LENCONDA:DEMO:onChange {test1: 123} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[    8667ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   70824ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   70995ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71000ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71003ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71007ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71012ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71017ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71020ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71024ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71028ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71033ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71036ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71040ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71045ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71047ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71051ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71054ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71058ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71062ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71065ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71068ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71072ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71075ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71078ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71081ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71084ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71087ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71090ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71093ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71095ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71098ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71101ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71105ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71108ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71111ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71114ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71116ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71120ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71124ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71127ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71130ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71132ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71137ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71140ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71143ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71146ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71149ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71153ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71156ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71159ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71162ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71164ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71167ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71171ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71173ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71176ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71179ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71181ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71184ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71188ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71190ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71193ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71196ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71199ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71203ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71207ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71210ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71213ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71215ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71219ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71222ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71224ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71228ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71230ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71233ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71238ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71241ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71244ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71246ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71249ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71254ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71257ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71259ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71262ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71264ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71266ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71270ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71272ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71274ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71279ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71284ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71287ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71290ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71295ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71298ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71302ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71306ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71311ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71314ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71317ms] [LOG] LENCONDA:DEMO:onChange {test1: abc} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[   71322ms] [LOG] LENCONDA:DEMO:onChange {test1: abcx} @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:84
+[  221333ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  221333ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  221333ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  221333ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  221503ms] [INFO] [webpack-dev-server] App hot update... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  221503ms] [LOG] [HMR] Checking for updates on the server... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  221504ms] [INFO] [webpack-dev-server] App hot update... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  221504ms] [LOG] [HMR] Checking for updates on the server... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  221504ms] [INFO] [webpack-dev-server] App hot update... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  221505ms] [LOG] [HMR] Checking for updates on the server... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  221505ms] [INFO] [webpack-dev-server] App hot update... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  221505ms] [LOG] [HMR] Checking for updates on the server... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  221639ms] TypeError: Cannot set properties of undefined (setting './src/components/form/index.tsx')
+    at self.webpackHotUpdate_open_norantec_ui_libraries (http://localhost:9000/demo.js:1348:39)
+    at http://localhost:9000/demo.ab70baee56cecc538a7c.hot-update.js:10:52
+[  221560ms] [WARNING] [HMR] Update failed: Loading hot update chunk demo failed.
+(missing: http://localhost:9000/demo.ab70baee56cecc538a7c.hot-update.js)
+ChunkLoadError
+    at http://localhost:9000/demo.js:1328:26
+    at new Promise (<anonymous>)
+    at loadUpdateChunk (http://localhost:9000/demo.js:1323:20)
+    at http://localhost:9000/demo.js:1790:29
+    at Array.forEach (<anonymous>)
+    at __webpack_require__.hmrC.jsonp (http://localhost:9000/demo.js:1785:22)
+    at http://localhost:9000/demo.js:1158:47
+    at Array.reduce (<anonymous>)
+    at http://localhost:9000/demo.js:1154:55 @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[  221640ms] TypeError: Cannot set properties of undefined (setting './src/components/form/index.tsx')
+    at self.webpackHotUpdate_open_norantec_ui_libraries (http://localhost:9000/demo.js:1348:39)
+    at http://localhost:9000/demo.ab70baee56cecc538a7c.hot-update.js:10:52
+[  221562ms] [WARNING] [HMR] Update failed: Loading hot update chunk demo failed.
+(missing: http://localhost:9000/demo.ab70baee56cecc538a7c.hot-update.js)
+ChunkLoadError
+    at http://localhost:9000/demo.js:1328:26
+    at new Promise (<anonymous>)
+    at loadUpdateChunk (http://localhost:9000/demo.js:1323:20)
+    at http://localhost:9000/demo.js:1790:29
+    at Array.forEach (<anonymous>)
+    at __webpack_require__.hmrC.jsonp (http://localhost:9000/demo.js:1785:22)
+    at http://localhost:9000/demo.js:1158:47
+    at Array.reduce (<anonymous>)
+    at http://localhost:9000/demo.js:1154:55 @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[  221640ms] TypeError: Cannot set properties of undefined (setting './src/components/form/index.tsx')
+    at self.webpackHotUpdate_open_norantec_ui_libraries (http://localhost:9000/demo.js:1348:39)
+    at http://localhost:9000/demo.ab70baee56cecc538a7c.hot-update.js:10:52
+[  221562ms] [WARNING] [HMR] Update failed: Loading hot update chunk demo failed.
+(missing: http://localhost:9000/demo.ab70baee56cecc538a7c.hot-update.js)
+ChunkLoadError
+    at http://localhost:9000/demo.js:1328:26
+    at new Promise (<anonymous>)
+    at loadUpdateChunk (http://localhost:9000/demo.js:1323:20)
+    at http://localhost:9000/demo.js:1790:29
+    at Array.forEach (<anonymous>)
+    at __webpack_require__.hmrC.jsonp (http://localhost:9000/demo.js:1785:22)
+    at http://localhost:9000/demo.js:1158:47
+    at Array.reduce (<anonymous>)
+    at http://localhost:9000/demo.js:1154:55 @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[  221592ms] [WARNING] [HMR] Cannot apply update. Need to do a full reload! @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[  221592ms] [WARNING] [HMR] Error: Aborted because ./src/components/form/index.tsx is not accepted
+Update propagation: ./src/components/form/index.tsx -> ./src/demo.tsx
+    at applyHandler (http://localhost:9000/demo.js:1496:31)
+    at http://localhost:9000/demo.js:1202:21
+    at Array.map (<anonymous>)
+    at internalApply (http://localhost:9000/demo.js:1201:54)
+    at http://localhost:9000/demo.js:1172:26
+    at waitForBlockingPromises (http://localhost:9000/demo.js:1126:48)
+    at http://localhost:9000/demo.js:1170:24 @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[  222412ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  222414ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  222460ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[  222588ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  222589ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  222591ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[  222667ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  222667ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  222668ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[  222686ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  222686ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  222688ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[  222736ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[  222740ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[  222751ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[  222759ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[  222815ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[  222820ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[  222823ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[  222828ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[  225628ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  225628ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  225628ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  225628ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  225742ms] [INFO] [webpack-dev-server] App hot update... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  225743ms] [LOG] [HMR] Checking for updates on the server... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  225743ms] [INFO] [webpack-dev-server] App hot update... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  225743ms] [LOG] [HMR] Checking for updates on the server... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  225744ms] [INFO] [webpack-dev-server] App hot update... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  225744ms] [LOG] [HMR] Checking for updates on the server... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  225744ms] [INFO] [webpack-dev-server] App hot update... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  225744ms] [LOG] [HMR] Checking for updates on the server... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  225847ms] TypeError: Cannot set properties of undefined (setting './src/components/form/index.tsx')
+    at self.webpackHotUpdate_open_norantec_ui_libraries (http://localhost:9000/demo.js:1348:39)
+    at http://localhost:9000/demo.6775a29bb020e75d5292.hot-update.js:10:52
+[  225791ms] [WARNING] [HMR] Update failed: Loading hot update chunk demo failed.
+(missing: http://localhost:9000/demo.6775a29bb020e75d5292.hot-update.js)
+ChunkLoadError
+    at http://localhost:9000/demo.js:1328:26
+    at new Promise (<anonymous>)
+    at loadUpdateChunk (http://localhost:9000/demo.js:1323:20)
+    at http://localhost:9000/demo.js:1790:29
+    at Array.forEach (<anonymous>)
+    at __webpack_require__.hmrC.jsonp (http://localhost:9000/demo.js:1785:22)
+    at http://localhost:9000/demo.js:1158:47
+    at Array.reduce (<anonymous>)
+    at http://localhost:9000/demo.js:1154:55 @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[  225848ms] TypeError: Cannot set properties of undefined (setting './src/components/form/index.tsx')
+    at self.webpackHotUpdate_open_norantec_ui_libraries (http://localhost:9000/demo.js:1348:39)
+    at http://localhost:9000/demo.6775a29bb020e75d5292.hot-update.js:10:52
+[  225792ms] [WARNING] [HMR] Update failed: Loading hot update chunk demo failed.
+(missing: http://localhost:9000/demo.6775a29bb020e75d5292.hot-update.js)
+ChunkLoadError
+    at http://localhost:9000/demo.js:1328:26
+    at new Promise (<anonymous>)
+    at loadUpdateChunk (http://localhost:9000/demo.js:1323:20)
+    at http://localhost:9000/demo.js:1790:29
+    at Array.forEach (<anonymous>)
+    at __webpack_require__.hmrC.jsonp (http://localhost:9000/demo.js:1785:22)
+    at http://localhost:9000/demo.js:1158:47
+    at Array.reduce (<anonymous>)
+    at http://localhost:9000/demo.js:1154:55 @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[  225848ms] TypeError: Cannot set properties of undefined (setting './src/components/form/index.tsx')
+    at self.webpackHotUpdate_open_norantec_ui_libraries (http://localhost:9000/demo.js:1348:39)
+    at http://localhost:9000/demo.6775a29bb020e75d5292.hot-update.js:10:52
+[  225793ms] [WARNING] [HMR] Update failed: Loading hot update chunk demo failed.
+(missing: http://localhost:9000/demo.6775a29bb020e75d5292.hot-update.js)
+ChunkLoadError
+    at http://localhost:9000/demo.js:1328:26
+    at new Promise (<anonymous>)
+    at loadUpdateChunk (http://localhost:9000/demo.js:1323:20)
+    at http://localhost:9000/demo.js:1790:29
+    at Array.forEach (<anonymous>)
+    at __webpack_require__.hmrC.jsonp (http://localhost:9000/demo.js:1785:22)
+    at http://localhost:9000/demo.js:1158:47
+    at Array.reduce (<anonymous>)
+    at http://localhost:9000/demo.js:1154:55 @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[  225805ms] [WARNING] [HMR] Cannot apply update. Need to do a full reload! @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[  225805ms] [WARNING] [HMR] Error: Aborted because ./src/components/form/index.tsx is not accepted
+Update propagation: ./src/components/form/index.tsx -> ./src/demo.tsx
+    at applyHandler (http://localhost:9000/demo.js:1496:31)
+    at http://localhost:9000/demo.js:1202:21
+    at Array.map (<anonymous>)
+    at internalApply (http://localhost:9000/demo.js:1201:54)
+    at http://localhost:9000/demo.js:1172:26
+    at waitForBlockingPromises (http://localhost:9000/demo.js:1126:48)
+    at http://localhost:9000/demo.js:1170:24 @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[  226471ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  226474ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  226524ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[  226654ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  226655ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  226657ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[  226733ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  226734ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  226735ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[  226753ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  226753ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  226754ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[  226802ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[  226808ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[  226818ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[  226823ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[  226870ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[  226875ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[  226881ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[  226884ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[  231254ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  231255ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  231255ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  231255ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  231402ms] [INFO] [webpack-dev-server] App hot update... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  231402ms] [LOG] [HMR] Checking for updates on the server... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  231404ms] [INFO] [webpack-dev-server] App hot update... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  231404ms] [LOG] [HMR] Checking for updates on the server... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  231405ms] [INFO] [webpack-dev-server] App hot update... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  231405ms] [LOG] [HMR] Checking for updates on the server... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  231405ms] [INFO] [webpack-dev-server] App hot update... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  231405ms] [LOG] [HMR] Checking for updates on the server... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  231424ms] [WARNING] [HMR] Cannot apply update. Need to do a full reload! @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[  231425ms] [WARNING] [HMR] Error: Aborted because ./src/components/form/index.tsx is not accepted
+Update propagation: ./src/components/form/index.tsx -> ./src/demo.tsx
+    at applyHandler (http://localhost:9000/demo.js:1496:31)
+    at http://localhost:9000/demo.js:1202:21
+    at Array.map (<anonymous>)
+    at internalApply (http://localhost:9000/demo.js:1201:54)
+    at http://localhost:9000/demo.js:1172:26
+    at waitForBlockingPromises (http://localhost:9000/demo.js:1126:48)
+    at http://localhost:9000/demo.js:1170:24 @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[  231425ms] [WARNING] [HMR] Update failed: Loading hot update chunk demo failed.
+(missing: http://localhost:9000/demo.e4e8949d0d4270bd04d7.hot-update.js)
+ChunkLoadError
+    at http://localhost:9000/demo.js:1328:26
+    at new Promise (<anonymous>)
+    at loadUpdateChunk (http://localhost:9000/demo.js:1323:20)
+    at http://localhost:9000/demo.js:1790:29
+    at Array.forEach (<anonymous>)
+    at __webpack_require__.hmrC.jsonp (http://localhost:9000/demo.js:1785:22)
+    at http://localhost:9000/demo.js:1158:47
+    at Array.reduce (<anonymous>)
+    at http://localhost:9000/demo.js:1154:55 @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[  231426ms] [WARNING] [HMR] Update failed: Loading hot update chunk demo failed.
+(missing: http://localhost:9000/demo.e4e8949d0d4270bd04d7.hot-update.js)
+ChunkLoadError
+    at http://localhost:9000/demo.js:1328:26
+    at new Promise (<anonymous>)
+    at loadUpdateChunk (http://localhost:9000/demo.js:1323:20)
+    at http://localhost:9000/demo.js:1790:29
+    at Array.forEach (<anonymous>)
+    at __webpack_require__.hmrC.jsonp (http://localhost:9000/demo.js:1785:22)
+    at http://localhost:9000/demo.js:1158:47
+    at Array.reduce (<anonymous>)
+    at http://localhost:9000/demo.js:1154:55 @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[  231426ms] [WARNING] [HMR] Update failed: Loading hot update chunk demo failed.
+(missing: http://localhost:9000/demo.e4e8949d0d4270bd04d7.hot-update.js)
+ChunkLoadError
+    at http://localhost:9000/demo.js:1328:26
+    at new Promise (<anonymous>)
+    at loadUpdateChunk (http://localhost:9000/demo.js:1323:20)
+    at http://localhost:9000/demo.js:1790:29
+    at Array.forEach (<anonymous>)
+    at __webpack_require__.hmrC.jsonp (http://localhost:9000/demo.js:1785:22)
+    at http://localhost:9000/demo.js:1158:47
+    at Array.reduce (<anonymous>)
+    at http://localhost:9000/demo.js:1154:55 @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[  231947ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  231949ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  231998ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[  232123ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  232123ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  232125ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[  232199ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  232200ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  232201ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[  232215ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  232216ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  232217ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[  232260ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[  232265ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[  232275ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[  232281ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[  232288ms] [LOG] ITEM:SET_VALUE undefined valueRef undefined incoming undefined @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:704
+[  232297ms] [LOG] ITEM:SET_VALUE undefined valueRef undefined incoming undefined @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:704
+[  232299ms] [LOG] ITEM:SET_VALUE undefined valueRef undefined incoming undefined @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:704
+[  232304ms] [LOG] ITEM:SET_VALUE undefined valueRef undefined incoming undefined @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:704
+[  232329ms] [LOG] ITEM:SET_VALUE test1 valueRef undefined incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:704
+[  232331ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[  232335ms] [LOG] ITEM:SET_VALUE test1 valueRef undefined incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:704
+[  232336ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[  232338ms] [LOG] ITEM:SET_VALUE test1 valueRef undefined incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:704
+[  232339ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[  232342ms] [LOG] ITEM:SET_VALUE test1 valueRef undefined incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:704
+[  232345ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[  232352ms] [LOG] ITEM:SET_VALUE test1 valueRef 123 incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:704
+[  232353ms] [LOG] ITEM:SET_VALUE test1 valueRef 123 incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:704
+[  232353ms] [LOG] ITEM:SET_VALUE test1 valueRef 123 incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:704
+[  238607ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  238607ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  238608ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  238608ms] [INFO] [webpack-dev-server] App updated. Recompiling... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  238710ms] [INFO] [webpack-dev-server] App hot update... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  238710ms] [LOG] [HMR] Checking for updates on the server... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  238711ms] [INFO] [webpack-dev-server] App hot update... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  238711ms] [LOG] [HMR] Checking for updates on the server... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  238711ms] [INFO] [webpack-dev-server] App hot update... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  238711ms] [LOG] [HMR] Checking for updates on the server... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  238712ms] [INFO] [webpack-dev-server] App hot update... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  238712ms] [LOG] [HMR] Checking for updates on the server... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  238824ms] TypeError: Cannot set properties of undefined (setting './src/components/form/index.tsx')
+    at self.webpackHotUpdate_open_norantec_ui_libraries (http://localhost:9000/demo.js:1348:39)
+    at http://localhost:9000/demo.707a66f4ce5b6b94667b.hot-update.js:10:52
+[  238766ms] [WARNING] [HMR] Update failed: Loading hot update chunk demo failed.
+(missing: http://localhost:9000/demo.707a66f4ce5b6b94667b.hot-update.js)
+ChunkLoadError
+    at http://localhost:9000/demo.js:1328:26
+    at new Promise (<anonymous>)
+    at loadUpdateChunk (http://localhost:9000/demo.js:1323:20)
+    at http://localhost:9000/demo.js:1790:29
+    at Array.forEach (<anonymous>)
+    at __webpack_require__.hmrC.jsonp (http://localhost:9000/demo.js:1785:22)
+    at http://localhost:9000/demo.js:1158:47
+    at Array.reduce (<anonymous>)
+    at http://localhost:9000/demo.js:1154:55 @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[  238825ms] TypeError: Cannot set properties of undefined (setting './src/components/form/index.tsx')
+    at self.webpackHotUpdate_open_norantec_ui_libraries (http://localhost:9000/demo.js:1348:39)
+    at http://localhost:9000/demo.707a66f4ce5b6b94667b.hot-update.js:10:52
+[  238767ms] [WARNING] [HMR] Update failed: Loading hot update chunk demo failed.
+(missing: http://localhost:9000/demo.707a66f4ce5b6b94667b.hot-update.js)
+ChunkLoadError
+    at http://localhost:9000/demo.js:1328:26
+    at new Promise (<anonymous>)
+    at loadUpdateChunk (http://localhost:9000/demo.js:1323:20)
+    at http://localhost:9000/demo.js:1790:29
+    at Array.forEach (<anonymous>)
+    at __webpack_require__.hmrC.jsonp (http://localhost:9000/demo.js:1785:22)
+    at http://localhost:9000/demo.js:1158:47
+    at Array.reduce (<anonymous>)
+    at http://localhost:9000/demo.js:1154:55 @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[  238827ms] TypeError: Cannot set properties of undefined (setting './src/components/form/index.tsx')
+    at self.webpackHotUpdate_open_norantec_ui_libraries (http://localhost:9000/demo.js:1348:39)
+    at http://localhost:9000/demo.707a66f4ce5b6b94667b.hot-update.js:10:52
+[  238768ms] [WARNING] [HMR] Update failed: Loading hot update chunk demo failed.
+(missing: http://localhost:9000/demo.707a66f4ce5b6b94667b.hot-update.js)
+ChunkLoadError
+    at http://localhost:9000/demo.js:1328:26
+    at new Promise (<anonymous>)
+    at loadUpdateChunk (http://localhost:9000/demo.js:1323:20)
+    at http://localhost:9000/demo.js:1790:29
+    at Array.forEach (<anonymous>)
+    at __webpack_require__.hmrC.jsonp (http://localhost:9000/demo.js:1785:22)
+    at http://localhost:9000/demo.js:1158:47
+    at Array.reduce (<anonymous>)
+    at http://localhost:9000/demo.js:1154:55 @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[  238783ms] [WARNING] [HMR] Cannot apply update. Need to do a full reload! @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[  238783ms] [WARNING] [HMR] Error: Aborted because ./src/components/form/index.tsx is not accepted
+Update propagation: ./src/components/form/index.tsx -> ./src/demo.tsx
+    at applyHandler (http://localhost:9000/demo.js:1496:31)
+    at http://localhost:9000/demo.js:1202:21
+    at Array.map (<anonymous>)
+    at internalApply (http://localhost:9000/demo.js:1201:54)
+    at http://localhost:9000/demo.js:1172:26
+    at waitForBlockingPromises (http://localhost:9000/demo.js:1126:48)
+    at http://localhost:9000/demo.js:1170:24 @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:40
+[  239446ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  239448ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  239495ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[  239617ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  239617ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  239618ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[  239687ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  239688ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  239689ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[  239702ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement enabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ webpack://@open-norantec/ui-libraries/./node_modules/webpack-dev-server/client/modules/logger/index.js?:599
+[  239702ms] [LOG] [HMR] Waiting for update signal from WDS... @ webpack://@open-norantec/ui-libraries/./node_modules/webpack/hot/log.js?:38
+[  239704ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack://@open-norantec/ui-libraries/./node_modules/react-dom/cjs/react-dom.development.js?:29890
+[  239744ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[  239753ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[  239759ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[  239765ms] [LOG] FORM:CONTROLLED_EFFECT {test1: 123} @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:407
+[  239765ms] [LOG] ITEM:SET_VALUE undefined valueRef undefined incoming undefined @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:705
+[  239769ms] [LOG] FORM:CONTROLLED_EFFECT {test1: 123} @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:407
+[  239769ms] [LOG] ITEM:SET_VALUE undefined valueRef undefined incoming undefined @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:705
+[  239772ms] [LOG] LENCONDA:4 undefined @ webpack://@open-norantec/ui-libraries/./src/demo.tsx?:76
+[  239775ms] [LOG] FORM:CONTROLLED_EFFECT {test1: 123} @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:407
+[  239775ms] [LOG] ITEM:SET_VALUE undefined valueRef undefined incoming undefined @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:705
+[  239783ms] [LOG] FORM:CONTROLLED_EFFECT {test1: 123} @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:407
+[  239783ms] [LOG] ITEM:SET_VALUE undefined valueRef undefined incoming undefined @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:705
+[  239800ms] [LOG] ITEM:SET_VALUE test1 valueRef undefined incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:705
+[  239802ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[  239805ms] [LOG] ITEM:SET_VALUE test1 valueRef undefined incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:705
+[  239807ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[  239810ms] [LOG] ITEM:SET_VALUE test1 valueRef undefined incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:705
+[  239813ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[  239815ms] [LOG] ITEM:SET_VALUE test1 valueRef undefined incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:705
+[  239817ms] [LOG] FORM:VALUE_CHANGE test1 123 controlled true current 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:358
+[  239827ms] [LOG] ITEM:SET_VALUE test1 valueRef 123 incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:705
+[  239828ms] [LOG] ITEM:SET_VALUE test1 valueRef 123 incoming 123 @ webpack://@open-norantec/ui-libraries/./src/components/form/index.tsx?:705

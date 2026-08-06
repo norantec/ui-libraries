@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
 // import { Form, FormItemProvider, FormProvider, useForm, Validator } from './components/form/ng';
-import { Form, FormInstance, FormItem, FormItemProvider, FormProvider, Validator } from './components/form';
+import { Form, FormInstance, FormItem, FormItemProvider, FormProvider, FormValues, Validator } from './components/form';
 import { ProviderFactory } from './components/provider-factory';
 import { useEffect, useRef, useState } from 'react';
 import { StringUtil } from '@open-norantec/utilities/dist/string-util.class';
@@ -41,6 +41,7 @@ const App: React.FC = () => {
   const [form, setForm] = useState<FormInstance>();
   const [validators, setValidators] = useState<Validator[]>([]);
   const autoHideRef = useRef<AutoHideRef | null>(null);
+  const [value, setValue] = useState<FormValues | undefined>({ test1: '123' });
 
   useEffect(() => {
     console.log('LENCONDA:4', form?.getValues?.());
@@ -87,6 +88,19 @@ const App: React.FC = () => {
         </FormItem>
         <FormItem label="Test5 (no order, after ordered)" name="test5">
           {[Input, { placeholder: 'no order, after ordered group' }]}
+        </FormItem>
+      </Form>
+      <hr />
+      <Form
+        controlled={true}
+        value={value}
+        onChange={(newValue) => {
+          console.log('LENCONDA:DEMO:onChange', newValue);
+          setValue(newValue);
+        }}
+      >
+        <FormItem label="TEST 1" name="test1">
+          {[Input, { placeholder: 'Input something...' }]}
         </FormItem>
       </Form>
       <button
